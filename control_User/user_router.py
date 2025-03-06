@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from database import get_db
 from pydantic import BaseModel
@@ -17,29 +17,64 @@ from email.mime.multipart import MIMEMultipart
 from pinecone import Pinecone, ServerlessSpec
 from project.crudProject import create_project
 import json
+import uuid
+
 
 user_router = APIRouter()
 
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
-SENDER_EMAIL = "YOUR EMAIL"
-SENDER_PASSWORD = "YOUR KEY"
+SENDER_EMAIL = ''  # 발신 이메일 주소
+SENDER_PASSWORD = ''  # 이메일 비밀번호
 
 
-class RegisterRequest(BaseModel):
-    name: str
-    password: str
-    email: str
 
-@user_router.post("/register")
-def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
+def get_db_connection():
+    return psycopg2.connect(
+        host='localhost',
+        dbname='postgres',
+        user='postgres',
+        password='1234',
+        port='5432',
+    )
+
+
+
+
+# class RegisterRequest(BaseModel):
+#     name: str
+#     password: str
+#     email: str
+#
+# @user_router.post("/register")
+# def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
+#     try:
+#         new_user = register(db = db, user_id = request.name, password=request.password, email=request.email, role="user")
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
+#     return {"message": "Register Success"}
+
+@user_router.post('/register')
+async def login(request: Request):
+    body = await request.json()
+    name = body.get('name')
+    email = body.get('email')
+    password = body.get('password')
+    print(name,email,password)
+
     try:
-        new_user = register(db = db, user_id = request.name, password=request.password, email=request.email, role="user")
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        query = """
+                        INSERT INTO "user" (id, pw, email, name)
+                        VALUES (%s, %s, %s, %s)
+                    """
+        cursor.execute(query, (email, password, email, name))
+        conn.commit()
+        conn.close()
+        return {"message": "Register Success"}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
-    return {"message": "Register Success"}
-
-
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 
@@ -97,29 +132,46 @@ def send_email(request: EmailRequest, db: Session = Depends(get_db)):
         return JSONResponse(content={'message': '이메일 전송 실패'}, status_code=500)
 
 
-class GoogleLoginRequest(BaseModel):
-    email: str
+# class GoogleLoginRequest(BaseModel):
+#     email: str
 
 @user_router.post('/googlelogin')
-def login(request: GoogleLoginRequest):
-    email = request.email
-    print(f"로그인 요청 이메일: {email}")
+async def login(request: Request):
+    # 요청 본문 출력
+    print("전체 요청 본문:")
+    body = await request.json()  # JSON 형식의 본문을 가져오기
+    print(body)
+
+    email = body['email']
+    name = body['name']
+    image = body['image']
 
     try:
-        conn = psycopg2.connect(
-            host='localhost',
-            dbname='msp_database',
-            user='postgres',
-            password='3636',
-            port='5433',
-        )
+        conn = get_db_connection()
         cur = conn.cursor()
 
         cur.execute('SELECT id, email, role FROM "user" WHERE LOWER(email) = LOWER(%s)', (email,))
         user = cur.fetchone()
+        print(user)
 
         if not user:
-            raise HTTPException(status_code=401, detail="회원정보가 없습니다.")
+            print("유저데이터 삽입 시작")
+            cur.execute(
+                'INSERT INTO "user" (id, email, name, role) VALUES (%s, %s, %s, %s)',
+                (email, email, name, 'user')  # 'user'로 기본 역할 설정
+            )
+            conn.commit()  # 변경사항 저장
+
+            return JSONResponse(
+                content={
+                    "message": f"{name}님 반갑습니다! 새 계정이 생성되었습니다.",
+                    "role": "user",
+                    "email": email,
+                },
+                status_code=200
+            )
+
+
 
         user_data = {
             "id": user[0],

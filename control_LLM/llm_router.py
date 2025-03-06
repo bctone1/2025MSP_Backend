@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from datetime import datetime
@@ -7,31 +7,211 @@ import anthropic
 import openai
 from fastapi import Request
 import logging
+import json
+
+
 llm_router = APIRouter()
 
-openai.api_key = "YOUR API KEY"
+openai.api_key = 'your api key'
+
 client = anthropic.Anthropic(
     api_key="YOUR API KEY"
 )
 
 
 
-class SetProjectRequest(BaseModel):
-    messageInput:str
+# class SetProjectRequest(BaseModel):
+#     messageInput:str
+#
+# @llm_router.post("/setproject")
+# def setproject(request:SetProjectRequest):
+#     description = request.messageInput
+#     print(description)
+#     answer = setproject_response(description)
+#     print(answer)
+#     return JSONResponse(
+#         content={
+#             "projectname": answer["projectname"],
+#             "description": answer["description"],
+#             "purpose": answer["purpose"]
+#         },
+#         status_code=200
+#     )
+
 
 @llm_router.post("/setproject")
-def setproject(request:SetProjectRequest):
-    description = request.messageInput
-    answer = setproject_response(description)
-    print(answer)
-    return JSONResponse(
-        content={
-            "projectname": answer["projectname"],
-            "description": answer["description"],
-            "purpose": answer["purpose"]
-        },
-        status_code=200
+async def set_project(request: Request):
+    data = await request.json()  # 요청 데이터 가져오기
+    print(data)
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": f"""
+            다음 프로젝트 설명을 JSON 형식으로 요약해 주세요.
+            반드시 아래의 형식을 따르세요.
+            {{
+                "projectname": "프로젝트명",
+                "description": "프로젝트 설명",
+                "purpose": "프로젝트 목적"
+            }}
+
+            프로젝트 설명: {data}
+            """}
+        ],
+        max_tokens=500
     )
+
+    # GPT 응답을 JSON으로 변환
+    parsed_response = json.loads(response['choices'][0]['message']['content'])
+    print(parsed_response)
+
+    return JSONResponse(content=parsed_response, status_code=200)
+
+
+@llm_router.post("/RequestRequirements")
+async def RequestRequirements(request: Request):
+    data = await request.json()  # 요청 데이터 가져오기
+    print(data)
+    messageInput = data.get('messageInput')
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": f"""
+                            다음 프로젝트 요구사항을 참고하여 아래 JSON 형식으로 답변해 주세요.
+                            {{
+                                "title": "",
+                                "description": "",
+                                "category": "",
+                                "definition": "요구사항 정의 및 방법을 상세하게 작성"
+                            }}
+                            요구사항: {messageInput}
+                            """}
+        ],
+        max_tokens=500
+    )
+
+    # GPT 응답을 JSON으로 변환
+    parsed_response = json.loads(response['choices'][0]['message']['content'])
+    print(parsed_response)
+    return JSONResponse(content=parsed_response, status_code=200)
+
+
+@llm_router.post("/RequestSystemSettings")
+async def RequestSystemSettings(request: Request):
+    data = await request.json()  # 요청 데이터 가져오기
+
+    messageInput = data.get('messageInput')
+    selectedDescriptions = data.get('selectedDescriptions')
+    print("=======================================================")
+    print(selectedDescriptions)
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": f"""
+                    다음 프로젝트의 요구사항 및 설명을 참고하여 아래 JSON 형식으로 답변해 주세요.
+                    {{
+                        "title": "",
+                        "description": "",
+                        "definition": "요구사항 정의 및 방법을 상세하게 작성"
+                    }}
+                    요구사항 : {selectedDescriptions},
+                    설명: {messageInput}
+                    """}
+        ],
+        max_tokens=500
+    )
+
+    # GPT 응답을 JSON으로 변환
+    parsed_response = json.loads(response['choices'][0]['message']['content'])
+    print(parsed_response)
+    return JSONResponse(content=parsed_response, status_code=200)
+
+
+@llm_router.post("/RequestDBschema")
+async def RequestDBschema(request: Request):
+    data = await request.json()  # 요청 데이터 가져오기
+
+    messageInput = data.get('messageInput')
+    selectedDescriptions = data.get('selectedDescriptions')
+    print(selectedDescriptions)
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": f"""
+                        다음 프로젝트의 요구사항 및 설명을 참고하여, DB 테이블 설계를 아래 JSON 형식으로 답변해 주세요.
+                        {{
+                            "table_name": "",
+                            "columns": "
+                                "constraints" : "",
+                                "data_type" : "",
+                                "name" : ""
+                            ",
+                            "description": "테이블 설명 작성",
+                        }}
+                        요구사항 : {selectedDescriptions},
+                        설명: {messageInput}
+                        """}
+        ],
+        max_tokens=500
+    )
+
+    # GPT 응답을 JSON으로 변환
+    parsed_response = json.loads(response['choices'][0]['message']['content'])
+    print(parsed_response)
+    return JSONResponse(content=parsed_response, status_code=200)
+
+@llm_router.post("/Requestapidata")
+async def Requestapidata(request: Request):
+    data = await request.json()  # 요청 데이터 가져오기
+
+    messageInput = data.get('messageInput')
+    selectedDescriptions = data.get('selectedDescriptions')
+    selectedSystem = data.get('selectedSystem')
+    print(data)
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": f"""
+                        다음 프로젝트의 요구사항 및 설명을 참고하여, api 예시 데이터를 아래 JSON 형식으로 답변해 주세요.
+                        {{
+                            "api_name": "",
+                            "apidata": "",
+                            "description": "",
+                        }}
+                        요구사항 : {selectedDescriptions},{selectedSystem}
+                        설명: {messageInput}
+                        """}
+        ],
+        max_tokens=500
+    )
+
+    # GPT 응답을 JSON으로 변환
+    parsed_response = json.loads(response['choices'][0]['message']['content'])
+    print(parsed_response)
+    return JSONResponse(content=parsed_response, status_code=200)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class PromptRequest(BaseModel):
