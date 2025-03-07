@@ -24,8 +24,8 @@ user_router = APIRouter()
 
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
-SENDER_EMAIL = ''  # 발신 이메일 주소
-SENDER_PASSWORD = ''  # 이메일 비밀번호
+SENDER_EMAIL = 'dudqls327@bctone.kr'  # 발신 이메일 주소
+SENDER_PASSWORD = 'mwdc lebe phqy rovf'  # 이메일 비밀번호
 
 
 
@@ -198,7 +198,14 @@ async def login(request: Request):
                 status_code=200
             )
         else:
-            raise HTTPException(status_code=403, detail="권한이 정의되지 않았습니다.")
+            return JSONResponse(
+                content={
+                    "message": f"{user_data['id']}님 반갑습니다.",
+                    "role": "user",
+                    "email": user_data["email"],
+                },
+                status_code=200
+            )
     except Exception as e:
         print(f"에러 발생: {e}")
         raise HTTPException(status_code=500, detail="서버 에러가 발생했습니다.")
