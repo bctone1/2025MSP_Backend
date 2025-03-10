@@ -296,28 +296,33 @@ async def projects_list(request: Request):
                     'SELECT * FROM "project" WHERE LOWER(user_email) = %s ORDER BY project_id DESC',
                     (email,)
                 )
-                result = cur.fetchall()
+
+                column_names = [desc[0] for desc in cur.description]
+                result = [dict(zip(column_names, row)) for row in cur.fetchall()]
+                # result = cur.fetchall()
 
                 print(f"Query result: {result}")
 
                 if not result:
                     return JSONResponse(content={"message": "프로젝트가 없습니다."}, status_code=400)
+                else :
+                    return result
 
                 # 프로젝트 리스트 변환
-                projects = [
-                    {
-                        "project_name": row[0],
-                        "start_date": row[1].strftime('%Y-%m-%d') if isinstance(row[1], date) else row[1],
-                        "end_date": row[2].strftime('%Y-%m-%d') if isinstance(row[2], date) else row[2],
-                        "description": row[3],
-                        "requirements": row[4],
-                        "model_setting": row[5],
-                        "num_of_member_": row[6],
-                        "project_id": row[7],
-                        "user_email": row[8]
-                    }
-                    for row in result
-                ]
+                # projects = [
+                #     {
+                #         "project_name": row[0],
+                #         "start_date": row[1].strftime('%Y-%m-%d') if isinstance(row[1], date) else row[1],
+                #         "end_date": row[2].strftime('%Y-%m-%d') if isinstance(row[2], date) else row[2],
+                #         "description": row[3],
+                #         "requirements": row[4],
+                #         "model_setting": row[5],
+                #         "num_of_member_": row[6],
+                #         "project_id": row[7],
+                #         "user_email": row[8]
+                #     }
+                #     for row in result
+                # ]
 
                 return JSONResponse(content=projects, status_code=200)
 
