@@ -137,34 +137,52 @@ async def apidata(request:Request):
 
 
 
+# class RequirementInfo(BaseModel):
+#     id: int
+#     project_id : int
+#     title : str
+#     description : str
+#     category : str
+#     priority : str
+#     status : str
+#     use_cases : str
+#     constraints : str
+
+# class SaveRequirementRequeset(BaseModel):
+#     project_id : int
+#     req : List[RequirementInfo]
 
 
 
+@project_router.post('/deleteRequirement')
+async def deleteRequirement(request: Request):
+    data = await request.json()
+    project_id = data.get('project_id')
+    definition = data.get('req', {}).get('definition')
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # 데이터 확인
+        check_query = "SELECT id FROM requirements WHERE definition = %s"
+        cursor.execute(check_query, (definition,))
+        existing = cursor.fetchone()
 
+        if not existing:
+            conn.close()
+            return JSONResponse(content={"message": "이미 삭제된 데이터입니다."})
 
-
-
-class RequirementInfo(BaseModel):
-    id: int
-    project_id : int
-    title : str
-    description : str
-    category : str
-    priority : str
-    status : str
-    use_cases : str
-    constraints : str
-
-class SaveRequirementRequeset(BaseModel):
-    project_id : int
-    req : List[RequirementInfo]
-
-
-
+        # 데이터 삭제
+        delete_query = "DELETE FROM requirements WHERE definition = %s AND project_id = %s"
+        cursor.execute(delete_query, (definition, project_id))
+        conn.commit()
+        conn.close()
+        return JSONResponse(content={"message": "삭제되었습니다.."})
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 @project_router.post('/saveRequirement')
-async def saveRequirement(request:Request):
-    data = await request.json()  # 요청 데이터 가져오기
+async def saveRequirement(request: Request):
+    data = await request.json()
     project_id = data.get('project_id')
     definition = data.get('req', {}).get('definition')
     description = data.get('req', {}).get('description')
@@ -173,8 +191,87 @@ async def saveRequirement(request:Request):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+
+        # 중복 확인
+        check_query = "SELECT id FROM requirements WHERE definition = %s"
+        cursor.execute(check_query, (definition,))
+        existing = cursor.fetchone()
+
+        if existing:
+            conn.close()
+            return JSONResponse(content={"message": "이미 추가된 데이터입니다."})
+
+        # 데이터 삽입
+        insert_query = """
+            INSERT INTO requirements (project_id, definition, description, title)
+            VALUES (%s, %s, %s, %s) RETURNING id
+        """
+        cursor.execute(insert_query, (project_id, definition, description, title))
+        inserted_id = cursor.fetchone()[0]
+        conn.commit()
+        conn.close()
+
+        return JSONResponse(content={"message": "저장되었습니다.", "id": inserted_id})
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
+
+@project_router.post('/deleteSystemSetting')
+async def deleteSystemSetting(request: Request):
+    data = await request.json()
+    project_id = data.get('project_id')
+    definition = data.get('req', {}).get('definition')
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # 데이터 확인
+        check_query = """
+                SELECT id FROM "systemSetting" WHERE definition = %s
+                """
+        cursor.execute(check_query, (definition,))
+        existing = cursor.fetchone()
+
+        if not existing:
+            conn.close()
+            return JSONResponse(content={"message": "이미 삭제된 데이터입니다."})
+
+        # 데이터 삭제
+        delete_query = """DELETE FROM "systemSetting" WHERE definition = %s AND project_id = %s"""
+        cursor.execute(delete_query, (definition, project_id))
+        conn.commit()
+        conn.close()
+        return JSONResponse(content={"message": "삭제되었습니다.."})
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@project_router.post('/saveSystemSetting')
+async def saveSystemSetting(request:Request):
+    data = await request.json()  # 요청 데이터 가져오기
+    # print(data)
+
+    project_id = data.get('project_id')
+    definition = data.get('req', {}).get('definition')
+    description = data.get('req', {}).get('description')
+    title = data.get('req', {}).get('title')
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # 중복 확인
+        check_query = """
+        SELECT id FROM "systemSetting" WHERE definition = %s
+        """
+        cursor.execute(check_query, (definition,))
+        existing = cursor.fetchone()
+
+        if existing:
+            conn.close()
+            return JSONResponse(content={"message": "이미 추가된 데이터입니다."})
+
         query = """
-                        INSERT INTO requirements (project_id, definition, description, title)
+                        INSERT INTO "systemSetting" (project_id, definition, description, title)
                         VALUES (%s, %s, %s, %s) RETURNING id
                     """
         cursor.execute(query, (project_id, definition, description, title))
@@ -186,27 +283,37 @@ async def saveRequirement(request:Request):
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
-@project_router.post('/saveSystemSetting')
-async def saveSystemSetting(request:Request):
-    data = await request.json()  # 요청 데이터 가져오기
 
+@project_router.post('/deleteDatatable')
+async def deleteDatatable(request: Request):
+    data = await request.json()
     project_id = data.get('project_id')
-    definition = data.get('req', {}).get('definition')
+    table_name = data.get('req', {}).get('table_name')
+    columns = data.get('req', {}).get('columns')
+    # columns 데이터가 딕셔너리이므로, 각 항목을 JSON 형식으로 직렬화
+    jsoncolumns = [json.dumps(col, ensure_ascii=False) for col in columns]
     description = data.get('req', {}).get('description')
-    title = data.get('req', {}).get('title')
 
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        query = """
-                        INSERT INTO "systemSetting" (project_id, definition, description, title)
-                        VALUES (%s, %s, %s, %s) RETURNING id
-                    """
-        cursor.execute(query, (project_id, definition, description, title))
-        inserted_id = cursor.fetchone()[0]  # 삽입된 id 가져오기
+        # 데이터 확인
+        check_query = """
+                SELECT id FROM tabledata WHERE description = %s
+                """
+        cursor.execute(check_query, (description,))
+        existing = cursor.fetchone()
+
+        if not existing:
+            conn.close()
+            return JSONResponse(content={"message": "이미 삭제된 데이터입니다."})
+
+        # 데이터 삭제
+        delete_query = """DELETE FROM tabledata WHERE description = %s AND project_id = %s"""
+        cursor.execute(delete_query, (description, project_id))
         conn.commit()
         conn.close()
-        return JSONResponse(content={"message": "저장되었습니다.", "id": inserted_id})
+        return JSONResponse(content={"message": "삭제되었습니다.."})
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
@@ -225,6 +332,18 @@ async def saveDatatable(request:Request):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+
+        check_query = """
+                SELECT id FROM tabledata WHERE description = %s
+                """
+        cursor.execute(check_query, (description,))
+        existing = cursor.fetchone()
+
+        if existing:
+            conn.close()
+            return JSONResponse(content={"message": "이미 추가된 데이터입니다."})
+
+
         query = """
                         INSERT INTO tabledata (project_id, table_name, columns, description)
                         VALUES (%s, %s, %s, %s) RETURNING id
@@ -243,6 +362,40 @@ async def saveDatatable(request:Request):
 
 
 
+
+@project_router.post('/deleteApidata')
+async def deleteApidata(request: Request):
+    data = await request.json()  # 요청 데이터 가져오기
+
+    project_id = data.get('project_id')
+    apidata = data.get('req', {}).get('apidata')
+    jsonapidata = json.dumps(apidata, ensure_ascii=False)  # apidata를 JSON 문자열로 변환
+    api_name = data.get('req', {}).get('api_name')
+    description = data.get('req', {}).get('description')
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # 데이터 확인
+        check_query = """
+                SELECT id FROM apitable WHERE description = %s
+                """
+        cursor.execute(check_query, (description,))
+        existing = cursor.fetchone()
+
+        if not existing:
+            conn.close()
+            return JSONResponse(content={"message": "이미 삭제된 데이터입니다."})
+
+        # 데이터 삭제
+        delete_query = """DELETE FROM apitable WHERE description = %s AND project_id = %s"""
+        cursor.execute(delete_query, (description, project_id))
+        conn.commit()
+        conn.close()
+        return JSONResponse(content={"message": "삭제되었습니다.."})
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
 @project_router.post('/saveApidata')
 async def saveApidata(request:Request):
     data = await request.json()  # 요청 데이터 가져오기
@@ -250,13 +403,23 @@ async def saveApidata(request:Request):
     project_id = data.get('project_id')
     apidata = data.get('req', {}).get('apidata')
     jsonapidata = json.dumps(apidata, ensure_ascii=False)  # apidata를 JSON 문자열로 변환
-
     api_name = data.get('req', {}).get('api_name')
     description = data.get('req', {}).get('description')
 
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+
+        check_query = """
+                        SELECT id FROM apitable WHERE description = %s
+                        """
+        cursor.execute(check_query, (description,))
+        existing = cursor.fetchone()
+
+        if existing:
+            conn.close()
+            return JSONResponse(content={"message": "이미 추가된 데이터입니다."})
+
         query = """
                     INSERT INTO apitable (project_id, api_name, apidata, description)
                     VALUES (%s, %s, %s, %s) RETURNING id

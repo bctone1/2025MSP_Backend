@@ -1,0 +1,178 @@
+★user 테이블★
+
+CREATE TABLE IF NOT EXISTS user_table 
+(
+    email VARCHAR NOT NULL,
+    pw VARCHAR NOT NULL,
+    role VARCHAR NOT NULL,
+    "group" TEXT,
+    name TEXT,
+    status TEXT,
+    skills TEXT[],
+    register_at date,
+    CONSTRAINT user_pkey PRIMARY KEY (email),
+    CONSTRAINT user_email_key UNIQUE (email)
+);
+
+
+INSERT INTO user_table (email, pw, role, "group", name, status, skills, register_at)
+VALUES
+    ('dudqls327@bctone.kr', 'user', 'developer', 'teamA', 'Alice', 'active', '{"Python", "Django", "JavaScript"}',NOW()),
+    ('admin@bcton.kr', 'admin', 'developer', 'teamB', 'Bob', 'inactive', '{"Java", "Spring", "SQL"}',NOW()),
+    ('carol@example.com', 'user', 'developer', 'teamC', 'Carol', 'active', '{"React", "Node.js", "MongoDB"}',NOW()),
+    ('eve@example.com', 'user', 'developer', 'teamB', 'Eve', 'inactive', '{"Ruby", "Rails", "PostgreSQL"}',NOW());
+
+========================================================================
+★프로젝트 테이블★
+
+CREATE TABLE IF NOT EXISTS project
+(
+    project_id SERIAL PRIMARY KEY,
+    project_name VARCHAR,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    description TEXT,
+    requirements VARCHAR,
+    model_setting VARCHAR NOT NULL,
+    num_of_member_ INTEGER,
+    user_email VARCHAR
+);
+
+INSERT INTO project (project_name, start_date, end_date, description, requirements, model_setting, num_of_member_, user_email) VALUES
+('Project Alpha', '2024-01-01', '2024-12-31', 'A major project to develop a new software product.', 'Software development, testing, deployment', 'Agile', 10, 'user1@example.com'),
+('Project Beta', '2024-03-15', '2025-03-15', 'Research project to explore AI technologies.', 'AI research, machine learning models', 'Waterfall', 5, 'user2@example.com'),
+('Project Gamma', '2024-06-01', '2025-06-01', 'Infrastructure upgrade for the company network.', 'Network design, hardware procurement, system upgrade', 'Scrum', 8, 'user3@example.com');
+
+
+
+
+========================================================================
+★요구사항 설계 테이블★
+
+CREATE TABLE IF NOT EXISTS requirements
+(
+    id SERIAL PRIMARY KEY,
+    project_id integer,
+    title character varying(255),
+    description text,
+    definition text
+)
+
+INSERT INTO requirements (project_id, title, description, definition) VALUES
+(1, 'API Integration', 'Integrate external APIs for data exchange', 'Use REST APIs to fetch data from external systems and provide data to other services'),
+(2, 'User Authentication', 'Implement user authentication system', 'Enable users to sign up, log in, and manage their sessions securely using OAuth2');
+
+
+========================================================================
+★시스템 설계 테이블★
+
+CREATE TABLE IF NOT EXISTS "systemSetting"
+(
+    id SERIAL PRIMARY KEY,
+    project_id integer,
+    title character varying(255),
+    description text,
+    definition text
+)
+INSERT INTO "systemSetting" ("project_id", "title", "description", "definition") VALUES 
+(102, '구글 회원가입 시스템 구현', '구글 회원가입을 위한 시스템 설계 및 구현', '사용자가 구글 계정을 활용하여 손쉽게 회원가입할 수 있는 기능을 제공해야 합니다. 사용자는 구글 계정으로 로그인하고 필요한 정보를 추가로 제공하여 회원가입을 완료할 수 있어야 합니다.'),
+(101, 'LLM을 활용한 상품 추천 시스템', 'LLM(Language Model)을 활용하여 사용자의 검색 키워드 및 이용 이력을 분석하고, 해당 정보를 바탕으로 개인 맞춤형 상품 추천을 제공하는 시스템을 설계합니다.', 'LLM(Language Model)을 활용한 상품 추천 시스템은 사용자의 검색 기록, 선호도, 인터넷 이용 패턴을 분석하여 사용자에게 맞춤형 추천 상품을 제시하는 시스템입니다. 먼저, 사용자의 개인정보 및 이용 이력을 수집하고 분석합니다. 그 후, LLM을 활용하여 사용자의 관심사 및 선호도를 파악하고, 상품 데이터베이스와 연동하여 최적의 상품을 추천합니다. 추천 알고리즘을 구현하여 사용자의 행동 패턴에 맞게 상품을 선정하고, 사용자에게 추천 목록을 제공합니다.');
+
+
+========================================================================
+★테이블 설계 테이블★
+
+CREATE TABLE IF NOT EXISTS tabledata
+(
+    id SERIAL PRIMARY KEY,
+    project_id integer,
+    table_name character varying(255),
+    columns text[],
+    description text
+)
+
+INSERT INTO tabledata(project_id, table_name, columns, description) VALUES
+('101', 'user', '{"{\"name\": \"id\", \"data_type\": \"serial\", \"constraints\": \"PRIMARY KEY\"}","{\"name\": \"name\", \"data_type\": \"varchar(255)\", \"constraints\": \"NOT NULL\"}","{\"name\": \"email\", \"data_type\": \"varchar(255)\", \"constraints\": \"UNIQUE NOT NULL\"}","{\"name\": \"created_at\", \"data_type\": \"timestamp\", \"constraints\": \"DEFAULT CURRENT_TIMESTAMP\"}"}', '사용자 정보를 저장하는 테이블')
+
+========================================================================
+★api 설계 테이블★
+
+CREATE TABLE IF NOT EXISTS apitable
+(
+    id SERIAL PRIMARY KEY,
+    project_id integer,
+    api_name character varying(255),
+    apidata json,
+    description text
+)
+
+INSERT INTO apitable (project_id, api_name, apidata, description) VALUES
+(102, '회원가입 API', 
+ '{"input": {"email": "이메일 주소 (문자열)", "password": "비밀번호 (문자열)", "username": "사용자명 (문자열)"},
+   "output": {"message": "회원가입 성공 메시지 또는 에러 메시지", "success": true}}', 
+ '회원가입을 위한 API로, 사용자명, 이메일 주소, 비밀번호를 입력 받아 회원가입을 수행하고, 결과를 성공 또는 실패로 반환합니다.'),
+
+(102, 'reset_password', 
+ '{"endpoint": "/api/reset-password", "method": "POST", "request_body": {"email": "string"},
+   "response": {"message": "string"}}', 
+ '비밀번호 재설정을 위한 API로, 해당 이메일 주소로 비밀번호 재설정 링크를 전송합니다.'),
+
+(101, 'personalized_product_recommendation', 
+ '{"recommended_products": ["iPhone 12", "Apple Watch Series 6", "MacBook Pro"],
+   "search_history": ["apple", "iphone", "tech gadgets"],
+   "usage_history": ["smartphone", "laptop", "wearables"],
+   "user_id": "12345"}', 
+ 'API designed to provide personalized product recommendations based on user''s search keywords and usage history using LLM (Language Model) for analysis.');
+
+========================================================================
+★공급사 테이블★
+
+CREATE TABLE IF NOT EXISTS provider_table
+(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,  
+    status text,
+    website text,
+    description text 
+)
+
+INSERT INTO provider_table(name, status, website, description)
+VALUES 
+    ('OpenAI', 'active', 'https://openai.com', 'AI 모델을 제공하는 API 서비스'),
+    ('Anthropic', 'active', 'https://www.anthropic.com', 'Claude AI 모델을 제공하는 API 서비스'),
+    ('Mistral AI', 'inactive', 'https://mistral.ai', '대규모 언어 모델을 제공하는 API 서비스'),
+    ('Google Cloud AI', 'active', 'https://cloud.google.com/ai', 'Google의 AI 관련 API 서비스');
+
+
+========================================================================
+★api key 테이블★
+
+CREATE TABLE IF NOT EXISTS api_keys (
+    id SERIAL PRIMARY KEY,
+    provider_id VARCHAR(50) NOT NULL,  
+    name VARCHAR(100) NOT NULL,  
+    key VARCHAR(255) NOT NULL UNIQUE,  
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),  
+    expires_at TIMESTAMP NOT NULL,  
+    status VARCHAR(20) NOT NULL CHECK (status IN ('active', 'inactive')),  
+    environment VARCHAR(50) NOT NULL CHECK (environment IN ('production', 'development', 'testing')),  
+    usage_limit INTEGER NOT NULL,  
+    usage_count INTEGER NOT NULL DEFAULT 0,
+    user_email VARCHAR(255) NOT NULL
+);
+
+
+
+
+
+INSERT INTO public.api_keys 
+    (provider_id, name, key, created_at, expires_at, status, environment, usage_limit, usage_count, user_email) 
+VALUES
+    ('openai', '프로덕션 키', 'sk-openai-prod-xxxxxxxxxxxxxxxxxxxxxx', '2024-01-15T10:30:00Z', '2025-01-15T10:30:00Z', 'active', 'production', 1000000, 450289, 'dudqls327@naver.com'),
+    ('openai', '개발 환경 키', 'sk-openai-dev-xxxxxxxxxxxxxxxxxxxxxx', '2024-01-20T14:45:00Z', '2025-01-20T14:45:00Z', 'active', 'development', 500000, 124567, 'dudqls327@naver.com'),
+    ('anthropic', '기본 키', 'sk-ant-xxxxxxxxxxxxxxxxxxxxxx', '2024-02-05T09:15:00Z', '2025-02-05T09:15:00Z', 'active', 'production', 750000, 325890, 'dudqls327@naver.com'),
+    ('mistral', '테스트 키', 'sk-mistral-xxxxxxxxxxxxxxxxxxxxxx', '2024-02-10T16:20:00Z', '2025-02-10T16:20:00Z', 'active', 'testing', 300000, 56789, 'dudqls327@naver.com');
+
+
+========================================================================
+
