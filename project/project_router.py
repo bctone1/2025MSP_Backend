@@ -304,28 +304,10 @@ async def projects_list(request: Request):
                 print(f"Query result: {result}")
 
                 if not result:
-                    return JSONResponse(content={"message": "프로젝트가 없습니다."}, status_code=400)
+                    print("프로젝트 없음")
+                    return JSONResponse(content={"message": "프로젝트가 없습니다."}, status_code=404)
                 else :
                     return result
-
-                # 프로젝트 리스트 변환
-                # projects = [
-                #     {
-                #         "project_name": row[0],
-                #         "start_date": row[1].strftime('%Y-%m-%d') if isinstance(row[1], date) else row[1],
-                #         "end_date": row[2].strftime('%Y-%m-%d') if isinstance(row[2], date) else row[2],
-                #         "description": row[3],
-                #         "requirements": row[4],
-                #         "model_setting": row[5],
-                #         "num_of_member_": row[6],
-                #         "project_id": row[7],
-                #         "user_email": row[8]
-                #     }
-                #     for row in result
-                # ]
-
-                return JSONResponse(content=projects, status_code=200)
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
@@ -337,7 +319,7 @@ async def get_members():
         conn = get_db_connection()
         cur = conn.cursor()
 
-        cur.execute('SELECT * FROM "user" ORDER BY id desc')
+        cur.execute('SELECT * FROM user_table ORDER BY register_at desc')
 
         column_names = [desc[0] for desc in cur.description]
         result = [dict(zip(column_names, row)) for row in cur.fetchall()]

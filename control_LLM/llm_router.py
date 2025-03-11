@@ -19,24 +19,63 @@ client = anthropic.Anthropic(
 )
 
 
+def get_db_connection():
+    return psycopg2.connect(
+        host='localhost',
+        dbname='postgres',
+        user='postgres',
+        password='1234',
+        port='5432',
+    )
 
-# class SetProjectRequest(BaseModel):
-#     messageInput:str
-#
-# @llm_router.post("/setproject")
-# def setproject(request:SetProjectRequest):
-#     description = request.messageInput
-#     print(description)
-#     answer = setproject_response(description)
-#     print(answer)
-#     return JSONResponse(
-#         content={
-#             "projectname": answer["projectname"],
-#             "description": answer["description"],
-#             "purpose": answer["purpose"]
-#         },
-#         status_code=200
-#     )
+@llm_router.post('/APIkeyList')
+def APIkeyList():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM public."api_keys" ORDER BY id ASC')
+
+    # 컬럼명을 가져오기
+    column_names = [desc[0] for desc in cur.description]
+
+    # 결과를 딕셔너리 형태로 변환
+    result = [dict(zip(column_names, row)) for row in cur.fetchall()]
+
+    cur.close()
+    conn.close()
+
+    return result
+
+
+@llm_router.post('/providerList')
+async def providerList():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT 
+        s.id,
+        s.name,
+        s.status,
+        s.website,
+        s.description,
+        COALESCE(k.key_count, 0) AS keys_count  -- NULL 방지
+    FROM 
+        provider_table s
+    LEFT JOIN 
+        (SELECT provider_id, COUNT(*) AS key_count FROM api_keys GROUP BY provider_id) k
+    ON s.name = k.provider_id
+    ORDER BY s.id ASC;    
+    """)
+
+    # 컬럼명을 가져오기
+    column_names = [desc[0] for desc in cur.description]
+
+    # 결과를 딕셔너리 형태로 변환
+    result = [dict(zip(column_names, row)) for row in cur.fetchall()]
+
+    cur.close()
+    conn.close()
+
+    return result
 
 
 @llm_router.post("/setproject")

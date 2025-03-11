@@ -43,10 +43,13 @@ def update_user(db: Session, id: str, new_id : str, new_pw: str, new_email: str)
 # 로그인 함수에서 사용
 def authenticate_user(db: Session, email: str, password: str):
     # 이메일로 사용자 조회
-    user = db.query(User).filter(User.email == email, User.pw == password).first()
+    user_query = db.query(user).filter(user.email == email, user.pw == password).first()
+
+    # print("============================================================================")
+    # print(user_query)
 
     # 사용자가 없으면 None 반환
-    if not user:
+    if not user_query:
         return None
 
-    return user
+    return user_query

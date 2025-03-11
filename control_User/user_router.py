@@ -19,6 +19,9 @@ from project.crudProject import create_project
 import json
 import uuid
 
+import psycopg2
+from psycopg2.extras import RealDictCursor
+
 
 user_router = APIRouter()
 
@@ -41,37 +44,24 @@ def get_db_connection():
 
 
 
-# class RegisterRequest(BaseModel):
-#     name: str
-#     password: str
-#     email: str
-#
-# @user_router.post("/register")
-# def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
-#     try:
-#         new_user = register(db = db, user_id = request.name, password=request.password, email=request.email, role="user")
-#     except Exception as e:
-#         raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
-#     return {"message": "Register Success"}
-
 @user_router.post('/register')
-async def login(request: Request):
+async def register(request: Request):
     body = await request.json()
     name = body.get('name')
     email = body.get('email')
     password = body.get('password')
-    print(name,email,password)
+    print(name, email, password)
 
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
-        query = """
-                        INSERT INTO "user" (id, pw, email, name)
-                        VALUES (%s, %s, %s, %s)
-                    """
-        cursor.execute(query, (email, password, email, name))
-        conn.commit()
-        conn.close()
+        with conn.cursor() as cursor:  # 커서 사용 후 자동으로 닫히도록 with문 사용
+            query = """
+                INSERT INTO user_table (email, pw, name, role, "group", status, register_at) 
+                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+            """
+            cursor.execute(query, (email, password, name, 'user', 'newUser', 'active'))
+            conn.commit()
+        conn.close()  # 연결 닫기
         return {"message": "Register Success"}
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
@@ -80,37 +70,63 @@ async def login(request: Request):
 
 
 
-
-
-
-class LoginRequest(BaseModel):
-    email: str
-    password: str
-
 @user_router.post('/login')
-def login(request: LoginRequest, db: Session = Depends(get_db)):
-    user = authenticate_user(db, request.email, request.password)
+async def login(request: Request):
+    body = await request.json()
+    email = body.get('email')
+    password = body.get('password')
 
-    if user is None:
-        print("user is None")
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    if user.role == "admin":
-        return JSONResponse(content={"message": "관리자님 반갑습니다.", "role": "admin", "name": f"{user.id}", "email": f"{user.email}"}, status_code=200)
-    elif user.role == "user":
-        return JSONResponse(content={"message": f"{user.id} 반갑습니다.", "role": "user", "name": f"{user.id}", "email": f"{user.email}"}, status_code=200)
-    else:
-        raise HTTPException(status_code=401, detail="회원정보가 없습니다.")
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="이메일과 비밀번호를 입력하세요.")
+
+    try:
+        conn = get_db_connection()
+        with conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(
+                    'SELECT * FROM user_table WHERE email = %s AND pw = %s ORDER BY email ASC',
+                    (email, password)
+                )
+                user_data = cur.fetchone()  # fetchall 대신 fetchone 사용
+
+        if not user_data:
+            return JSONResponse(content={'message': '회원정보가 없습니다.'}, status_code=404)
+
+        if user_data["role"] == "admin":
+            return JSONResponse(
+                content={
+                    "message": "관리자님 반갑습니다.",
+                    "role": "admin",
+                    "email": user_data["email"],
+                    "name" : user_data["name"]
+                },
+                status_code=200
+            )
+        elif user_data["role"] == "user":
+            return JSONResponse(
+                content={
+                    "message": f"{user_data['name']}님 반갑습니다.",
+                    "role": "user",
+                    "email": user_data["email"],
+                    "name": user_data["name"]
+                },
+                status_code=200
+            )
+        else:
+            return JSONResponse(content={'message': '역할 정보가 없습니다.'}, status_code=400)
+
+    except Exception as e:
+        print(f"에러 발생: {e}")
+        raise HTTPException(status_code=500, detail="서버 에러가 발생했습니다.")
 
 
-class EmailRequest(BaseModel):
-    email: str
-    secretCode:str
 
 @user_router.post("/sendEmail")
-def send_email(request: EmailRequest, db: Session = Depends(get_db)):
+async def send_email(request: Request):
+    body = await request.json()
     print("Hello")
-    email = request.email
-    secretCode = request.secretCode
+    email = body.get('email')
+    secretCode = body.get('secretCode')
     if not secretCode or not email:
         return JSONResponse(content={'message': 'Missing secretCode or email'}, status_code=400)
     subject = "이메일 인증 코드"
@@ -132,8 +148,6 @@ def send_email(request: EmailRequest, db: Session = Depends(get_db)):
         return JSONResponse(content={'message': '이메일 전송 실패'}, status_code=500)
 
 
-# class GoogleLoginRequest(BaseModel):
-#     email: str
 
 @user_router.post('/googlelogin')
 async def login(request: Request):
@@ -142,75 +156,60 @@ async def login(request: Request):
     body = await request.json()  # JSON 형식의 본문을 가져오기
     print(body)
 
-    email = body['email']
-    name = body['name']
-    image = body['image']
+    email = body.get('email')
+    name = body.get('name')
+    image = body.get('image')
 
     try:
         conn = get_db_connection()
-        cur = conn.cursor()
+        with conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # 유저 데이터 조회
+                cur.execute('SELECT * FROM user_table WHERE LOWER(email) = LOWER(%s)', (email,))
+                user_data = cur.fetchone()
+                print(user_data)
 
-        cur.execute('SELECT id, email, role FROM "user" WHERE LOWER(email) = LOWER(%s)', (email,))
-        user = cur.fetchone()
-        print(user)
+                if not user_data:
+                    print("유저데이터 삽입 시작")
+                    # 커서를 새로 열고 INSERT 작업 실행
+                    with conn.cursor() as cur_insert:
+                        cur_insert.execute(
+                            'INSERT INTO user_table (email, pw, name, role, "group", status, register_at) VALUES (%s, %s, %s, %s, %s, %s, NOW())',
+                            (email, 'defaultpassword', name, 'user', 'googleUser','active')
+                        )
+                        conn.commit()
+                    return JSONResponse(
+                        content={
+                            "message": f"{name}님 반갑습니다! 새 계정이 생성되었습니다.",
+                            "role": "user",
+                            "email": email,
+                        },
+                        status_code=200
+                    )
+                else:
+                    if user_data["role"] == "admin":
+                        return JSONResponse(
+                            content={
+                                "message": "관리자님 반갑습니다.",
+                                "role": "admin",
+                                "email": user_data["email"],
+                                "name": user_data["name"]
+                            },
+                            status_code=200
+                        )
+                    elif user_data["role"] == "user":
+                        return JSONResponse(
+                            content={
+                                "message": f"{user_data['name']}님 반갑습니다.",
+                                "role": "user",
+                                "email": user_data["email"],
+                                "name": user_data["name"]
+                            },
+                            status_code=200
+                        )
+                    else:
+                        return JSONResponse(content={'message': '역할 정보가 없습니다.'}, status_code=400)
 
-        if not user:
-            print("유저데이터 삽입 시작")
-            cur.execute(
-                'INSERT INTO "user" (id, email, name, role) VALUES (%s, %s, %s, %s)',
-                (email, email, name, 'user')  # 'user'로 기본 역할 설정
-            )
-            conn.commit()  # 변경사항 저장
-
-            return JSONResponse(
-                content={
-                    "message": f"{name}님 반갑습니다! 새 계정이 생성되었습니다.",
-                    "role": "user",
-                    "email": email,
-                },
-                status_code=200
-            )
-
-
-
-        user_data = {
-            "id": user[0],
-            "email": user[1],
-            "role": user[2],
-        }
-
-        if user_data["role"] == "admin":
-            return JSONResponse(
-                content={
-                    "message": "관리자님 반갑습니다.",
-                    "role": "admin",
-                    "email": user_data["email"],
-                },
-                status_code=200
-            )
-        elif user_data["role"] == "user":
-            return JSONResponse(
-                content={
-                    "message": f"{user_data['id']}님 반갑습니다.",
-                    "role": "user",
-                    "email": user_data["email"],
-                },
-                status_code=200
-            )
-        else:
-            return JSONResponse(
-                content={
-                    "message": f"{user_data['id']}님 반갑습니다.",
-                    "role": "user",
-                    "email": user_data["email"],
-                },
-                status_code=200
-            )
     except Exception as e:
         print(f"에러 발생: {e}")
         raise HTTPException(status_code=500, detail="서버 에러가 발생했습니다.")
-    finally:
-        cur.close()
-        conn.close()
-
-
