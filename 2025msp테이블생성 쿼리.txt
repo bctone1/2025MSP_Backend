@@ -17,10 +17,10 @@ CREATE TABLE IF NOT EXISTS user_table
 
 INSERT INTO user_table (email, pw, role, "group", name, status, skills, register_at)
 VALUES
-    ('dudqls327@bctone.kr', 'user', 'developer', 'teamA', 'Alice', 'active', '{"Python", "Django", "JavaScript"}',NOW()),
-    ('admin@bcton.kr', 'admin', 'developer', 'teamB', 'Bob', 'inactive', '{"Java", "Spring", "SQL"}',NOW()),
-    ('carol@example.com', 'user', 'developer', 'teamC', 'Carol', 'active', '{"React", "Node.js", "MongoDB"}',NOW()),
-    ('eve@example.com', 'user', 'developer', 'teamB', 'Eve', 'inactive', '{"Ruby", "Rails", "PostgreSQL"}',NOW());
+    ('dudqls327@bctone.kr', 'pass1234', 'admin', 'teamA', 'Alice', 'active', '{"Python", "Django", "JavaScript"}',NOW()),
+    ('admin@bcton.kr', 'pass2345', 'user', 'teamB', 'Bob', 'inactive', '{"Java", "Spring", "SQL"}',NOW()),
+    ('carol@example.com', 'pass3456', 'user', 'teamC', 'Carol', 'active', '{"React", "Node.js", "MongoDB"}',NOW()),
+    ('eve@example.com', 'pass6833', 'user', 'teamB', 'Eve', 'inactive', '{"Ruby", "Rails", "PostgreSQL"}',NOW());
 
 ========================================================================
 ★프로젝트 테이블★

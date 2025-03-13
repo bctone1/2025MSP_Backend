@@ -1,21 +1,55 @@
-### To run server ( PORT 5000 )
+## 세팅 
+CORE 모듈의 config.py에서 모든 API KEY, DB 접속 정보, 이메일 인증 정보 등을 설정합니다.
+```
+DB = 'postgresql'
+DB_USER = 'postgres'
+DB_PASSWORD = '1234'
+DB_SERVER = 'localhost'
+DB_PORT = '5432'
+DB_NAME = 'msp_database'
 
-`
-uvicorn main:app --host 0.0.0.0 --port 5000
-`
+SMTP_SERVER = 'smtp.gmail.com'
+SMTP_PORT = 587
+SENDER_EMAIL = 'MY ADDRESS'
+SENDER_PASSWORD = 'MY KEY'
 
-### Input your Claude API Key
+CLAUDE_API = "ANTHROPIC KEY"
+GPT_API = "OPEN AI KEY"
 
-`
-client = anthropic.Anthropic(
-    api_key="Your Claude API Key"
+```
+
+## 실행 방법 
+main.py를 
+Pycharm 환경에서 작업 시 녹색 화살표 버튼을 클릭하면 실행됩니다.
+### main.py
+```
+from fastapi import FastAPI
+from api.routers import router
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 모든 도메인에서 접근 허용, 실제 운영 환경에서는 특정 도메인만 허용하는 것이 좋음
+    allow_credentials=True,
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 헤더 허용
 )
-`
 
-### Input your OpenAI (ChatGPT) API Key
+app.include_router(router)
 
-`
-openai.api_key = 'Your OpenAI API Key'
-`
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5000)
+```
 
-If you want to create table, run 'create_table.py'
+## 2025-03-13 작업 내용
+FastAPI 구조에 맞게 전체 디렉터리 및 코드 구조를 변경 중입니다.
+또한 CORE와 DATABASE 디렉터리에서 중요한 정보와 DB 관련 함수들을 정의해서,
+실제 엔드 포인트 코드들을 최대한 간소화하는 작업 중에 있습니다.
+
+현재 USER 관련 기능은 성공적으로 실행되며,
+프로젝트랑 LLM은 아직 새로운 구조로 변경하는 작업 중에 있습니다.
+![img.png](img.png)
+
+아직 새로운 코드 구조로 변경하지 못한 코드들은 not_using 디렉터리에 전부 주석 처리한 후 남겨두었습니다.

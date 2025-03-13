@@ -1,10 +1,6 @@
 from fastapi import FastAPI
-from control_User.user_router import user_router
-from project.project_router import project_router
-from control_LLM.llm_router import llm_router
+from api.routers import router
 from fastapi.middleware.cors import CORSMiddleware
-
-# uvicorn main:app --host 0.0.0.0 --port 5000    (터미널로 실행시킬 때)
 
 app = FastAPI()
 app.add_middleware(
@@ -15,12 +11,11 @@ app.add_middleware(
     allow_headers=["*"],  # 모든 헤더 허용
 )
 
+app.include_router(router)
 
-app.include_router(user_router)
-app.include_router(project_router)
-app.include_router(llm_router)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5000)
 
-@app.get("/")
-def read_root():
-    return {"message": "Hello, FastAPI on port 5000!"}
+
 
