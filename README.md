@@ -52,4 +52,13 @@ FastAPI 구조에 맞게 전체 디렉터리 및 코드 구조를 변경 중입�
 프로젝트랑 LLM은 아직 새로운 구조로 변경하는 작업 중에 있습니다.
 ![img.png](img.png)
 
-아직 새로운 코드 구조로 변경하지 못한 코드들은 not_using 디렉터리에 전부 주석 처리한 후 남겨두었습니다.
+아직 새로운 코드 구조로 변경하지 못한 코드들은 not_using 디렉터리에 전부 주석 처리 후 보관 중입니다.
+
+
+## 2025-03-14 변경 사항
+주요 변경 사항은 되도록 https://supermind.bctone.kr/c/ai-dev/ 에 작성 후 링크를 남기겠습니다.
+### Alembic 기반 Migration 설정
+https://supermind.bctone.kr/c/ai-dev/msp-backend-migration
+해당 작업 진행 중 base.py, session.py, models 모듈의 init.py에도 약간의 변경 사항이 생겼습니다.
+### Pydantic 스키마 구현
+https://supermind.bctone.kr/c/ai-dev/msp-1f17f9

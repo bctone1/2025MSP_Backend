@@ -6,19 +6,19 @@ from email.mime.multipart import MIMEMultipart
 from psycopg2.extras import RealDictCursor
 import smtplib
 import core.config as config
+from schemas.user import *
 
 user_router = APIRouter()
-SMTP_SERVER = 'smtp.gmail.com'
-SMTP_PORT = 587
-SENDER_EMAIL = 'dudqls327@bctone.kr'  # 발신 이메일 주소
-SENDER_PASSWORD = 'mwdc lebe phqy rovf'  # 이메일 비밀번호
+SMTP_SERVER = config.SMTP_SERVER
+SMTP_PORT = config.SMTP_PORT
+SENDER_EMAIL = config.SENDER_EMAIL
+SENDER_PASSWORD = config.SENDER_PASSWORD
 
-@user_router.post('/register')
-async def register(request: Request):
-    body = await request.json()
-    name = body.get('name')
-    email = body.get('email')
-    password = body.get('password')
+@user_router.post('/register', response_model=RegisterResponse)
+async def register(request: RegisterRequest):
+    name = request.name
+    email = request.email
+    password = request.password
     print(name, email, password)
 
     try:
@@ -36,13 +36,10 @@ async def register(request: Request):
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
-@user_router.post('/login')
-async def login(request: Request):
-    body = await request.json()
-    print(body)
-    email = body.get('email')
-    password = body.get('password')
-    print(email, password)
+@user_router.post('/login', response_model=LoginResponse)
+async def login(request: LoginRequest):
+    email = request.email
+    password = request.password
     if not email or not password:
         raise HTTPException(status_code=400, detail="이메일과 비밀번호를 입력하세요.")
 
@@ -89,12 +86,10 @@ async def login(request: Request):
 
 
 
-@user_router.post("/sendEmail")
-async def send_email(request: Request):
-    body = await request.json()
-    print("Hello")
-    email = body.get('email')
-    secretCode = body.get('secretCode')
+@user_router.post("/sendEmail", response_model=SendEmailResponse)
+async def send_email(request: SendEmailRequest):
+    email = request.email
+    secretCode = request.secretCode
     if not secretCode or not email:
         return JSONResponse(content={'message': 'Missing secretCode or email'}, status_code=400)
     subject = "이메일 인증 코드"
@@ -117,16 +112,13 @@ async def send_email(request: Request):
 
 
 
-@user_router.post('/googlelogin')
-async def login(request: Request):
+@user_router.post('/googlelogin', response_model=GoogleLoginResponse)
+async def login(request: GoogleLoginRequest):
     # 요청 본문 출력
     print("전체 요청 본문:")
-    body = await request.json()  # JSON 형식의 본문을 가져오기
-    print(body)
-
-    email = body.get('email')
-    name = body.get('name')
-    image = body.get('image')
+    email = request.email
+    name = request.email
+    image = request.image
 
     try:
         conn = get_db_connection()
@@ -180,4 +172,4 @@ async def login(request: Request):
 
     except Exception as e:
         print(f"에러 발생: {e}")
-        raise HTTPException(status_code=500, detail="서버 에러가 발생했습니다.")
+        return JSONResponse(content={'message': f'역할 정보가 없습니다 : {e}'}, status_code=500)

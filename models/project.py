@@ -2,6 +2,8 @@ from sqlalchemy import Column, Integer, String, Date, Text, ForeignKey, JSON
 from database.base import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
+from pgvector.sqlalchemy import Vector
+
 
 class User(Base):
     __tablename__ = 'user_table'

@@ -9,6 +9,7 @@ from typing import List
 import json
 from database.session import get_db_connection, get_db
 from crud.project import create_project
+from schemas.user import *
 
 project_router = APIRouter()
 
