@@ -2,13 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 import logging
 from fastapi import Request
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import List
 import json
 from database.session import get_db_connection, get_db
-from crud.project import create_project
 from schemas.user import *
 
 project_router = APIRouter()
@@ -54,7 +52,6 @@ def createproject(request:dict, db: Session = Depends(get_db)):
     )
 
     return {"message": "프로젝트가 생성되었습니다."}, 200
-
 
 class RequirementsListRequest(BaseModel):
     project_id : int
@@ -430,6 +427,7 @@ logger = logging.getLogger("uvicorn.error")
 @project_router.post("/projectsList")
 async def projects_list(request: Request):
     body = await request.json()
+    print(body)
     email = body.get('email')
 
     print(f"Received email: {email}")
@@ -462,10 +460,11 @@ async def projects_list(request: Request):
 async def get_members():
     try:
         conn = get_db_connection()
+        print("db_connected")
         cur = conn.cursor()
 
         cur.execute('SELECT * FROM user_table ORDER BY register_at desc')
-
+        print("success")
         column_names = [desc[0] for desc in cur.description]
         result = [dict(zip(column_names, row)) for row in cur.fetchall()]
 

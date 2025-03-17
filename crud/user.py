@@ -1,39 +1,53 @@
+import core.config as config
+from datetime import datetime
 from sqlalchemy.orm import Session
 from models.project import User
 
-# 회원 가입
-def create_user(db: Session, user_id: str, password: str, email: str, role: str):
+
+SMTP_SERVER = config.SMTP_SERVER
+SMTP_PORT = config.SMTP_PORT
+SENDER_EMAIL = config.SENDER_EMAIL
+SENDER_PASSWORD = config.SENDER_PASSWORD
+
+def user_register(db : Session, email : str, pw : str, name : str):
     new_user = User(
-        id=user_id,
-        pw=password,
-        email=email,
-        role=role
+        email = email,
+        pw = pw,
+        name = name,
+        role = 'user',
+        group = 'newUser',
+        status = 'active',
+        register_at=datetime.utcnow()
     )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return new_user
 
-def update_user(db: Session, id: str, new_id : str, new_pw: str, new_email: str):
-    try:
-        user = db.query(User).filter(User.id == id).one()
-
-        if new_id:
-            user.id = new_id
-        if new_pw:
-            user.pw = new_pw
-        if new_email:
-            user.email = new_email
-        db.commit()
-        return {"message" : "User Updated Successfully."}
-    except Exception as e:
-        db.rollback()
-        return {"error" : str(e)}
-
-def delete_user(db: Session, id: str):
-    user = db.query(User).filter(User.id == id).first()
+def user_login(db : Session, email : str, pw : str):
+    user = db.query(User).filter(User.email == email, User.pw == pw).first()
     if user:
-        db.delete(user)
-        db.commit()
-        return True
-    return False
+        return {
+            "email": user.email,
+            "name": user.name,
+            "role": user.role
+        }
+    return None
+
+def get_user_data(db : Session, email : str):
+    return db.query(User).filter(User.email.ilike(email)).first()
+
+def create_google_user(db : Session, email : str, name : str):
+    new_user = User(
+        email = email,
+        pw = 'default_password',
+        name = name,
+        role = 'googleUser',
+        group = 'newUser',
+        status = 'active',
+        register_at = datetime.utcnow()
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
