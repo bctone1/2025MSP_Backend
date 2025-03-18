@@ -87,9 +87,10 @@ async def login(request: GoogleLoginRequest, db : Session = Depends(get_db)):
     email = request.email
     name = request.name
 
+    print(request)
+
     try:
         user = get_user_data(db, email)
-
         if not user:
             user = create_google_user(db, email, name)
             return JSONResponse(

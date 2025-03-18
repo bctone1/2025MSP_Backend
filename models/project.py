@@ -9,12 +9,10 @@ class User(Base):
     __tablename__ = 'user_table'
 
     email = Column(String, primary_key=True, index=True)
-    pw = Column(String, nullable=False)
+    password = Column(String, nullable=False)
     role = Column(String, nullable=False)
     group = Column(Text, nullable=True)
     name = Column(Text, nullable=True)
-    status = Column(Text, nullable=True)
-    skills = Column(ARRAY(Text), nullable=True)
     register_at = Column(Date, nullable=True)
 
 class Project(Base):

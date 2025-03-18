@@ -424,6 +424,33 @@ async def saveApidata(request:Request):
 logger = logging.getLogger("uvicorn.error")
 
 
+@project_router.post("/getUserInfo")
+async def getUserInfo(request: Request):
+    body = await request.json()
+    print(body)
+    email = body.get("email")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM user_table WHERE email = %s ORDER BY id ASC", (email,))
+
+    # 한 줄만 가져오기
+    row = cur.fetchone()
+
+    if row:
+        column_names = [desc[0] for desc in cur.description]
+        result = dict(zip(column_names, row))  # 한 줄을 딕셔너리로 변환
+    else:
+        result = None  # 데이터가 없을 경우 None 반환
+
+    print(result)
+
+    cur.close()
+    conn.close()
+
+    return result  # JSON 응답 가능하도록 자동 변환됨
+
+
 @project_router.post("/projectsList")
 async def projects_list(request: Request):
     body = await request.json()
@@ -436,7 +463,7 @@ async def projects_list(request: Request):
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    'SELECT * FROM "project" WHERE LOWER(user_email) = %s ORDER BY project_id DESC',
+                    'SELECT * FROM project_table WHERE LOWER(user_email) = %s ORDER BY project_id DESC',
                     (email,)
                 )
 
@@ -454,6 +481,42 @@ async def projects_list(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
+
+
+
+
+@project_router.post('/APIkeyList')
+def APIkeyList():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM api_key_table ORDER BY id ASC')
+    # 컬럼명을 가져오기
+    column_names = [desc[0] for desc in cur.description]
+    # 결과를 딕셔너리 형태로 변환
+    result = [dict(zip(column_names, row)) for row in cur.fetchall()]
+    print(result)
+
+    cur.close()
+    conn.close()
+
+    return result
+
+@project_router.post('/providerList')
+async def providerList():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM provider_table ORDER BY id ASC ")
+
+    # 컬럼명을 가져오기
+    column_names = [desc[0] for desc in cur.description]
+
+    # 결과를 딕셔너리 형태로 변환
+    result = [dict(zip(column_names, row)) for row in cur.fetchall()]
+
+    cur.close()
+    conn.close()
+
+    return result
 
 
 @project_router.post("/getmembers")
