@@ -7,19 +7,13 @@ from langchain.tools import Tool
 
 
 def get_project_agent(project_id: int, provider="openai", model=None):
-    """
-    프로젝트 관리 에이전트를 생성합니다.
-    """
-    # LLM 모델 가져오기
     llm = get_llm(provider, model)
 
-    # 도구 정의
     tools = [
         execute_python_code,
         get_database_schema
     ]
 
-    # 에이전트 프롬프트 템플릿
     prompt = ChatPromptTemplate.from_template(
         """너는 META LLM MSP 시스템의 AI 에이전트입니다. 프로젝트 ID {project_id}에 대한 작업을 수행합니다.
 
@@ -34,10 +28,8 @@ def get_project_agent(project_id: int, provider="openai", model=None):
         """
     )
 
-    # 에이전트 생성
     agent = create_react_agent(llm, tools, prompt)
 
-    # 에이전트 실행기 생성
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,

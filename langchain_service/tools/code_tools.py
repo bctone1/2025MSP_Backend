@@ -1,15 +1,10 @@
-from langchain.tools import Tool
 from langchain.agents import tool
 import subprocess
 import tempfile
 import os
 
-
 @tool
 def execute_python_code(code: str) -> str:
-    """
-    Python 코드를 실행하고 결과를 반환합니다.
-    """
     try:
         with tempfile.NamedTemporaryFile(suffix='.py', delete=False) as temp:
             temp.write(code.encode('utf-8'))
@@ -32,11 +27,5 @@ def execute_python_code(code: str) -> str:
 
 @tool
 def get_database_schema(project_id: int) -> str:
-    """
-    특정 프로젝트의 데이터베이스 스키마 정보를 반환합니다.
-    """
-    # 실제 구현은 SQL 쿼리를 통해 스키마 정보 가져오기
-    # 예시 구현
     return f"데이터베이스 스키마 정보 (프로젝트 ID: {project_id})..."
 
-# 추가 도구 정의...

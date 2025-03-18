@@ -3,9 +3,6 @@ from langchain_service.embeddings.setup import get_embeddings
 import core.config as config
 
 def get_chroma_db(collection_name="documents"):
-    """
-    Chroma 벡터 스토어 인스턴스를 반환합니다.
-    """
     embedding_function = get_embeddings()
     return Chroma(
         collection_name=collection_name,
@@ -14,9 +11,6 @@ def get_chroma_db(collection_name="documents"):
     )
 
 def get_pgvector_db(collection_name="documents"):
-    """
-    PGVector 벡터 스토어 인스턴스를 반환합니다.
-    """
     embedding_function = get_embeddings()
     connection_string = config.VECTOR_DB_CONNECTION
     return PGVector(

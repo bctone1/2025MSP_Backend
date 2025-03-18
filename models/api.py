@@ -26,9 +26,3 @@ class ApiKey(Base):
     usage_limit = Column(Integer, nullable=False)
     usage_count = Column(Integer, nullable=False, default=0)
     user_email = Column(String(255), nullable=False)
-
-class TestTable(Base):
-    __tablename__ = 'test_table'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(100), nullable=False)
