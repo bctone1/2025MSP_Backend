@@ -1,4 +1,5 @@
 ## 세팅 
+### config.py 
 CORE 모듈의 config.py에서 모든 API KEY, DB 접속 정보, 이메일 인증 정보 등을 설정합니다.
 ```
 DB = 'postgresql'
@@ -15,7 +16,32 @@ SENDER_PASSWORD = 'MY KEY'
 
 CLAUDE_API = "ANTHROPIC KEY"
 GPT_API = "OPEN AI KEY"
+```
 
+### 패키지 설치
+```
+pip install -r requirements.txt
+```
+
+## DB 마이그레이션
+### Alembic 설치 확인
+```
+alembic --version
+```
+해당 명령어로 설치 확인 후, 설치가 제대로 안 되었을 시에는
+```
+pip install alembic
+```
+수동 설치
+
+### 마이그레이션 파일 생성
+```
+alembic revision --autogenerate -m "2025-03-19"
+```
+
+### Alembic 적용
+```
+alembic upgrade head
 ```
 
 ## 실행 방법 
