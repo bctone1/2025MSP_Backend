@@ -540,3 +540,34 @@ async def get_members():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+
+
+
+
+
+from fastapi import APIRouter, UploadFile, File
+from fastapi.responses import JSONResponse
+
+@project_router.post("/UploadFile")
+async def UploadFile(request: Request):
+    form_data = await request.form()
+
+    # 폼에서 프로젝트 ID와 이메일 가져오기
+    project_id = form_data.get("project_id")
+    user_email = form_data.get("user_email")
+
+    # 파일 받기
+    files = form_data.getlist("files[]")
+
+    print("받은 프로젝트 ID:", project_id)
+    print("받은 이메일:", user_email)
+    print("받은 파일 개수:", len(files))
+
+    # 파일 내용 읽기
+    for file in files:
+        # 파일의 내용 읽기
+        content = await file.read()  # 파일을 메모리에서 읽음
+        print(f"파일 이름: {file.filename}")
+        print(f"파일 내용 (부분 출력): {content[:100]}")  # 첫 100바이트만 출력
+
+    return JSONResponse(content={"message": "파일 업로드 성공", "file_count": len(files)})
