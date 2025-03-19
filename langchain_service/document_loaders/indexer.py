@@ -27,6 +27,5 @@ def index_documents(documents: List[Document], collection_name="documents", use_
         from langchain_service.vector_stores.setup import get_chroma_db
         vector_db = get_chroma_db(collection_name)
 
-    # 이미 존재하는 경우 삭제하기 위한 코드가 필요할 수 있음
     vector_db.add_documents(chunks)
     return vector_db

@@ -1,43 +1,52 @@
-from sqlalchemy import Column, Integer, String, Date, Text, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Date, Text, ForeignKey, JSON, TIMESTAMP, func
 from database.base import Base
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, BYTEA
 from pgvector.sqlalchemy import Vector
 
 
 class User(Base):
-    __tablename__ = 'user_table'
+    __tablename__ = "user_table"
 
-    email = Column(String, primary_key=True, index=True)
-    pw = Column(String, nullable=False)
-    role = Column(String, nullable=False)
-    group = Column(Text, nullable=True)
-    name = Column(Text, nullable=True)
-    status = Column(Text, nullable=True)
-    skills = Column(ARRAY(Text), nullable=True)
-    register_at = Column(Date, nullable=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String(255), unique=True, nullable=False)
+    password = Column(Text, nullable=False)
+    name = Column(String(100), nullable=False)
+    role = Column(String(50))
+    group = Column(String(100))
+    register_at = Column(TIMESTAMP, server_default=func.current_timestamp())
+
+    projects = relationship("Project", back_populates="user", lazy="dynamic")
 
 class Project(Base):
-    __tablename__ = 'project'
+    __tablename__ = "project_table"
 
-    project_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    project_name = Column(String, nullable=True)
-    start_date = Column(Date, nullable=False)
-    end_date = Column(Date, nullable=False)
-    description = Column(Text, nullable=True)
-    requirements = Column(String, nullable=True)
-    model_setting = Column(String, nullable=False)
-    num_of_member_ = Column(Integer, nullable=True)
-    user_email = Column(String, ForeignKey('user_table.email'), nullable=True)
+    project_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
+    project_name = Column(String(255), nullable=False)
+    category = Column(String(100))
+    description = Column(Text)
+    provider = Column(String(255))
+    ai_model = Column(String(255))
 
-    # 관계 설정: 프로젝트는 특정 사용자를 참조할 수 있음
     user = relationship("User", back_populates="projects")
-    table_data = relationship("TableData", back_populates="project")
-    api_data = relationship("APITable", back_populates="project")
 
-# User 모델에 Project와의 관계를 설정
-User.projects = relationship("Project", back_populates="user")
+class ProjectInfoBase(Base):
+    __tablename__ = "project_info_base"
 
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    project_id = Column(Integer, ForeignKey("project_table.project_id", ondelete="CASCADE"), nullable=False)
+    user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
+    file_url = Column(Text, nullable=True)
+    file = Column(BYTEA, nullable=True)  # 파일을 BYTEA 형식으로 저장
+    vector_memory = Column(ARRAY(Integer), nullable=True)  # 벡터 크기 1536의 배열로 저장
+    upload_at = Column(TIMESTAMP, default=func.current_timestamp())
+
+    # 외래 키 관계 설정
+    project = relationship("Project", backref="info")
+    user = relationship("User", backref="project_info")
+
+'''   
 class Requirements(Base):
     __tablename__ = 'requirements'
 
@@ -91,3 +100,4 @@ class APITable(Base):
 
     # Project와의 관계 설정
     project = relationship("Project", back_populates="api_data")
+'''

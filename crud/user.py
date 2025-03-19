@@ -25,7 +25,7 @@ def user_register(db : Session, email : str, pw : str, name : str):
     return new_user
 
 def user_login(db : Session, email : str, pw : str):
-    user = db.query(User).filter(User.email == email, User.pw == pw).first()
+    user = db.query(User).filter(User.email == email, User.password == pw).first()
     if user:
         return {
             "email": user.email,

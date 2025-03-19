@@ -23,7 +23,7 @@ class ProjectInfo(BaseModel):
 
 class CreateProjectRequest(BaseModel):
     projectInfo: ProjectInfo
-
+'''
 @project_router.post("/createproject")
 def createproject(request:dict, db: Session = Depends(get_db)):
 
@@ -52,7 +52,7 @@ def createproject(request:dict, db: Session = Depends(get_db)):
     )
 
     return {"message": "프로젝트가 생성되었습니다."}, 200
-
+'''
 class RequirementsListRequest(BaseModel):
     project_id : int
 
