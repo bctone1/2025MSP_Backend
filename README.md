@@ -64,6 +64,34 @@ def downgrade() -> None:
                type_=postgresql.ARRAY(sa.INTEGER()),
                existing_nullable=True)
 ```
+### PG VECTOR 관련 에러 해결 방법 ( 예시 )
+ alembic upgrade head 실행 시 오류
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 03930cf2be1a, 2025-03-19
+Traceback (most recent call last):
+  File "/home/bctone/meta-llm-msp/backend/venv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/bctone/meta-llm-msp/backend/venv/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.DuplicateTable: relation "provider_table" already exists
+...
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.DuplicateTable) relation "provider_table" already exists
+
+[SQL:
+CREATE TABLE provider_table (
+        id SERIAL NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        status VARCHAR(50),
+        website VARCHAR(255),
+        description TEXT,
+        PRIMARY KEY (id),
+        UNIQUE (name)
+)
+
+]
+
+```
 ## 실행 방법 
 main.py를 
 Pycharm 환경에서 작업 시 녹색 화살표 버튼을 클릭하면 실행됩니다.
