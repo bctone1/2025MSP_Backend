@@ -35,7 +35,12 @@ class ConversationSession(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     session_title = Column(String(255), nullable=False)
+    project_id = Column(Integer, ForeignKey('project_table.project_id', ondelete='CASCADE'))
+    user_email = Column(String(255), ForeignKey('user_table.email', ondelete='CASCADE'))
     register_at = Column(TIMESTAMP, default=func.current_timestamp())
+
+    project = relationship("Project", backref="conversation_sessions")
+    user = relationship("User", backref="conversation_sessions")
 
 class ConversationLog(Base):
     __tablename__ = "conversation_logs"

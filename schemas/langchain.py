@@ -1,15 +1,12 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List
 
-class FileRequest(BaseModel):
-    project_id : int
-    file_name : str
 
-class FileResponse(BaseModel):
-    message : str
+class FileUploadRequest(BaseModel):
+    project_id: str
+    user_email: str
+    files: List[str]
 
-class AgentRequest(BaseModel):
-    project_id: int
-    query: str
-    provider: Optional[str] = "openai"
-    model: Optional[str] = None
+class FileUploadResponse(BaseModel):
+    message: str
+    files: List[str]

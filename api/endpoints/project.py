@@ -1,16 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 import logging
+from langchain_service.llms.setup import get_llm
 from fastapi import Request
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import List
 import json
 from database.session import get_db_connection, get_db
-from schemas.user import *
+from schemas.project import *
+from crud.project import *
 
 project_router = APIRouter()
-
+'''
 class ProjectInfo(BaseModel):
     name: str
     description: str
@@ -23,6 +25,7 @@ class ProjectInfo(BaseModel):
 
 class CreateProjectRequest(BaseModel):
     projectInfo: ProjectInfo
+    '''
 '''
 @project_router.post("/createproject")
 def createproject(request:dict, db: Session = Depends(get_db)):
@@ -53,9 +56,87 @@ def createproject(request:dict, db: Session = Depends(get_db)):
 
     return {"message": "프로젝트가 생성되었습니다."}, 200
 '''
+
+
+
+@project_router.post('/createproject', response_model=CreateProjectResponse)
+async def create_project(request: CreateProjectRequest, db: Session = Depends(get_db)):
+    name = request.projectInfo.name
+    desc = request.projectInfo.desc
+    category = request.projectInfo.category
+    model = request.projectInfo.model
+    user_email = request.projectInfo.user_email
+    provider = request.projectInfo.provider
+
+    print(f"Creating project: {name}, {desc}, {category}, {model}, {user_email}, {provider}")
+
+    try:
+        created_project = create_new_project(db, name, desc, category, model, user_email, provider)
+        if created_project is None:
+            raise HTTPException(status_code=500, detail="프로젝트 생성 실패")
+
+        return CreateProjectResponse(
+            message="프로젝트가 생성되었습니다",
+        )
+    except Exception as e:
+        print(f"Unexpected error: {e}")  # 디버깅용 로그
+        raise HTTPException(status_code=500, detail=str(e))
+
+@project_router.post("/projectsList")
+async def projects_list(request: Request):
+    body = await request.json()
+    print(body)
+    email = body.get('email')
+
+    print(f"Received email: {email}")
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    'SELECT * FROM project_table WHERE LOWER(user_email) = %s ORDER BY project_id DESC',
+                    (email,)
+                )
+
+                column_names = [desc[0] for desc in cur.description]
+                result = [dict(zip(column_names, row)) for row in cur.fetchall()]
+                # result = cur.fetchall()
+
+                print(f"Query result: {result}")
+
+                if not result:
+                    print("프로젝트 없음")
+                    return JSONResponse(content={"message": "프로젝트가 없습니다."}, status_code=404)
+                else :
+                    return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+
+@project_router.post('/RequestMessage')
+async def request_message(request: RequestMessageRequest, db: Session = Depends(get_db)):
+    email = request.user_email
+    project_id = request.project_id
+    message = request.messageInput
+    print(email, project_id, message)
+    llm_openai = get_llm(provider="openai", model="gpt-3.5-turbo")
+    openai_response = llm_openai.invoke(message)
+    print(openai_response)
+    return openai_response
+
+'''
+@project_router.post('/projectsList')
+async def project_list(request: ProjectListRequest, db: Session = Depends(get_db)):
+    email = request.email
+    print(email)
+
+'''
+'''
 class RequirementsListRequest(BaseModel):
     project_id : int
 
+
+'''
+'''
 @project_router.post('/requirementsList')
 def requirementsList(request:RequirementsListRequest):
     project_id = request.project_id
@@ -476,4 +557,4 @@ async def get_members():
         return result
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")'''

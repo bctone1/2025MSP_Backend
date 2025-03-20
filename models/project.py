@@ -38,8 +38,7 @@ class ProjectInfoBase(Base):
     project_id = Column(Integer, ForeignKey("project_table.project_id", ondelete="CASCADE"), nullable=False)
     user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
     file_url = Column(Text, nullable=True)
-    file = Column(BYTEA, nullable=True)  # 파일을 BYTEA 형식으로 저장
-    vector_memory = Column(ARRAY(Integer), nullable=True)  # 벡터 크기 1536의 배열로 저장
+    vector_memory = Column(Vector(1536), nullable=True)
     upload_at = Column(TIMESTAMP, default=func.current_timestamp())
 
     # 외래 키 관계 설정
