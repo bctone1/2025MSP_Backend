@@ -64,8 +64,8 @@ def downgrade() -> None:
                type_=postgresql.ARRAY(sa.INTEGER()),
                existing_nullable=True)
 ```
-### PG VECTOR 관련 에러 해결 방법 ( 예시 )
- alembic upgrade head 실행 시 오류
+### alembic upgrade head 실행 시 오류
+```
 INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
 INFO  [alembic.runtime.migration] Will assume transactional DDL.
 INFO  [alembic.runtime.migration] Running upgrade  -> 03930cf2be1a, 2025-03-19
@@ -90,7 +90,6 @@ CREATE TABLE provider_table (
 )
 
 ]
-
 ```
 ## 실행 방법 
 main.py를 
