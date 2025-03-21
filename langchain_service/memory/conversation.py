@@ -11,15 +11,16 @@ def get_memory(session_id, memory_type="buffer", window_size=5):
         history = PostgresChatMessageHistory(
             connection_string=config.VECTOR_DB_CONNECTION,
             session_id=session_id,
-            table_name="chat_history"
+            table_name="conversation_logs"
         )
-        return ConversationBufferMemory(memory_key="chat_history", chat_memory=history)
+        return ConversationBufferMemory(memory_key="conversation_logs", chat_memory=history)
 
     elif memory_type == "window":
         return ConversationBufferWindowMemory(
-            memory_key="chat_history",
+            memory_key="conversation_logs",
             k=window_size
         )
 
     else:
-        return ConversationBufferMemory(memory_key="chat_history")
+        return ConversationBufferMemory(memory_key="conversation_logs")
+

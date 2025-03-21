@@ -4,7 +4,7 @@ from langchain_service.memory.conversation import get_memory
 from langchain_service.vector_stores.setup import get_pgvector_db
 
 
-def get_qa_chain(session_id, collection_name="documents", provider="openai", model=None):
+def get_qa_chain(session_id, collection_name="conversation_session", provider="openai", model=None):
 
     llm = get_llm(provider, model)
 
@@ -19,6 +19,4 @@ def get_qa_chain(session_id, collection_name="documents", provider="openai", mod
         memory=memory,
         return_source_documents=True
     )
-
     return qa_chain
-

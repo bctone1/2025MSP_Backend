@@ -1,11 +1,12 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends
 from database.session import get_db_connection, get_db
 from fastapi.responses import JSONResponse
-from schemas.langchain import *
 from fastapi import FastAPI, Request
 from typing import List, Annotated
 from crud.langchain import *
+from schemas.langchain import *
 from langchain_service.chains.file_chain import get_file_chain
+from langchain_service.llms.setup import get_llm
 import core.config as config
 import os
 
@@ -44,3 +45,15 @@ async def UploadFile(request: Request, db: Session = Depends(get_db)):
         return JSONResponse(content={"message": "파일 업로드 성공", "file_count": len(files)})
     except Exception as e:
         raise HTTPException(status_code=500, detail="파일 업로드 중 오류 발생")
+
+
+@langchain_router.post('/RequestMessage')
+async def request_message(request: RequestMessageRequest, db: Session = Depends(get_db)):
+    email = request.user_email
+    project_id = request.project_id
+    message = request.messageInput
+    print(email, project_id, message)
+    llm_openai = get_llm(provider="openai", model="gpt-3.5-turbo")
+    openai_response = llm_openai.invoke(message)
+    print(openai_response)
+    return openai_response

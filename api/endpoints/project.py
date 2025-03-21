@@ -112,17 +112,6 @@ async def projects_list(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
-@project_router.post('/RequestMessage')
-async def request_message(request: RequestMessageRequest, db: Session = Depends(get_db)):
-    email = request.user_email
-    project_id = request.project_id
-    message = request.messageInput
-    print(email, project_id, message)
-    llm_openai = get_llm(provider="openai", model="gpt-3.5-turbo")
-    openai_response = llm_openai.invoke(message)
-    print(openai_response)
-    return openai_response
-
 '''
 @project_router.post('/projectsList')
 async def project_list(request: ProjectListRequest, db: Session = Depends(get_db)):

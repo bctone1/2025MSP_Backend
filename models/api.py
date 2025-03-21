@@ -3,6 +3,7 @@ from database.base import Base
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
+from pgvector.sqlalchemy import Vector
 
 class Provider(Base):
     __tablename__ = "provider_table"
@@ -51,7 +52,7 @@ class ConversationLog(Base):
     user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
     message_role = Column(String(255), nullable=False)
     conversation = Column(Text, nullable=False)
-    vector_memory = Column(ARRAY(Float), nullable=True)  # 벡터 크기 1536의 배열로 저장
+    vector_memory = Column(Vector(1536), nullable=True)  # 벡터 크기 1536의 배열로 저장
     request_at = Column(TIMESTAMP, default=func.current_timestamp())
 
     # 외래 키 관계 설정

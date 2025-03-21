@@ -10,7 +10,7 @@ def get_chroma_db(collection_name="documents"):
         persist_directory=config.CHROMA_PERSIST_DIRECTORY
     )
 
-def get_pgvector_db(collection_name="documents"):
+def get_pgvector_db(collection_name="conversation_logs"):
     embedding_function = get_embeddings()
     connection_string = config.VECTOR_DB_CONNECTION
     return PGVector(
