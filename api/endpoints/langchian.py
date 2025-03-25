@@ -6,6 +6,7 @@ from typing import List, Annotated
 from crud.langchain import *
 from schemas.langchain import *
 from langchain_service.chains.file_chain import get_file_chain
+from langchain_service.chains.qa_chain import qa_chain
 from langchain_service.llms.setup import get_llm
 import core.config as config
 import os
@@ -46,7 +47,7 @@ async def UploadFile(request: Request, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail="파일 업로드 중 오류 발생")
 
-
+'''
 @langchain_router.post('/RequestMessage')
 async def request_message(request: RequestMessageRequest, db: Session = Depends(get_db)):
     email = request.user_email
@@ -57,3 +58,13 @@ async def request_message(request: RequestMessageRequest, db: Session = Depends(
     openai_response = llm_openai.invoke(message)
     print(openai_response)
     return openai_response
+'''
+
+@langchain_router.post('/RequestMessage')
+async def request_message(request: RequestMessageRequest, db: Session = Depends(get_db)):
+    email = 'user2@example.com'
+    project_id = 11
+    message = request.messageInput
+    a = qa_chain(db = db, session_id=1, project_id=project_id, user_email=email, conversation=message)
+    print(a)
+    return "Success"

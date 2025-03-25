@@ -6,7 +6,6 @@ from langchain_community.document_loaders import (
 )
 import os
 
-## LangChain에서 사용하는 파일 로더 사용
 def load_document(file_path):
     ext = os.path.splitext(file_path)[1].lower()
 
@@ -22,3 +21,5 @@ def load_document(file_path):
         raise ValueError(f"지원되지 않는 파일 형식: {ext}")
 
     return loader.load()
+
+

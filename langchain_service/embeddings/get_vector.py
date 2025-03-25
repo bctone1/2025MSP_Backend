@@ -1,6 +1,4 @@
-from langchain_openai import OpenAIEmbeddings
 from .setup import get_embeddings
-import core.config as config
 import numpy as np
 
 def text_to_vector(text):
@@ -13,3 +11,6 @@ def text_to_vector(text):
     except Exception as e:
         print(f"Error during embedding: {e}")
         return None
+
+
+

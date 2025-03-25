@@ -3,7 +3,7 @@ import core.config as config
 
 def get_embeddings():
     return OpenAIEmbeddings(
-        api_key=config.GPT_API,
+        api_key = config.GPT_API,
         model=config.EMBEDDING_MODEL
     )
 
