@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from typing import List
 
 class LoginRequest(BaseModel):
     email : str
@@ -36,3 +37,12 @@ class SendEmailRequest(BaseModel):
 
 class SendEmailResponse(BaseModel):
     message : str
+
+class Members(BaseModel):
+    name : str
+    email : str
+    role : str
+    group : str
+
+class GetMembersResponse(BaseModel):
+    members: List[Members]

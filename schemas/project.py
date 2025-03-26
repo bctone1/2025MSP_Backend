@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 class ProjectInfo(BaseModel):
     name: str
@@ -25,7 +26,14 @@ class ProjectListResponse(BaseModel):
     selectProject : int
     setView : str
 
-class RequestMessageRequest(BaseModel):
-    messageInput : str
-    project_id : int
-    user_email : str
+
+class Provider(BaseModel):
+    id : int
+    name: str
+    status: str
+    website: str
+    description: str
+
+class ProviderListResponse(BaseModel):
+    providers: List[Provider]
+

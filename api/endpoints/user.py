@@ -115,3 +115,12 @@ async def login(request: GoogleLoginRequest, db : Session = Depends(get_db)):
     except Exception as e:
         print(f"에러 발생: {e}")
         raise HTTPException(status_code=500, detail=f"서버 오류: {e}")
+
+@user_router.post("/getmembers", response_model=GetMembersResponse)
+async def projects_list(db: Session = Depends(get_db)):
+    memberList = get_member(db)
+    print(f"memberList : {memberList}")
+    print(f"members : {memberList["members"]}")
+    members = memberList["members"]
+    return memberList
+

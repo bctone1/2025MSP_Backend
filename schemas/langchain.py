@@ -15,3 +15,4 @@ class RequestMessageRequest(BaseModel):
     messageInput: str
     project_id: int
     user_email: str
+

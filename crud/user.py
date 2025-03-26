@@ -1,6 +1,7 @@
 import core.config as config
 from datetime import datetime
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from models.project import User
 
 
@@ -12,11 +13,10 @@ SENDER_PASSWORD = config.SENDER_PASSWORD
 def user_register(db : Session, email : str, pw : str, name : str):
     new_user = User(
         email = email,
-        pw = pw,
+        password = pw,
         name = name,
         role = 'user',
         group = 'newUser',
-        status = 'active',
         register_at=datetime.utcnow()
     )
     db.add(new_user)
@@ -40,14 +40,27 @@ def get_user_data(db : Session, email : str):
 def create_google_user(db : Session, email : str, name : str):
     new_user = User(
         email = email,
-        pw = 'default_password',
+        password = 'default_password',
         name = name,
         role = 'googleUser',
         group = 'newUser',
-        status = 'active',
         register_at = datetime.utcnow()
     )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return new_user
+
+def get_member(db : Session):
+    members = db.execute(select(User.id, User.email, User.password, User.name, User.role, User.group, User.register_at)).all()
+
+    return {
+        "members": [
+            {
+                "name": m.name,
+                "email": m.email,
+                "role": m.role,
+                "group": m.group
+            } for m in members
+        ]
+    }

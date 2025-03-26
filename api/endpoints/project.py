@@ -112,6 +112,14 @@ async def projects_list(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
+@project_router.post("/providerList", response_model=ProviderListResponse)
+async def projects_list(db: Session = Depends(get_db)):
+    providers = get_provider(db = db)
+    print(f"Providers : {providers}")
+    # return JSONResponse(content={"data": providers}, status_code=200)
+    return providers
+
+
 '''
 @project_router.post('/projectsList')
 async def project_list(request: ProjectListRequest, db: Session = Depends(get_db)):

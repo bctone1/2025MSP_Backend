@@ -67,4 +67,4 @@ async def request_message(request: RequestMessageRequest, db: Session = Depends(
     message = request.messageInput
     a = qa_chain(db = db, session_id=1, project_id=project_id, user_email=email, conversation=message)
     print(a)
-    return "Success"
+    return message

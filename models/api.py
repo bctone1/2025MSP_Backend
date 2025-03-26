@@ -59,3 +59,13 @@ class ConversationLog(Base):
     session = relationship("ConversationSession", backref="logs")
     project = relationship("Project", backref="logs")
     user = relationship("User", backref="logs")
+
+class AIModel(Base):
+    __tablename__ = "ai_models"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    model_name = Column(String(255), nullable=False)
+    provider_id = Column(Integer, ForeignKey('provider_table.id', ondelete='CASCADE'), nullable=False)
+    provider_name = Column(String(255), ForeignKey('provider_table.name', ondelete='CASCADE'), nullable=False)
+
+    provider = relationship('Provider', backref='ai_models')
