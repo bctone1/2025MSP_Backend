@@ -2,7 +2,6 @@ from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey, Flo
 from database.base import Base
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import ARRAY
 from pgvector.sqlalchemy import Vector
 
 class Provider(Base):
@@ -67,5 +66,4 @@ class AIModel(Base):
     model_name = Column(String(255), nullable=False)
     provider_id = Column(Integer, ForeignKey('provider_table.id', ondelete='CASCADE'), nullable=False)
     provider_name = Column(String(255), ForeignKey('provider_table.name', ondelete='CASCADE'), nullable=False)
-
-    provider = relationship('Provider', backref='ai_models')
+    provider = relationship('Provider', backref='ai_models', foreign_keys=[provider_id])

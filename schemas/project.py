@@ -2,8 +2,8 @@ from pydantic import BaseModel
 from typing import List
 
 class ProjectInfo(BaseModel):
-    name: str
-    desc: str
+    project_name: str
+    description: str
     category: str
     model: str
     user_email: str

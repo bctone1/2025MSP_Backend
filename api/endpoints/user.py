@@ -1,4 +1,4 @@
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from database.session import get_db_connection, get_db
 from email.mime.text import MIMEText
@@ -37,6 +37,7 @@ async def login(request: LoginRequest, db : Session = Depends(get_db)):
         return JSONResponse(
             content={
                 "message": "관리자님 반갑습니다.",
+                "id": user_data["id"],
                 "role": "admin",
                 "email": user_data["email"],
                 "name": user_data["name"]
@@ -47,6 +48,7 @@ async def login(request: LoginRequest, db : Session = Depends(get_db)):
         return JSONResponse(
             content={
                 "message": f"{user_data['name']}님 반갑습니다.",
+                "id": user_data["id"],
                 "role": "user",
                 "email": user_data["email"],
                 "name": user_data["name"]
@@ -123,4 +125,56 @@ async def projects_list(db: Session = Depends(get_db)):
     print(f"members : {memberList["members"]}")
     members = memberList["members"]
     return memberList
+
+@user_router.post("/AddNewUser", response_model=AddUserResponse)
+async def projects_list(request: AddUserRequest, db: Session = Depends(get_db)):
+    email = request.email
+    name = request.name
+    role = request.role
+    group = request.group
+    try :
+        register_by_admin(db = db, email = email, name = name, role = role, group = group)
+        return JSONResponse(content={'message': '사용자가 추가 되었습니다.'}, status_code=200)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@user_router.post("/DeleteUser", response_model=DeleteUserResponse)
+async def projects_list(request: DeleteUserRequest, db: Session = Depends(get_db)):
+    email = request.email
+    delete_user(db, email)
+    return JSONResponse(content={'message': '삭제 완료.'}, status_code=200)
+
+@user_router.post("/ChangeUserInfo", response_model=ChangeMemberResponse)
+async def change_user_info_endpoint(request: ChangeMemberRequest, db: Session = Depends(get_db)):
+    name = request.name
+    email = request.email
+    role = request.role
+    group = request.group
+    change_user_info(db = db, name = name, email = email, role = role, group = group)
+    return JSONResponse(content={'message': '변경 완료.'}, status_code=200)
+
+@user_router.post("/getUserInfo", response_model=GetUserInfoResponse)
+async def get_user_info_endpoint(request: GetUserInfoRequest, db: Session = Depends(get_db)):
+    email = request.email
+    response = get_user_info(db = db, email = email)
+    print(response)
+    return response
+
+@user_router.post("/ChangePassword", response_model=ChangePasswordResponse)
+async def change_password_endpoint(request: ChangePasswordRequest, db: Session = Depends(get_db)):
+    id = request.ProfileData.id
+    current_pw = request.newPasswordData.password
+    new_pw = request.newPasswordData.newpassword
+    change_password(db = db, id = id, current_pw = current_pw, new_pw = new_pw)
+    return JSONResponse(content={'message': '비밀번호 변경 완료.'}, status_code=200)
+
+@user_router.post("/ChangeProfile", response_model=ChangeProfileResponse)
+async def change_profile_endpoint(request: ChangeProfileRequest, db: Session = Depends(get_db)):
+    id = request.ProfileData.id
+    name = request.newProfileData.name
+    print(f"new_name : {name}")
+    group = request.newProfileData.group
+    print(f"new_group : {group}")
+    change_profile(db = db, id = id, name = name, group = group)
+    return JSONResponse(content={'message': '프로필 변경 완료.'}, status_code=200)
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends
 from database.session import get_db_connection, get_db
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi import FastAPI, Request
 from typing import List, Annotated
 from crud.langchain import *
@@ -10,6 +10,7 @@ from langchain_service.chains.qa_chain import qa_chain
 from langchain_service.llms.setup import get_llm
 import core.config as config
 import os
+import json
 
 langchain_router = APIRouter()
 
@@ -62,9 +63,62 @@ async def request_message(request: RequestMessageRequest, db: Session = Depends(
 
 @langchain_router.post('/RequestMessage')
 async def request_message(request: RequestMessageRequest, db: Session = Depends(get_db)):
-    email = 'user2@example.com'
-    project_id = 11
+    email = request.user_email
+    project_id = request.project_id
     message = request.messageInput
     a = qa_chain(db = db, session_id=1, project_id=project_id, user_email=email, conversation=message)
-    print(a)
-    return message
+    print(f"응답 내용 : {a}")
+    return a
+
+@langchain_router.post("/modelsList", response_model=ModelListResponse)
+async def model_list(db: Session = Depends(get_db)):
+    model_list = get_model_list(db)
+    print(f"models : {model_list}")
+    #response_text = "\n".join(json.dumps(model) for model in models)
+    #response = StreamingResponse(iter([response_text]), media_type="text/plain")
+    return model_list
+
+@langchain_router.post("/DeleteModel", response_model=DeleteModelResponse)
+async def model_delete(request : DeleteModelRequest, db: Session = Depends(get_db)):
+    model_id = request.id
+    print(model_id)
+    delete_model(db, model_id=model_id)
+    return JSONResponse(content={"message": "모델 삭제 성공"})
+
+@langchain_router.post("/DeleteProvider", response_model=DeleteProviderResponse)
+async def provider_delete_endpoint(request : DeleteProviderRequest, db: Session = Depends(get_db)):
+    provider_id = request.id
+    delete_provider(db, provider_id=provider_id)
+    return JSONResponse(content={"message": "Provider 삭제 성공"})
+
+@langchain_router.post("/AddNewProvider", response_model=AddNewProviderResponse)
+async def new_provider_endpoint(request : AddNewProviderRequest, db: Session = Depends(get_db)):
+    name = request.name
+    status = request.status
+    website = request.website
+    description = request.description
+    add_provider(db = db, name = name, status = status, website = website, description = description )
+    return JSONResponse(content={"message": "Provider 추가 성공"})
+
+@langchain_router.post("/AddNewModel", response_model = AddModelResponse)
+async def new_model_endpoint(request : AddModelRequest, db: Session = Depends(get_db)):
+    provider_name = request.provider_name
+    name = request.name
+    add_model(db=db, provider_name = provider_name, name = name)
+    return JSONResponse(content={"message": "모델 추가 성공"})
+
+@langchain_router.post("/ChangeModel", response_model=ChangeModelResponse)
+async def change_model_endpoint(request : ChangeModelRequest, db: Session = Depends(get_db)):
+    id = request.model_before.id
+    provider_name = request.model_new.provider_name
+    name = request.model_new.name
+    change_model(db = db, id = id, provider_name = provider_name, name=name)
+
+    return JSONResponse(content={"message": "모델 수정 성공"})
+
+@langchain_router.post("/APIkeyList")
+async def api_list_endpoint(db: Session = Depends(get_db)):
+    api_key_list = get_api_keys(db)
+    print(f"key : {api_key_list}")
+    return api_key_list
+

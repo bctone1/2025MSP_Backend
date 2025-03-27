@@ -38,6 +38,6 @@ def qa_chain(db : Session, session_id, project_id, user_email, conversation, pro
     vector2 = text_to_vector(response.content)  # LangChain의 get_embedding 기반으로 만든 함수 text_to_vector
     print(f"vector2: {vector2}")
     add_message(db=db, session_id=session_id, project_id=project_id, user_email=user_email, message_role='AI', conversation=response.content, vector_memory=vector2)
-    return response
+    return response.content
 
 

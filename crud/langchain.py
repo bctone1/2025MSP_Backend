@@ -2,7 +2,7 @@ import core.config as config
 from datetime import datetime
 from sqlalchemy.orm import Session
 from models.project import ProjectInfoBase
-from models.api import ConversationLog
+from models.api import ConversationLog, AIModel, Provider, ApiKey
 from sqlalchemy import select
 from pgvector.sqlalchemy import Vector
 import numpy as np
@@ -74,5 +74,86 @@ def get_chat_history(db: Session, session_id: int):
 
     return history_messages
 
+def get_model_list(db: Session):
+    models = db.execute(select(AIModel.id, AIModel.model_name, AIModel.provider_id, AIModel.provider_name)).all()
+    return {
+        "models" : [
+            {
+                "id": m.id,
+                "model_name": m.model_name,
+                "provider_id": m.provider_id,
+                "provider_name": m.provider_name,
+            } for m in models
+        ]
+    }
 
+def delete_model(db: Session, model_id : int):
+    model = db.query(AIModel).filter(AIModel.id == model_id).first()
+    db.delete(model)
+    db.commit()
+    return "Deleted"
 
+def delete_provider(db: Session, provider_id : int):
+    ai_models = db.query(AIModel).filter(AIModel.provider_id == provider_id).all()
+    for model in ai_models:
+        db.delete(model)
+    api_keys = db.query(ApiKey).filter(ApiKey.provider_id == provider_id).all()
+    for key in api_keys:
+        db.delete(key)
+    db.commit()
+    provider = db.query(Provider).filter(Provider.id == provider_id).first()
+    db.delete(provider)
+    db.commit()
+    return "Deleted"
+
+def add_provider(db: Session, name : str, status : str, website : str, description : str):
+    new_provider = Provider(
+        name = name,
+        status = status,
+        website = website,
+        description = description
+    )
+    db.add(new_provider)
+    db.commit()
+
+def add_model(db: Session, provider_name : str, name : str):
+    provider_id = db.query(Provider.id).filter(Provider.name == provider_name).scalar()
+    new_model = AIModel(
+        model_name = name,
+        provider_id = provider_id,
+        provider_name = provider_name
+    )
+    db.add(new_model)
+    db.commit()
+
+def change_model(db: Session, id : int, provider_name : str, name : str):
+    provider_id = db.query(Provider.id).filter(Provider.name == provider_name).scalar()
+    model = db.query(AIModel).filter(AIModel.id == id).first()
+    if model:
+        model.model_name = name,
+        model.provider_id = provider_id,
+        model.provider_name = provider_name
+
+        db.commit()
+        db.refresh(model)
+        return model
+    else:
+        return None
+
+def get_api_keys(db: Session):
+    keys = db.execute(select(ApiKey)).scalars().all()
+    return {
+        "api_keys": [
+            {
+                "id" : k.id,
+                "provider_id" : k.provider_id,
+                "provider_name" : k.provider_name,
+                "user_id" : k.user_id,
+                "api_key" : k.api_key,
+                "status" : k.status,
+                "create_at" : k.create_at,
+                "usage_limit" : k.usage_limit,
+                "usage_count" : k.usage_count
+            } for k in keys
+        ]
+    }

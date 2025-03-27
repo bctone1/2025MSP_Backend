@@ -61,8 +61,8 @@ def createproject(request:dict, db: Session = Depends(get_db)):
 
 @project_router.post('/createproject', response_model=CreateProjectResponse)
 async def create_project(request: CreateProjectRequest, db: Session = Depends(get_db)):
-    name = request.projectInfo.name
-    desc = request.projectInfo.desc
+    name = request.projectInfo.project_name
+    desc = request.projectInfo.description
     category = request.projectInfo.category
     model = request.projectInfo.model
     user_email = request.projectInfo.user_email
