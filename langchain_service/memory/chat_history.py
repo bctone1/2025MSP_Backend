@@ -24,3 +24,8 @@ class ChatHistoryManager:
                 messages.append(HumanMessage(content=msg.conversation))
 
         return messages
+
+
+
+
+

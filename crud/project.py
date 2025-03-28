@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from models.project import Project
 from models.api import *
+from datetime import datetime
 
 def create_new_project(db : Session, name : str, desc : str, category : str, model : str, user_email : str, provider : str):
     new_project = Project(
@@ -31,3 +32,4 @@ def get_provider(db: Session):
             } for p in providers
         ]
     }
+

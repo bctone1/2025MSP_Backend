@@ -2,8 +2,9 @@ import core.config as config
 from datetime import datetime
 from sqlalchemy.orm import Session
 from models.project import ProjectInfoBase
-from models.api import ConversationLog, AIModel, Provider, ApiKey
+from models.api import ConversationLog, AIModel, Provider, ApiKey, ConversationSession
 from sqlalchemy import select
+from sqlalchemy.sql import func
 from pgvector.sqlalchemy import Vector
 import numpy as np
 
@@ -157,3 +158,82 @@ def get_api_keys(db: Session):
             } for k in keys
         ]
     }
+'''
+def get_session(db: Session, email : str):
+    session = db.query(ConversationSession).filter(ConversationSession.user_email == email).all()
+    if session :
+        return {
+            "response": [
+                {
+                    "id": s.id,
+                    "session_title": s.session_title,
+                    "project_id": s.project_id,
+                    "user_email": s.user_email,
+                    "register_at" : s.register_at
+                } for s in session
+            ]
+        }
+'''
+
+
+def get_session(db: Session, email : str):
+    subquery = (
+        db.query(
+            ConversationLog.session_id,
+            func.count().label("messages")
+        )
+        .filter(ConversationLog.message_role == 'assistant')
+        .group_by(ConversationLog.session_id)
+        .subquery()
+    )
+
+    query = (
+        db.query(
+            ConversationSession,
+            func.coalesce(subquery.c.messages, 0).label("messages")
+        )
+        .outerjoin(subquery, ConversationSession.id == subquery.c.session_id)
+        .filter(ConversationSession.user_email == email)
+        .order_by(ConversationSession.id.desc())
+    )
+    result = []
+    for session, messages in query.all():
+        session_dict = session.__dict__.copy()
+        session_dict['messages'] = messages  # messages 값을 추가
+        result.append(session_dict)
+    return result
+
+def get_conversation(db: Session, email : str):
+    session = db.query(ConversationLog).filter(ConversationLog.user_email == email).all()
+    if session :
+        return {
+            "response": [
+                {
+                    "id": s.id,
+                    "session_id": s.session_id,
+                    "project_id": s.project_id,
+                    "user_email": s.user_email,
+                    "message_role" : s.message_role,
+                    "conversation" : s.conversation,
+                    #"vector_memory" : s.vector_memory,
+                    "request_at" : s.request_at
+                } for s in session
+            ]
+        }
+def add_new_session(db: Session, id : str, project_id : int, session_title : str, user_email : str):
+    new_session = ConversationSession(
+        id  = id,
+        session_title = session_title,
+        register_at = datetime.utcnow(),
+        project_id = project_id,
+        user_email = user_email
+    )
+    db.add(new_session)
+    db.commit()
+    db.refresh(new_session)
+    return new_session
+
+def is_this_first(db: Session, id : str, content : str):
+    first_conversation = db.query(ConversationLog).filter_by(session_id=id).order_by(ConversationLog.request_at.asc()).first()
+    if first_conversation is None :
+        return "First"

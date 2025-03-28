@@ -30,3 +30,5 @@ def index_documents(documents: List[Document], collection_name="documents", use_
     vector_db.add_documents(chunks)
     return vector_db
 
+
+

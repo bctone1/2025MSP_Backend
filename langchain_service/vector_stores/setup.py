@@ -18,3 +18,5 @@ def get_pgvector_db(collection_name="conversation_logs"):
         embedding_function=embedding_function,
         connection_string=connection_string
     )
+
+

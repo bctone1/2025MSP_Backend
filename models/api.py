@@ -33,7 +33,7 @@ class ApiKey(Base):
 class ConversationSession(Base):
     __tablename__ = "conversation_session"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(String(255), primary_key=True)
     session_title = Column(String(255), nullable=False)
     project_id = Column(Integer, ForeignKey('project_table.project_id', ondelete='CASCADE'))
     user_email = Column(String(255), ForeignKey('user_table.email', ondelete='CASCADE'))
@@ -46,7 +46,7 @@ class ConversationLog(Base):
     __tablename__ = "conversation_logs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    session_id = Column(Integer, ForeignKey("conversation_session.id", ondelete="CASCADE"), nullable=False)
+    session_id = Column(String(255), ForeignKey("conversation_session.id", ondelete="CASCADE"), nullable=False)
     project_id = Column(Integer, ForeignKey("project_table.project_id", ondelete="CASCADE"), nullable=False)
     user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
     message_role = Column(String(255), nullable=False)

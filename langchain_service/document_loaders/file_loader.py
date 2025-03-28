@@ -12,7 +12,7 @@ def load_document(file_path):
     if ext == '.txt':
         loader = TextLoader(file_path, encoding="utf-8")
     elif ext == '.pdf':
-        loader = PyPDFLoader(file_path)
+        loader = PyPDFLoader(file_path, )
     elif ext in ['.docx', '.doc']:
         loader = Docx2txtLoader(file_path)
     elif ext == '.csv':
@@ -21,5 +21,6 @@ def load_document(file_path):
         raise ValueError(f"지원되지 않는 파일 형식: {ext}")
 
     return loader.load()
+
 
 

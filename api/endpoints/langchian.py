@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends, status
 from database.session import get_db_connection, get_db
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi import FastAPI, Request
@@ -14,7 +14,7 @@ import json
 
 langchain_router = APIRouter()
 
-@langchain_router.post("/UploadFile", response_model=FileUploadRequest)
+@langchain_router.post("/UploadFile", response_model=FileUploadResponse)
 async def UploadFile(request: Request, db: Session = Depends(get_db)):
     try:
         form_data = await request.form()
@@ -66,7 +66,8 @@ async def request_message(request: RequestMessageRequest, db: Session = Depends(
     email = request.user_email
     project_id = request.project_id
     message = request.messageInput
-    a = qa_chain(db = db, session_id=1, project_id=project_id, user_email=email, conversation=message)
+    session = request.session
+    a = qa_chain(db = db, session_id=session, project_id=project_id, user_email=email, conversation=message)
     print(f"응답 내용 : {a}")
     return a
 
@@ -119,6 +120,69 @@ async def change_model_endpoint(request : ChangeModelRequest, db: Session = Depe
 @langchain_router.post("/APIkeyList")
 async def api_list_endpoint(db: Session = Depends(get_db)):
     api_key_list = get_api_keys(db)
-    print(f"key : {api_key_list}")
     return api_key_list
 
+@langchain_router.post("/getSessions")
+async def get_session_endpoint(request: GetSessionRequest, db: Session = Depends(get_db)):
+    try:
+        email = request.email
+        print(f"EMAIL : {email}" )
+        if not email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email is required"
+            )
+
+        response = get_session(db, email)  # get_session 함수에서 DB 쿼리 실행
+        if response is None:
+            print("NO RESPONSE")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No sessions found for email: {email}"
+            )
+
+        print(f"response: {response}")
+        return response
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
+
+
+@langchain_router.post("/getConversations", response_model=GetConversationResponse)
+async def get_conversation_endpoint(request: GetConversationRequest, db: Session = Depends(get_db)):
+    try:
+        email = request.email
+        print(f"EMAIL : {email}" )
+        if not email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email is required"
+            )
+
+        response = get_conversation(db, email)
+        if response is None:
+            print("NO RESPONSE")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No sessions found for email: {email}"
+            )
+        return response
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
+
+@langchain_router.post("/newSession", response_model=NewSessionResponse)
+async def new_session_endpoint(request : NewSessionRequest, db: Session = Depends(get_db)):
+    id = request.id
+    session_title = request.session_title
+    project_id = request.project_id
+    user_email = request.user_email
+    response = add_new_session(db=db, id = id, project_id=project_id, session_title=session_title, user_email=user_email)
+    print(response)
+    return response

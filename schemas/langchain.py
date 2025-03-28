@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, conlist
 from typing import List
-
+from datetime import datetime
 
 class FileUploadRequest(BaseModel):
     project_id: str
@@ -9,12 +9,12 @@ class FileUploadRequest(BaseModel):
 
 class FileUploadResponse(BaseModel):
     message: str
-    files: List[str]
 
 class RequestMessageRequest(BaseModel):
     messageInput: str
     project_id: int
     user_email: str
+    session : str
 
 class ModelList(BaseModel):
     id : int
@@ -97,3 +97,46 @@ class ChangeModelRequest(BaseModel):
 class ChangeModelResponse(BaseModel):
     message : str
 
+class GetSessionRequest(BaseModel):
+    email : str
+
+class Session(BaseModel):
+    id : str
+    session_title : str
+    project_id : int
+    user_email : str
+    register_at: datetime
+
+class GetSessionResponse(BaseModel):
+    response: List[Session]
+
+class GetConversationRequest(BaseModel):
+    email : str
+
+class Conversation(BaseModel):
+    id : int
+    session_id : str
+    project_id : int
+    user_email : str
+    message_role : str
+    conversation : str
+    #vector_memory : conlist(float, min_length=1536, max_length=1536)
+    request_at : datetime
+
+class GetConversationResponse(BaseModel):
+    response: List[Conversation]
+
+class NewSessionRequest(BaseModel):
+    id : str
+    project_id : int
+    session_title : str
+    register_at : str
+    messages: int
+    user_email : str
+
+class NewSessionResponse(BaseModel):
+    id : str
+    project_id : int
+    session_title : str
+    register_at : datetime
+    user_email : str
