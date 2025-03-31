@@ -1,42 +1,55 @@
 import core.config as config
 from datetime import datetime
 from sqlalchemy.orm import Session
-from models.project import ProjectInfoBase
+from models.project import ProjectInfoBase, InfoList
 from models.api import ConversationLog, AIModel, Provider, ApiKey, ConversationSession
 from sqlalchemy import select
 from sqlalchemy.sql import func
 from pgvector.sqlalchemy import Vector
 import numpy as np
 
-def upload_file(db: Session, project: int, email: str, url: str, vector: list):
+def upload_file(db: Session, project: int, email: str, url: str):
     try:
         # 벡터를 PGVector 형식으로 변환
-        vector = np.array(vector)  # 벡터를 numpy 배열로 변환
-        vector = vector.flatten()  # 벡터를 1차원 배열로 변환
-        print(f"Uploading vector of length {len(vector)}")
+        #vector = np.array(vector)  # 벡터를 numpy 배열로 변환
+        #vector = vector.flatten()  # 벡터를 1차원 배열로 변환
+        #print(f"Uploading vector of length {len(vector)}")
 
         # 새로운 파일을 추가
         new_file = ProjectInfoBase(
             project_id=project,
             user_email=email,
             file_url=url,
-            vector_memory=vector,  # 벡터 값을 vector_memory 컬럼에 저장
             upload_at=datetime.utcnow()  # 업로드 시간 설정
         )
-
         # 데이터베이스에 추가 및 커밋
         db.add(new_file)
         db.commit()
         db.refresh(new_file)
+        print(f"IIIIDDDD: {new_file.id}")
 
-        # 결과 반환
-        print(f"Uploaded file with vector: {new_file.vector_memory}")
-        return new_file
+        return new_file.id
 
     except Exception as e:
         db.rollback()  # 에러 발생 시 롤백
         print(f"Error occurred: {str(e)}")
         raise e
+
+def save_info(db: Session, infobase_id : int, content : str, vector_memory : list):
+    try:
+        new_info = InfoList(
+            infobase_id = infobase_id,
+            content = content,
+            vector_memory = vector_memory,
+            upload_at=datetime.utcnow()
+        )
+        db.add(new_info)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"Error occured : {str(e)}")
+        raise e
+
 
 def add_message(db : Session, session_id : int, project_id : int, user_email : str, message_role : str, conversation : str, vector_memory : list):
     try:
@@ -233,7 +246,15 @@ def add_new_session(db: Session, id : str, project_id : int, session_title : str
     db.refresh(new_session)
     return new_session
 
-def is_this_first(db: Session, id : str, content : str):
+def is_this_first(db: Session, id : str):
     first_conversation = db.query(ConversationLog).filter_by(session_id=id).order_by(ConversationLog.request_at.asc()).first()
     if first_conversation is None :
-        return "First"
+        print("THIS IS FIRST ")
+        return True
+
+def change_session_title(db : Session, session_id : str, content : str):
+    session = db.query(ConversationSession).filter(ConversationSession.id == session_id).first()
+    session.session_title = content
+    db.commit()
+    db.refresh(session)
+    return session

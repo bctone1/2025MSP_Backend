@@ -38,12 +38,24 @@ class ProjectInfoBase(Base):
     project_id = Column(Integer, ForeignKey("project_table.project_id", ondelete="CASCADE"), nullable=False)
     user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
     file_url = Column(Text, nullable=True)
-    vector_memory = Column(Vector(1536), nullable=True)
+    #vector_memory = Column(Vector(1536), nullable=True)
     upload_at = Column(TIMESTAMP, default=func.current_timestamp())
 
     # 외래 키 관계 설정
     project = relationship("Project", backref="info")
     user = relationship("User", backref="project_info")
+
+class InfoList(Base):
+    __tablename__ = "info_list"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    infobase_id = Column(Integer, ForeignKey("project_info_base.id", ondelete="CASCADE"), nullable=False)
+    content = Column(Text)
+    vector_memory = Column(Vector(1536))
+    upload_at = Column(TIMESTAMP, default=func.current_timestamp())
+
+    # 외래 키 관계 설정
+    infobase = relationship("ProjectInfoBase", backref="info_list")
 
 '''   
 class Requirements(Base):

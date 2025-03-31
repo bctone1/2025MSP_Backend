@@ -7,6 +7,7 @@ from crud.langchain import *
 from schemas.langchain import *
 from langchain_service.chains.file_chain import get_file_chain
 from langchain_service.chains.qa_chain import qa_chain
+from langchain_service.agents.session_agent import get_session_agent
 from langchain_service.llms.setup import get_llm
 import core.config as config
 import os
@@ -41,10 +42,9 @@ async def UploadFile(request: Request, db: Session = Depends(get_db)):
             print(f"파일 {file_path} 존재합니다.")
         else:
             print(f"파일 {file_path} 존재하지 않습니다.")
-        vector = get_file_chain(file_path=file_path)
-        print(vector)
-        upload_file(db=db, project=10, email='user1@example.com', url=file_path, vector=vector)
-        return JSONResponse(content={"message": "파일 업로드 성공", "file_count": len(files)})
+        id = upload_file(db=db, project=10, email='user1@example.com', url=file_path)
+        get_file_chain(db=db, id = id, file_path=file_path)
+        return JSONResponse(content={"message": "파일 업로드 성공"})
     except Exception as e:
         raise HTTPException(status_code=500, detail="파일 업로드 중 오류 발생")
 
@@ -67,6 +67,13 @@ async def request_message(request: RequestMessageRequest, db: Session = Depends(
     project_id = request.project_id
     message = request.messageInput
     session = request.session
+    first = is_this_first(db=db, id=session)
+    if first == True:
+        print("THIS IS FIRST MESSAGE")
+        agent_executor = get_session_agent(session)
+        response = agent_executor(message)
+        print(f"Session Title : {response}")
+        change_session_title(db=db, session_id=session, content=response.content)
     a = qa_chain(db = db, session_id=session, project_id=project_id, user_email=email, conversation=message)
     print(f"응답 내용 : {a}")
     return a
