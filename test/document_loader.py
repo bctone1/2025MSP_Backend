@@ -1,7 +1,7 @@
 import os
 from langchain_service.document_loaders.file_loader import load_document
 from pprint import pprint
-
+'''
 if __name__ == "__main__":
     test_files = [
         "./test_documents/File_Loader_Test.txt",
@@ -20,4 +20,4 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"❌ {file_path} 로드 실패: {e}")
         else:
-            print(f"⚠️ {file_path} 파일이 존재하지 않습니다. 테스트를 위해 준비해주세요.")
+            print(f"⚠️ {file_path} 파일이 존재하지 않습니다. 테스트를 위해 준비해주세요.")'''

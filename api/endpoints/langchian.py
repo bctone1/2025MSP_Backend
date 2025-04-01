@@ -67,15 +67,26 @@ async def request_message(request: RequestMessageRequest, db: Session = Depends(
     project_id = request.project_id
     message = request.messageInput
     session = request.session
+    model = request.selected_model
     first = is_this_first(db=db, id=session)
+    provider = ""
+    if model in config.OPENAI_MODELS:
+        provider = "openai"
+    elif model in config.ANTHROPIC_MODELS:
+        provider = "anthropic"
+    else:
+        return JSONResponse(content={"message": "해당 모델은 META LLM MSP에서 제공하지 않는 모델입니다."})
+    api_key = get_api_key(db=db, user_email=email, provider=provider)
+
+    print(f"✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ Model : {model}✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅")
     if first == True:
         print("THIS IS FIRST MESSAGE")
         agent_executor = get_session_agent(session)
         response = agent_executor(message)
         print(f"Session Title : {response}")
         change_session_title(db=db, session_id=session, content=response.content)
-    a = qa_chain(db = db, session_id=session, project_id=project_id, user_email=email, conversation=message)
-    print(f"응답 내용 : {a}")
+    a = qa_chain(db = db, session_id=session, project_id=project_id, user_email=email, conversation=message, provider=provider, model=model)
+    print(f"✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ Model : {a}✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅")
     return a
 
 @langchain_router.post("/modelsList", response_model=ModelListResponse)

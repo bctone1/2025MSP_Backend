@@ -1,6 +1,6 @@
 from langchain_service.vector_stores.setup import get_chroma_db, get_pgvector_db
 import core.config as config
-
+'''
 if __name__ == "__main__":
     test_texts = ["LangChain은 강력한 AI 프레임워크입니다.", "Vector DB를 사용하여 검색을 향상할 수 있습니다."]
 
@@ -29,3 +29,4 @@ if __name__ == "__main__":
         print("🎯 PGVector DB 데이터 추가 성공!")
     except Exception as e:
         print("❌ PGVector 에러 발생:", e)
+'''

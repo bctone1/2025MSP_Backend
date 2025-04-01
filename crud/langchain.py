@@ -1,7 +1,7 @@
 import core.config as config
 from datetime import datetime
 from sqlalchemy.orm import Session
-from models.project import ProjectInfoBase, InfoList
+from models.project import ProjectInfoBase, InfoList, User
 from models.api import ConversationLog, AIModel, Provider, ApiKey, ConversationSession
 from sqlalchemy import select
 from sqlalchemy.sql import func
@@ -83,7 +83,8 @@ def get_chat_history(db: Session, session_id: int):
     for msg in results:
         history_messages.append({
             'message_role': msg.message_role,
-            'conversation': msg.conversation
+            'conversation': msg.conversation,
+            'vector_memory' : msg.vector_memory
         })
 
     return history_messages
@@ -258,3 +259,15 @@ def change_session_title(db : Session, session_id : str, content : str):
     db.commit()
     db.refresh(session)
     return session
+
+def get_api_key(db : Session, user_email : str, provider = str):
+    user = db.query(User).filter(User.email == user_email).first()
+    user_id = user.id
+    if provider == 'openai':
+        api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id==1).first()
+        config.GPT_API = api.api_key
+    elif provider == "anthropic":
+        api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id==2).first()
+        config.CLAUDE_API = api.api_key
+    if provider:
+        return api.api_key

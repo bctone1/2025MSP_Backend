@@ -16,7 +16,7 @@ def get_session_agent(session_id: str, provider="openai", model=None):
         - 질문: '새로운 웹 프로젝트를 시작하려고 합니다. 기술 스택과 구조를 어떻게 설정할지 고민입니다.'
         - 응답: '웹 프로젝트 기술 스택 설정'
         
-        실제 저에게 대답할 때는 '제목 :'이나 '응답: ' 같은 사족 없이 제목만을 주세요,
+        실제 저에게 대답할 때는 '제목 :'이나 '응답: ' 같은 사족 없이 제목만을 주세요.
 
         질문: {{input}}
         """
@@ -29,16 +29,3 @@ def get_session_agent(session_id: str, provider="openai", model=None):
 
     return agent_executor
 
-session_id = "msp_id20250328114640"
-
-# 에이전트 가져오기
-agent_executor = get_session_agent(session_id)
-
-# 테스트 입력 (예: 세션 제목을 자동 생성하는 질문)
-user_input = "현재 FastAPI 기반 파이썬 프로젝트 진행 중입니다."
-
-# 에이전트 실행 및 결과 출력
-response = agent_executor(user_input)
-
-# 결과 출력
-print("에이전트 응답:", response)

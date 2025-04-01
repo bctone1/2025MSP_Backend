@@ -10,7 +10,7 @@ def get_relevant_messages(db: Session, session_id: str, query_vector: list, top_
     벡터 검색을 수행하여 가장 유사한 대화 기록을 반환하는 함수
     """
     history_messages = get_chat_history(db, session_id)
-
+    print(f"✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅history message : {history_messages}✅✅✅✅✅✅✅✅✅✅✅")
     # 벡터가 없는 경우 (최초 대화)
     if not history_messages:
         return []
@@ -24,7 +24,8 @@ def get_relevant_messages(db: Session, session_id: str, query_vector: list, top_
     ranked_messages = []
     for msg in history_messages:
         vector = msg.get("vector_memory")
-        if vector:  # 벡터가 존재하는 경우
+        print(f"✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅history message : {vector}✅✅✅✅✅✅✅✅✅✅✅")
+        if vector is not None and len(vector) > 0 and len(vector) == len(query_vector):  # 벡터가 존재하는 경우
             similarity = cosine_similarity(query_vector, msg["vector_memory"])
             ranked_messages.append((similarity, msg))
 

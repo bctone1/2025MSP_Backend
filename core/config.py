@@ -10,8 +10,11 @@ SMTP_PORT = 587
 SENDER_EMAIL = 'dudqls327@bctone.kr'
 SENDER_PASSWORD = 'mwdc lebe phqy rovf'
 
-CLAUDE_API = "YOUR API KEY"
-GPT_API = "YOUR API KEY"
+CLAUDE_API = "API KEY"
+GPT_API = "API KEY"
+
+OPENAI_MODELS = ['gpt-4', 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo']
+ANTHROPIC_MODELS = ['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307']
 
 VECTOR_DB_CONNECTION = f'{DB}://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}:{DB_PORT}/{DB_NAME}'
 EMBEDDING_MODEL = 'text-embedding-ada-002'

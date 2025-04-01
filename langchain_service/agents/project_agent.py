@@ -28,12 +28,3 @@ def get_project_agent(project_id: int, provider="openai", model=None):
         """
     )
 
-    agent = create_react_agent(llm, tools, prompt)
-
-    agent_executor = AgentExecutor(
-        agent=agent,
-        tools=tools,
-        verbose=True
-    )
-
-    return agent_executor

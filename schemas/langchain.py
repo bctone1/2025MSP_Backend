@@ -15,6 +15,7 @@ class RequestMessageRequest(BaseModel):
     project_id: int
     user_email: str
     session : str
+    selected_model : str
 
 class ModelList(BaseModel):
     id : int

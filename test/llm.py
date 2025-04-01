@@ -1,7 +1,7 @@
 from langchain_service.llms.setup import get_llm
 import core.config as config
 
-if __name__ == "__main__":
+'''if __name__ == "__main__":
     # OpenAI 제공자 테스트
     try:
         print("=== OpenAI 테스트 ===")
@@ -27,3 +27,4 @@ if __name__ == "__main__":
         print("🎯 Anthropic 응답:", anthropic_response)
     except Exception as e:
         print("❌ Anthropic 에러 발생:", e)
+'''
