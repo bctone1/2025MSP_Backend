@@ -24,8 +24,8 @@ def qa_chain(db : Session, session_id, project_id, user_email, conversation, pro
     return response.content
 
 
-'''
 
+'''
 
 def qa_chain(db: Session, session_id, project_id, user_email, conversation, provider="openai", model=None):
     llm = get_llm(provider, model)  # LangChain의 get LLM
@@ -63,7 +63,6 @@ def qa_chain(db: Session, session_id, project_id, user_email, conversation, prov
                 message_role='assistant', conversation=response.content, vector_memory=vector2)
 
     return response.content
-
 
 '''
 def get_qa_chain(session_id, collection_name="conversation_session", provider="openai", model=None):

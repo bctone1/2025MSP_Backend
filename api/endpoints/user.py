@@ -99,6 +99,7 @@ async def login(request: GoogleLoginRequest, db : Session = Depends(get_db)):
                     "message": f"{user.name}님 반갑습니다! 새 계정이 생성되었습니다.",
                     "role": user.role,
                     "email": user.email,
+                    "id":user.id
                 },
                 status_code=200
             )
@@ -109,7 +110,8 @@ async def login(request: GoogleLoginRequest, db : Session = Depends(get_db)):
                     "message": message,
                     "role": user.role,
                     "email": user.email,
-                    "name": user.name
+                    "name": user.name,
+                    "id" : user.id
                 },
                 status_code=200
             )
