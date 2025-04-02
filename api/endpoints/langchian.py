@@ -69,14 +69,13 @@ async def request_message(request: RequestMessageRequest, db: Session = Depends(
     session = request.session
     model = request.selected_model
     first = is_this_first(db=db, id=session)
-    provider = ""
     if model in config.OPENAI_MODELS:
         provider = "openai"
     elif model in config.ANTHROPIC_MODELS:
         provider = "anthropic"
     else:
         return JSONResponse(content={"message": "해당 모델은 META LLM MSP에서 제공하지 않는 모델입니다."})
-    api_key = get_api_key(db=db, user_email=email, provider=provider)
+    get_api_key(db=db, user_email=email, provider=provider)
 
     print(f"✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ Model : {model}✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅")
     if first == True:
