@@ -42,7 +42,7 @@ async def UploadFile(request: Request, db: Session = Depends(get_db)):
             print(f"파일 {file_path} 존재합니다.")
         else:
             print(f"파일 {file_path} 존재하지 않습니다.")
-        id = upload_file(db=db, project=10, email='user1@example.com', url=file_path)
+        id = upload_file(db=db, project=project_id, email=user_email, url=file_path)
         get_file_chain(db=db, id = id, file_path=file_path)
         return JSONResponse(content={"message": "파일 업로드 성공"})
     except Exception as e:

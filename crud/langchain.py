@@ -75,18 +75,47 @@ def add_message(db : Session, session_id : int, project_id : int, user_email : s
 
 
 def get_chat_history(db: Session, session_id: int):
-    """세션 ID 기준으로 대화 기록을 DB에서 가져오기"""
+    """세션 ID 기준으로 대화 기록과 추가 정보를 DB에서 가져오기"""
+    history_messages = []
+
+    # 1. conversation_logs 테이블 조회
     stmt = select(ConversationLog).where(ConversationLog.session_id == session_id).order_by(ConversationLog.request_at)
     results = db.execute(stmt).scalars().all()
 
-    history_messages = []
+    # ✅ 결과가 없으면 바로 빈 리스트 반환
+    if not results:
+        return history_messages
+
+    # 2. 첫 번째 결과에서 project_id 가져오기
+    project_id = results[0].project_id
+
+    # 3. project_id를 이용해 info_base 조회
+    info_base_stmt = select(ProjectInfoBase).where(ProjectInfoBase.project_id == project_id)
+    info_base_result = db.execute(info_base_stmt).scalar()  # ✅ 첫 번째 결과 가져오기
+    print(f"😊results : {project_id}😊")
+    if info_base_result:
+        info_id = info_base_result.id
+
+        # 4. info_list 조회
+        info_list_stmt = select(InfoList).where(InfoList.infobase_id == info_id).order_by(InfoList.upload_at)
+        infos = db.execute(info_list_stmt).scalars().all()
+
+        # 5. info_list 내용을 history_messages에 추가
+        for info in infos:
+            history_messages.append({
+                'message_role': "System",
+                'conversation': info.content,
+                'vector_memory': info.vector_memory
+            })
+
+    # 6. 기존 conversation_logs 내용도 history_messages에 추가
     for msg in results:
         history_messages.append({
             'message_role': msg.message_role,
             'conversation': msg.conversation,
-            'vector_memory' : msg.vector_memory
+            'vector_memory': msg.vector_memory
         })
-
+    print(f"😊😊😊😊😊😊😊😊😊😊history message : {history_messages}😊😊😊😊😊😊😊😊😊😊")
     return history_messages
 
 def get_model_list(db: Session):

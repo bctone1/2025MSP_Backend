@@ -34,3 +34,4 @@ def get_relevant_messages(db: Session, session_id: str, query_vector: list, top_
     relevant_messages = [msg for _, msg in ranked_messages[:top_n]]
 
     return relevant_messages
+
