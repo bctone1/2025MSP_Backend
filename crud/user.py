@@ -4,16 +4,25 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from models.project import User
 from fastapi import HTTPException
+import bcrypt
 
 SMTP_SERVER = config.SMTP_SERVER
 SMTP_PORT = config.SMTP_PORT
 SENDER_EMAIL = config.SENDER_EMAIL
 SENDER_PASSWORD = config.SENDER_PASSWORD
 
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+
 def user_register(db : Session, email : str, pw : str, name : str):
+    hashed_pw = hash_password(pw)
     new_user = User(
         email = email,
-        password = pw,
+        password=hashed_pw,
         name = name,
         role = 'user',
         group = 'newUser',
@@ -24,9 +33,10 @@ def user_register(db : Session, email : str, pw : str, name : str):
     db.refresh(new_user)
     return new_user
 
+
 def user_login(db : Session, email : str, pw : str):
-    user = db.query(User).filter(User.email == email, User.password == pw).first()
-    if user:
+    user = db.query(User).filter(User.email == email).first()
+    if user and verify_password(pw, user.password):
         return {
             "id" : user.id,
             "email": user.email,

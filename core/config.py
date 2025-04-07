@@ -1,9 +1,20 @@
+
+'''
 DB = 'postgresql'
 DB_USER = 'postgres'
 DB_PASSWORD = '3636'
 DB_SERVER = 'localhost'
 DB_PORT = '5433'
 DB_NAME = 'msp_database'
+'''
+DB = 'postgresql'
+DB_USER = 'bctone'
+DB_PASSWORD = 'blogcodi0318'
+DB_SERVER = '52.78.61.53'
+DB_PORT = '5432'
+DB_NAME = 'meta_llm_msp'
+
+
 
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
