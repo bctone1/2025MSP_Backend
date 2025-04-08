@@ -5,6 +5,7 @@ from sqlalchemy import select
 from models.project import User
 from fastapi import HTTPException
 import bcrypt
+import random
 
 SMTP_SERVER = config.SMTP_SERVER
 SMTP_PORT = config.SMTP_PORT
@@ -34,24 +35,48 @@ def user_register(db : Session, email : str, pw : str, name : str):
     return new_user
 
 
-def user_login(db : Session, email : str, pw : str):
+def user_login(db: Session, email: str, pw: str):
     user = db.query(User).filter(User.email == email).first()
-    if user and verify_password(pw, user.password):
-        return {
-            "id" : user.id,
-            "email": user.email,
-            "name": user.name,
-            "role": user.role
-        }
+    if not user:
+        return None
+
+    # 비밀번호 암호화 여부 판단
+    if user.password.startswith("$2b$"):  # bcrypt 해시 형식이면
+        if verify_password(pw, user.password):
+            return {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "role": user.role
+            }
+    else:
+        # 암호화 안 된 경우 (기존 방식) 평문 비교
+        if user.password == pw:
+            # 로그인 성공 후 비밀번호 해시로 업데이트 (마이그레이션)
+            user.password = hash_password(pw)
+            db.commit()
+            return {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "role": user.role
+            }
+
     return None
 
 def get_user_data(db : Session, email : str):
     return db.query(User).filter(User.email.ilike(email)).first()
 
+def generate_random_password():
+    random_number = ''.join([str(random.randint(0, 9)) for _ in range(8)])
+    return f'default_password{random_number}'
+
 def create_google_user(db : Session, email : str, name : str):
+    password = generate_random_password()
+    hashed_pw = hash_password(password)
     new_user = User(
         email = email,
-        password = 'default_password',
+        password = hashed_pw,
         name = name,
         role = 'googleUser',
         group = 'newUser',

@@ -1,3 +1,12 @@
+
+DB = 'postgresql'
+DB_USER = 'bctone'
+DB_PASSWORD = 'blogcodi0318'
+DB_SERVER = '54.180.98.62'
+DB_PORT = '5432'
+DB_NAME = 'meta_llm_msp'
+
+'''
 DB = 'postgresql'
 DB_USER = 'postgres'
 DB_PASSWORD = '3636'
@@ -5,10 +14,11 @@ DB_SERVER = 'localhost'
 DB_PORT = '5433'
 DB_NAME = 'msp_database'
 
+'''
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
-SENDER_EMAIL = 'your email'
-SENDER_PASSWORD = 'your pw'
+SENDER_EMAIL = 'leegyeom35@bctone.kr'
+SENDER_PASSWORD = 'vdyk ipjp qdpb oklr'
 
 CLAUDE_API = "API KEY"
 GPT_API = "API KEY"
