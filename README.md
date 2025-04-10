@@ -119,7 +119,9 @@ if __name__ == "__main__":
 # 테스트 계정
 ## 관리자 계정
 [admin@bctone.kr](mailto:admin@bctone.kr) | pass123
+
 [leegyeom35@bctone.kr](mailto:leegyeom35@bctone.kr) | testpass123
 ## 사용자 계정
 [user@example.com](mailto:user@example.com) | pass456
+
 [user@bctone.kr](mailto:user@bctone.kr) | testpass123
