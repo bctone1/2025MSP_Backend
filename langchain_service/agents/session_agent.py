@@ -25,7 +25,7 @@ def get_session_agent(session_id: str, provider="openai", model=None):
     # 사용자 입력에 대해 답변을 생성하는 함수
     def agent_executor(input_text: str):
         response = llm(prompt.format(input=input_text))
+        print(f"✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅{response}✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅")
         return response
-
     return agent_executor
 

@@ -1,9 +1,11 @@
 import core.config as config
 from datetime import datetime
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, func
 from models.project import User
+from models.api import ApiKey
 from fastapi import HTTPException
+from crud.langchain import get_embedding_key
 import bcrypt
 import random
 
@@ -40,7 +42,6 @@ def user_login(db: Session, email: str, pw: str):
     if not user:
         return None
 
-    # 비밀번호 암호화 여부 판단
     if user.password.startswith("$2b$"):  # bcrypt 해시 형식이면
         if verify_password(pw, user.password):
             return {
@@ -165,3 +166,19 @@ def change_profile(db : Session, id : int, name : str, group : str):
     db.commit()
     db.refresh(user)
     return user.password
+
+def update_usage(db : Session, user_email : str, provider : str, usage : int):
+    user = db.query(User).filter(User.email == user_email).first()
+    id = user.id
+    api = db.query(ApiKey).filter(
+        ApiKey.user_id == id,
+        ApiKey.status == 'Active',
+        func.lower(ApiKey.provider_name) == provider.lower()
+    ).first()
+    total_usage = api.usage_count + usage
+    if api.usage_limit > total_usage :
+        api.usage_count = total_usage
+        db.commit()
+        db.refresh(user)
+    return total_usage
+

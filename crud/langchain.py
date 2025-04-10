@@ -289,14 +289,24 @@ def change_session_title(db : Session, session_id : str, content : str):
     db.refresh(session)
     return session
 
+def get_embedding_key(db : Session):
+    api = db.query(ApiKey).filter(ApiKey.user_id == 1).first()
+    config.EMBEDDING_API = api.api_key
+    config.GPT_API = api.api_key
+    print(f"✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅{config.EMBEDDING_API}✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅")
+    return config.EMBEDDING_API
+
 def get_api_key(db : Session, user_email : str, provider = str):
     user = db.query(User).filter(User.email == user_email).first()
     user_id = user.id
     if provider == 'openai':
-        api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id==1).first()
+        api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id==4).first()
         config.GPT_API = api.api_key
+        get_embedding_key(db=db)
     elif provider == "anthropic":
         api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id==2).first()
         config.CLAUDE_API = api.api_key
+        get_embedding_key(db=db)
     if provider:
         return api.api_key
+

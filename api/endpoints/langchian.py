@@ -77,7 +77,6 @@ async def request_message(request: RequestMessageRequest, db: Session = Depends(
         return JSONResponse(content={"message": "해당 모델은 META LLM MSP에서 제공하지 않는 모델입니다."})
     get_api_key(db=db, user_email=email, provider=provider)
 
-    print(f"✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ Model : {model}✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅")
     if first == True:
         print("THIS IS FIRST MESSAGE")
         agent_executor = get_session_agent(session)

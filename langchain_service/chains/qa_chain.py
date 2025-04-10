@@ -6,6 +6,7 @@ from langchain_core.output_parsers import StrOutputParser
 from crud.langchain import *
 from langchain.prompts import PromptTemplate
 from langchain_service.llms.get_cost import *
+from crud.user import update_usage
 '''
 def qa_chain(db : Session, session_id, project_id, user_email, conversation, provider="openai", model=None):
     llm = get_llm(provider, model) # LangChain의 get LLM
@@ -70,7 +71,6 @@ def qa_chain(db: Session, session_id, project_id, user_email, conversation, prov
 def qa_chain(db: Session, session_id, project_id, user_email, conversation, provider="openai", model=None):
     llm = get_llm(provider, model)
     vector = text_to_vector(conversation)
-
     relevant_messages = get_relevant_messages(db, session_id, vector, top_n=5)
 
     formatted_history = "\n".join(
@@ -87,14 +87,14 @@ def qa_chain(db: Session, session_id, project_id, user_email, conversation, prov
     if provider == "openai":
         with get_openai_callback() as cb:
             response_text = chain.invoke({"history": formatted_history, "input": conversation})
-
+            update_usage(db = db, user_email = user_email, provider = provider, usage = cb.total_tokens)
             print(f"[LLM 사용량 - OpenAI] prompt: {cb.prompt_tokens} / completion: {cb.completion_tokens} / total: {cb.total_tokens} / cost: ${cb.total_cost:.6f}")
     elif provider == "anthropic":
         prompt_tokens = count_tokens(formatted_history)
         response_text = chain.invoke({"history": formatted_history, "input": conversation})
         completion_tokens = count_tokens(response_text)
         cost_data = estimate_claude_cost(model, prompt_tokens, completion_tokens)
-
+        update_usage(db=db, user_email=user_email, provider=provider, usage=cost_data['total'])
         print(f"[LLM 사용량 - Claude] prompt: {cost_data['prompt']} / completion: {cost_data['completion']} / total: {cost_data['total']} / cost: ${cost_data['cost']:.6f}")
     else:
         # 기타 모델 대응 가능
@@ -103,7 +103,7 @@ def qa_chain(db: Session, session_id, project_id, user_email, conversation, prov
 
     # 저장
     vector2 = text_to_vector(response_text)
-
+    print(f"✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ LENGTH OF VEC : {vector}✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅")
     add_message(db=db, session_id=session_id, project_id=project_id, user_email=user_email,
                 message_role='user', conversation=conversation, vector_memory=vector)
 

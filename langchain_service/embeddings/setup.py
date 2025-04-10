@@ -3,8 +3,9 @@ import core.config as config
 
 
 def get_embeddings():
+    print(f"✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ EMBEDDING NOW : {config.EMBEDDING_API}✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅")
     return OpenAIEmbeddings(
-        api_key = config.GPT_API,
+        api_key = config.EMBEDDING_API,
         model=config.EMBEDDING_MODEL
     )
 

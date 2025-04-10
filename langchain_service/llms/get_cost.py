@@ -14,5 +14,6 @@ def estimate_claude_cost(model: str, prompt_tokens: int, completion_tokens: int)
         "total": prompt_tokens + completion_tokens,
         "cost": round(cost, 6)
     }
+
 def count_tokens(text: str):
     return int(len(text) / 4)

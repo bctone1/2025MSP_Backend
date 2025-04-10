@@ -22,6 +22,7 @@ SENDER_PASSWORD = 'vdyk ipjp qdpb oklr'
 
 CLAUDE_API = "API KEY"
 GPT_API = "API KEY"
+EMBEDDING_API = "API KEY"
 
 OPENAI_MODELS = ['gpt-4', 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo']
 ANTHROPIC_MODELS = ['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307']
