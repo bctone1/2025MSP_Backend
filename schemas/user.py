@@ -59,7 +59,7 @@ class AddUserResponse(BaseModel):
     message : str
 
 class DeleteUserRequest(BaseModel):
-    email : str
+    email: str
 
 class DeleteUserResponse(BaseModel):
     message : str
@@ -115,3 +115,10 @@ class ChangeProfileRequest(BaseModel):
 
 class ChangeProfileResponse(BaseModel):
     message: str
+
+class FindPasswordRequest(BaseModel):
+    newPasswordData : str
+    email : str
+
+class FindPasswordResponse(BaseModel):
+    message : str

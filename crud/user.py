@@ -152,11 +152,28 @@ def get_user_info(db: Session, email : str):
 
 def change_password(db : Session, id : int, current_pw : str, new_pw : str):
     user = db.query(User).filter(User.id == id).first()
-    if user.password == current_pw:
-        user.password = new_pw
+    hashed_pw = hash_password(new_pw)
+    if user.password.startswith("$2b$"):
+        if verify_password(current_pw, user.password):
+            user.password = hashed_pw
+            db.commit()
+            db.refresh(user)
+            return "비밀번호가 변경되었습니다!"
+        else :
+            return "현재 비밀번호가 잘못되었습니다."
+    else :
+        return "관리자 권한으로 생성된 계정입니다."
+
+def find_password(db : Session, email : str, new_pw : str):
+    user = db.query(User).filter(User.email == email).first()
+    hashed_pw = hash_password(new_pw)
+    if user.password.startswith("$2b$"):
+        user.password = hashed_pw
         db.commit()
         db.refresh(user)
-    return user.password
+        return "비밀번호가 변경되었습니다!"
+    else :
+        return "관리자 권한으로 생성된 계정입니다."
 
 def change_profile(db : Session, id : int, name : str, group : str):
     user = db.query(User).filter(User.id == id).first()

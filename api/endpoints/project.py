@@ -93,10 +93,13 @@ async def projects_list(request: Request):
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    'SELECT * FROM project_table WHERE LOWER(user_email) = %s ORDER BY project_id DESC',
-                    (email,)
-                )
+                if email!='admin':
+                    cur.execute(
+                        'SELECT * FROM project_table WHERE LOWER(user_email) = %s ORDER BY project_id DESC',
+                        (email,)
+                    )
+                else:
+                    cur.execute('SELECT * FROM project_table  ORDER BY project_id DESC')
 
                 column_names = [desc[0] for desc in cur.description]
                 result = [dict(zip(column_names, row)) for row in cur.fetchall()]

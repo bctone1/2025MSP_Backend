@@ -1,8 +1,8 @@
 from langchain.prompts import ChatPromptTemplate
-from langchain_service.llms.setup import get_llm
+from langchain_service.llms.setup import get_llm, get_backend_agent
 
 def get_session_agent(session_id: str, provider="openai", model=None):
-    llm = get_llm(provider, model)
+    llm = get_backend_agent(provider, model)
 
     prompt = ChatPromptTemplate.from_template(
         f"""

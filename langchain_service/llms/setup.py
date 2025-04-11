@@ -21,3 +21,11 @@ def get_llm(provider="openai", model=None):
         raise ValueError(f"지원되지 않는 제공자: {provider}")
 
 
+def get_backend_agent(provider="openai", model=None):
+    if provider == "openai":
+        model_name = model or config.DEFAULT_CHAT_MODEL
+        return ChatOpenAI(
+            openai_api_key=config.EMBEDDING_API,
+            model_name=model_name,
+            temperature=0.7
+        )

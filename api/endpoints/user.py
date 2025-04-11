@@ -167,8 +167,16 @@ async def change_password_endpoint(request: ChangePasswordRequest, db: Session =
     id = request.ProfileData.id
     current_pw = request.newPasswordData.password
     new_pw = request.newPasswordData.newpassword
-    change_password(db = db, id = id, current_pw = current_pw, new_pw = new_pw)
-    return JSONResponse(content={'message': '비밀번호 변경 완료.'}, status_code=200)
+    messages = change_password(db = db, id = id, current_pw = current_pw, new_pw = new_pw)
+    return JSONResponse(content={'message': messages}, status_code=200)
+
+@user_router.post("/FindPassword", response_model=FindPasswordResponse)
+async def find_password_endpoint(request: FindPasswordRequest, db: Session = Depends(get_db)):
+    email = request.email
+    new_pw = request.newPasswordData
+    messages = find_password(db = db, email=email, new_pw=new_pw)
+    return JSONResponse(content={'message': messages}, status_code=200)
+
 
 @user_router.post("/ChangeProfile", response_model=ChangeProfileResponse)
 async def change_profile_endpoint(request: ChangeProfileRequest, db: Session = Depends(get_db)):

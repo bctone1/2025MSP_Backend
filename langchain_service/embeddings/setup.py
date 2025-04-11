@@ -1,4 +1,6 @@
 from langchain_openai import OpenAIEmbeddings
+from crud.langchain import get_embedding_key
+from sqlalchemy.orm import Session
 import core.config as config
 
 

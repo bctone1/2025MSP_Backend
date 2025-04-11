@@ -74,6 +74,7 @@ def add_message(db : Session, session_id : int, project_id : int, user_email : s
         raise e
 
 
+
 def get_chat_history(db: Session, session_id: int):
     """세션 ID 기준으로 대화 기록과 추가 정보를 DB에서 가져오기"""
     history_messages = []
@@ -292,8 +293,6 @@ def change_session_title(db : Session, session_id : str, content : str):
 def get_embedding_key(db : Session):
     api = db.query(ApiKey).filter(ApiKey.user_id == 1).first()
     config.EMBEDDING_API = api.api_key
-    config.GPT_API = api.api_key
-    print(f"✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅{config.EMBEDDING_API}✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅")
     return config.EMBEDDING_API
 
 def get_api_key(db : Session, user_email : str, provider = str):
