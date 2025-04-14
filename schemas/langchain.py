@@ -3,8 +3,9 @@ from typing import List
 from datetime import datetime
 
 class FileUploadRequest(BaseModel):
-    project_id: str
+    project_id: int
     user_email: str
+    session_id : str
     files: List[str]
 
 class FileUploadResponse(BaseModel):

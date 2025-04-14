@@ -5,7 +5,6 @@ from sqlalchemy import select, func
 from models.project import User
 from models.api import ApiKey
 from fastapi import HTTPException
-from crud.langchain import get_embedding_key
 import bcrypt
 import random
 
@@ -39,10 +38,11 @@ def user_register(db : Session, email : str, pw : str, name : str):
 
 def user_login(db: Session, email: str, pw: str):
     user = db.query(User).filter(User.email == email).first()
+
     if not user:
         return None
 
-    if user.password.startswith("$2b$"):  # bcrypt 해시 형식이면
+    if user.password.startswith("$2b$"):
         if verify_password(pw, user.password):
             return {
                 "id": user.id,
@@ -51,9 +51,7 @@ def user_login(db: Session, email: str, pw: str):
                 "role": user.role
             }
     else:
-        # 암호화 안 된 경우 (기존 방식) 평문 비교
         if user.password == pw:
-            # 로그인 성공 후 비밀번호 해시로 업데이트 (마이그레이션)
             user.password = hash_password(pw)
             db.commit()
             return {

@@ -1,5 +1,5 @@
 from langchain.prompts import ChatPromptTemplate
-from langchain_service.llms.setup import get_llm, get_backend_agent
+from langchain_service.llms.setup import get_backend_agent
 
 def get_session_agent(session_id: str, provider="openai", model=None):
     llm = get_backend_agent(provider, model)
@@ -18,14 +18,11 @@ def get_session_agent(session_id: str, provider="openai", model=None):
         
         실제 저에게 대답할 때는 '제목 :'이나 '응답:' 같은 접두어 없이 **제목만** 주세요.
         
-        질문: {{input}}
+        질문: {input}
         """
     )
-
-    # 사용자 입력에 대해 답변을 생성하는 함수
     def agent_executor(input_text: str):
         response = llm(prompt.format(input=input_text))
-        print(f"✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅{response}✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅")
         return response
     return agent_executor
 

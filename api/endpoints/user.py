@@ -1,11 +1,9 @@
-from fastapi import Depends, APIRouter, HTTPException, Request
+from fastapi import Depends, APIRouter
 from fastapi.responses import JSONResponse
-from database.session import get_db_connection, get_db
+from database.session import get_db
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from psycopg2.extras import RealDictCursor
 import smtplib
-import core.config as config
 from schemas.user import *
 from crud.user import *
 
@@ -62,11 +60,11 @@ async def login(request: LoginRequest, db : Session = Depends(get_db)):
 @user_router.post("/sendEmail", response_model=SendEmailResponse)
 async def send_email(request: SendEmailRequest):
     email = request.email
-    secretCode = request.secretCode
-    if not secretCode or not email:
+    secret_code = request.secretCode
+    if not secret_code or not email:
         return JSONResponse(content={'message': 'Missing secretCode or email'}, status_code=400)
     subject = "이메일 인증 코드"
-    body = f"귀하의 인증 코드는 {secretCode}입니다."
+    body = f"귀하의 인증 코드는 {secret_code}입니다."
     msg = MIMEMultipart()
     msg['From'] = config.SENDER_EMAIL
     msg['To'] = email
@@ -79,8 +77,7 @@ async def send_email(request: SendEmailRequest):
         server.sendmail(config.SENDER_EMAIL, email, msg.as_string())
         server.quit()
         return JSONResponse(content={'message': '요청되었습니다'}, status_code=200)
-    except Exception as e:
-        print(f"Error: {e}")
+    except Exception:
         return JSONResponse(content={'message': '이메일 전송 실패'}, status_code=500)
 
 
@@ -117,16 +114,12 @@ async def login(request: GoogleLoginRequest, db : Session = Depends(get_db)):
             )
 
     except Exception as e:
-        print(f"에러 발생: {e}")
         raise HTTPException(status_code=500, detail=f"서버 오류: {e}")
 
 @user_router.post("/getmembers", response_model=GetMembersResponse)
 async def projects_list(db: Session = Depends(get_db)):
-    memberList = get_member(db)
-    print(f"memberList : {memberList}")
-    print(f"members : {memberList["members"]}")
-    members = memberList["members"]
-    return memberList
+    member_list = get_member(db)
+    return member_list
 
 @user_router.post("/AddNewUser", response_model=AddUserResponse)
 async def projects_list(request: AddUserRequest, db: Session = Depends(get_db)):
@@ -159,15 +152,14 @@ async def change_user_info_endpoint(request: ChangeMemberRequest, db: Session = 
 async def get_user_info_endpoint(request: GetUserInfoRequest, db: Session = Depends(get_db)):
     email = request.email
     response = get_user_info(db = db, email = email)
-    print(response)
     return response
 
 @user_router.post("/ChangePassword", response_model=ChangePasswordResponse)
 async def change_password_endpoint(request: ChangePasswordRequest, db: Session = Depends(get_db)):
-    id = request.ProfileData.id
+    user_id = request.ProfileData.id
     current_pw = request.newPasswordData.password
     new_pw = request.newPasswordData.newpassword
-    messages = change_password(db = db, id = id, current_pw = current_pw, new_pw = new_pw)
+    messages = change_password(db = db, id = user_id, current_pw = current_pw, new_pw = new_pw)
     return JSONResponse(content={'message': messages}, status_code=200)
 
 @user_router.post("/FindPassword", response_model=FindPasswordResponse)
@@ -180,11 +172,9 @@ async def find_password_endpoint(request: FindPasswordRequest, db: Session = Dep
 
 @user_router.post("/ChangeProfile", response_model=ChangeProfileResponse)
 async def change_profile_endpoint(request: ChangeProfileRequest, db: Session = Depends(get_db)):
-    id = request.ProfileData.id
+    user_id = request.ProfileData.id
     name = request.newProfileData.name
-    print(f"new_name : {name}")
     group = request.newProfileData.group
-    print(f"new_group : {group}")
-    change_profile(db = db, id = id, name = name, group = group)
+    change_profile(db = db, id = user_id, name = name, group = group)
     return JSONResponse(content={'message': '프로필 변경 완료.'}, status_code=200)
 

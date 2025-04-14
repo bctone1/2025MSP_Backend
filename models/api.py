@@ -8,7 +8,7 @@ class Provider(Base):
     __tablename__ = "provider_table"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(255), unique=True, nullable=False)  # `name` 컬럼에 unique 제약 있음
+    name = Column(String(255), unique=True, nullable=False)
     status = Column(String(50))
     website = Column(String(255))
     description = Column(Text)
@@ -17,8 +17,8 @@ class ApiKey(Base):
     __tablename__ = "api_key_table"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    provider_id = Column(Integer, ForeignKey("provider_table.id", ondelete="CASCADE"), nullable=False)  # `provider_id` 외래 키
-    provider_name = Column(String(255), ForeignKey("provider_table.name", ondelete="CASCADE"), nullable=False)  # `provider_name` 외래 키
+    provider_id = Column(Integer, ForeignKey("provider_table.id", ondelete="CASCADE"), nullable=False)
+    provider_name = Column(String(255), ForeignKey("provider_table.name", ondelete="CASCADE"), nullable=False)
     user_id = Column(Integer, ForeignKey("user_table.id", ondelete="CASCADE"), nullable=False)
     api_key = Column(Text, unique=True, nullable=False)
     status = Column(String(50))
@@ -26,7 +26,6 @@ class ApiKey(Base):
     usage_limit = Column(Integer, default=0)
     usage_count = Column(Integer, default=0)
 
-    # 외래 키 관계 설정
     provider = relationship("Provider", backref="api_keys", foreign_keys=[provider_id])
     user = relationship("User", backref="api_keys")
 
@@ -54,7 +53,6 @@ class ConversationLog(Base):
     vector_memory = Column(Vector(1536), nullable=True)  # 벡터 크기 1536의 배열로 저장
     request_at = Column(TIMESTAMP, default=func.current_timestamp())
 
-    # 외래 키 관계 설정
     session = relationship("ConversationSession", backref="logs")
     project = relationship("Project", backref="logs")
     user = relationship("User", backref="logs")

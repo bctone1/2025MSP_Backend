@@ -4,9 +4,6 @@ import core.config as config
 
 
 def get_memory(session_id, memory_type="buffer", window_size=5):
-    """
-    대화 메모리 인스턴스를 반환합니다.
-    """
     if memory_type == "postgres":
         history = PostgresChatMessageHistory(
             connection_string=config.VECTOR_DB_CONNECTION,
@@ -20,7 +17,6 @@ def get_memory(session_id, memory_type="buffer", window_size=5):
             memory_key="conversation_logs",
             k=window_size
         )
-
     else:
         return ConversationBufferMemory(memory_key="conversation_logs")
 

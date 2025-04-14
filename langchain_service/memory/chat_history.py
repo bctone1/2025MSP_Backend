@@ -1,4 +1,3 @@
-from sqlalchemy import create_engine, Column, String, Text, TIMESTAMP, LargeBinary
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from models.api import ConversationLog
