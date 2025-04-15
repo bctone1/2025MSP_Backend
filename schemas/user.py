@@ -1,6 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from typing import List
+
+class UserInfo(BaseModel):
+    user_id: int = Field(..., alias="id")
+    user_name: str = Field(..., alias="name")
+    email: str
 
 class LoginRequest(BaseModel):
     email : str
@@ -121,4 +126,15 @@ class FindPasswordRequest(BaseModel):
     email : str
 
 class FindPasswordResponse(BaseModel):
+    message : str
+
+class AddNewAPIkeyRequest(BaseModel):
+    api_key : str
+    provider_id : int
+    provider_name : str
+    usage_limit : int
+    usage_count : int
+    user: UserInfo
+
+class AddNewAPIkeyResponse(BaseModel):
     message : str

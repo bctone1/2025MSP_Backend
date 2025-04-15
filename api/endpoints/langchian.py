@@ -9,6 +9,7 @@ from langchain_service.chains.qa_chain import qa_chain
 from langchain_service.agents.session_agent import get_session_agent
 from langchain_service.embeddings.get_vector import text_to_vector
 import core.config as config
+from fastapi import UploadFile, File, Form
 import os
 
 langchain_router = APIRouter()
@@ -44,6 +45,41 @@ async def upload_file(request: Request, db: Session = Depends(get_db)):
         return JSONResponse(content={"message": "파일 업로드 성공"})
     except Exception:
         raise HTTPException(status_code=500, detail="파일 업로드 중 오류 발생")
+
+
+'''
+@langchain_router.post("/UploadFile")
+async def upload_file_debug(request: Request):
+    try:
+        # headers
+        print("=== Headers ===")
+        for k, v in request.headers.items():
+            print(f"{k}: {v}")
+
+        # content type
+        print("=== Content-Type ===")
+        print(request.headers.get("content-type"))
+
+        # raw body
+        body_bytes = await request.body()
+        print("=== Raw Body ===")
+        print(body_bytes[:500])  # 너무 길면 잘라서 보기
+
+        # try parsing as form
+        print("=== Form Fields ===")
+        try:
+            form = await request.form()
+            for key, value in form.multi_items():
+                print(f"{key}: {value}")
+        except Exception as e:
+            print(f"Form parsing error: {e}")
+
+        return JSONResponse(content={"status": "debug info printed"}, status_code=200)
+
+    except Exception as e:
+        print(f"Unhandled error: {e}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+'''
 
 @langchain_router.post('/RequestMessage')
 async def request_message(request: RequestMessageRequest, db: Session = Depends(get_db)):
@@ -167,4 +203,6 @@ async def new_session_endpoint(request : NewSessionRequest, db: Session = Depend
     project_id = request.project_id
     user_email = request.user_email
     response = add_new_session(db=db, id = session_id, project_id=project_id, session_title=session_title, user_email=user_email)
+    if response == "already_exist":
+        return JSONResponse(content={"message": "요청이 너무 빈번합니다."})
     return response

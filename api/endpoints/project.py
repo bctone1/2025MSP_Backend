@@ -7,7 +7,7 @@ from crud.project import *
 
 project_router = APIRouter()
 
-@project_router.post('/createproject', response_model=CreateProjectResponse)
+@project_router.post('/createproject')
 async def create_project(request: CreateProjectRequest, db: Session = Depends(get_db)):
     name = request.projectInfo.project_name
     desc = request.projectInfo.description
@@ -21,9 +21,8 @@ async def create_project(request: CreateProjectRequest, db: Session = Depends(ge
         if created_project is None:
             raise HTTPException(status_code=500, detail="프로젝트 생성 실패")
 
-        return CreateProjectResponse(
-            message="프로젝트가 생성되었습니다",
-        )
+        print(f"created: {created_project.project_id}")
+        return created_project
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

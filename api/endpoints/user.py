@@ -6,12 +6,21 @@ from email.mime.multipart import MIMEMultipart
 import smtplib
 from schemas.user import *
 from crud.user import *
+from fastapi import Request
+import json
 
 user_router = APIRouter()
 SMTP_SERVER = config.SMTP_SERVER
 SMTP_PORT = config.SMTP_PORT
 SENDER_EMAIL = config.SENDER_EMAIL
 SENDER_PASSWORD = config.SENDER_PASSWORD
+
+@user_router.post("/Debug")
+async def test_endpoint(request: Request):
+    body = await request.json()
+    print("Raw JSON Body:", json.dumps(body, indent=2))
+    return {"message": "Got raw request"}
+
 
 @user_router.post('/register', response_model=RegisterResponse)
 async def register(request: RegisterRequest, db: Session = Depends(get_db)):
@@ -77,8 +86,8 @@ async def send_email(request: SendEmailRequest):
         server.sendmail(config.SENDER_EMAIL, email, msg.as_string())
         server.quit()
         return JSONResponse(content={'message': '요청되었습니다'}, status_code=200)
-    except Exception:
-        return JSONResponse(content={'message': '이메일 전송 실패'}, status_code=500)
+    except Exception as e:
+        return JSONResponse(content={'message': f'이메일 전송 실패 : {str(e)}'}, status_code=500)
 
 
 @user_router.post('/googlelogin', response_model=GoogleLoginResponse)
@@ -178,3 +187,17 @@ async def change_profile_endpoint(request: ChangeProfileRequest, db: Session = D
     change_profile(db = db, id = user_id, name = name, group = group)
     return JSONResponse(content={'message': '프로필 변경 완료.'}, status_code=200)
 
+@user_router.post("/AddNewAPIkey", response_model = AddNewAPIkeyResponse)
+async def add_new_apikey(request: AddNewAPIkeyRequest, db : Session = Depends(get_db)):
+    api_key = request.api_key
+    provider_id = request.provider_id
+    provider_name = request.provider_name
+    usage_limit = request.usage_limit
+    usage_count = request.usage_count
+    user_id = request.user.user_id
+    try :
+        add_apikey(db=db, api_key=api_key, provider_id=provider_id, provider_name=provider_name,
+                   usage_limit=usage_limit, usage_count=usage_count, user_id=user_id)
+        return JSONResponse(content={'message': 'API 키가 정상적으로 추가되었습니다.'}, status_code=200)
+    except Exception as e:
+        return JSONResponse(content={"message": f"오류 발생 : {str(e)}"}, status_code=500)

@@ -14,6 +14,7 @@ class User(Base):
     role = Column(String(50))
     group = Column(String(100))
     register_at = Column(TIMESTAMP, server_default=func.current_timestamp())
+    phone_number = Column(String(20), unique=True)
 
     projects = relationship("Project", back_populates="user", lazy="dynamic")
 

@@ -197,3 +197,17 @@ def update_usage(db : Session, user_email : str, provider : str, usage : int):
         db.refresh(user)
     return total_usage
 
+def add_apikey(db: Session, api_key : str, provider_id : int, provider_name : str, usage_limit : int, usage_count:int, user_id:int):
+    new_apikey = ApiKey(
+        api_key = api_key,
+        provider_id = provider_id,
+        provider_name = provider_name,
+        usage_limit = usage_limit,
+        usage_count = usage_count,
+        user_id = user_id,
+        status = "Active"
+    )
+    db.add(new_apikey)
+    db.commit()
+    db.refresh(new_apikey)
+    return "success"
