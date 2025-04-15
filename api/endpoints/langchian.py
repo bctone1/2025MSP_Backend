@@ -15,7 +15,7 @@ import os
 langchain_router = APIRouter()
 
 @langchain_router.post("/UploadFile", response_model=FileUploadResponse)
-async def upload_file(request: Request, db: Session = Depends(get_db)):
+async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
     try:
         form_data = await request.form()
         project_id = form_data.get("project_id")
@@ -23,7 +23,6 @@ async def upload_file(request: Request, db: Session = Depends(get_db)):
         user_email = form_data.get("user_email")
         session_id = form_data.get("session_id")
         files = form_data.getlist("files[]")
-
         save_dir = config.UPLOADED_FILES
         os.makedirs(save_dir, exist_ok=True)
         file_name, file_path = "", ""
@@ -46,40 +45,6 @@ async def upload_file(request: Request, db: Session = Depends(get_db)):
     except Exception:
         raise HTTPException(status_code=500, detail="파일 업로드 중 오류 발생")
 
-
-'''
-@langchain_router.post("/UploadFile")
-async def upload_file_debug(request: Request):
-    try:
-        # headers
-        print("=== Headers ===")
-        for k, v in request.headers.items():
-            print(f"{k}: {v}")
-
-        # content type
-        print("=== Content-Type ===")
-        print(request.headers.get("content-type"))
-
-        # raw body
-        body_bytes = await request.body()
-        print("=== Raw Body ===")
-        print(body_bytes[:500])  # 너무 길면 잘라서 보기
-
-        # try parsing as form
-        print("=== Form Fields ===")
-        try:
-            form = await request.form()
-            for key, value in form.multi_items():
-                print(f"{key}: {value}")
-        except Exception as e:
-            print(f"Form parsing error: {e}")
-
-        return JSONResponse(content={"status": "debug info printed"}, status_code=200)
-
-    except Exception as e:
-        print(f"Unhandled error: {e}")
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-'''
 
 @langchain_router.post('/RequestMessage')
 async def request_message(request: RequestMessageRequest, db: Session = Depends(get_db)):

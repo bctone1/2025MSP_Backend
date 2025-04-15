@@ -18,7 +18,6 @@ def upload_file(db: Session, project: int, email: str, url: str):
         db.add(new_file)
         db.commit()
         db.refresh(new_file)
-
         return new_file.id
 
     except Exception as e:
