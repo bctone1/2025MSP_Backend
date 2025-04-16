@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, func
 from models.project import User
 from models.api import ApiKey
+from service.sms.make_code import  generate_verification_code
+from service.sms.send_message import send_message
 from fastapi import HTTPException
 import bcrypt
 import random
@@ -211,3 +213,13 @@ def add_apikey(db: Session, api_key : str, provider_id : int, provider_name : st
     db.commit()
     db.refresh(new_apikey)
     return "success"
+
+def sms_verfication(db: Session, phone_number : str):
+    user = db.query(User).filter(User.phone_number == phone_number).first()
+    if user :
+        code = generate_verification_code()
+        send_message(phone_number=phone_number, code=code)
+        return code, user.email
+    else :
+        return "가입되지 않은 전화번호입니다."
+

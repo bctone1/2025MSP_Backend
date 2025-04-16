@@ -201,3 +201,10 @@ async def add_new_apikey(request: AddNewAPIkeyRequest, db : Session = Depends(ge
         return JSONResponse(content={'message': 'API 키가 정상적으로 추가되었습니다.'}, status_code=200)
     except Exception as e:
         return JSONResponse(content={"message": f"오류 발생 : {str(e)}"}, status_code=500)
+
+@user_router.post("/FindEmail", response_model=FindEmailResponse)
+async def find_email_endpoint(request: FindEmailRequest, db: Session = Depends(get_db)):
+    phone_number = request.phone_number
+    result = sms_verfication(db = db, phone_number = phone_number)
+    return JSONResponse(content={'code': f'{result[0]}', 'email' : f'{result[1]}'}, status_code=200)
+

@@ -1,9 +1,9 @@
 DB = 'postgresql'
-DB_USER = 'bctone'
-DB_PASSWORD = 'blogcodi0318'
-DB_SERVER = '54.180.98.62'
-DB_PORT = '5432'
-DB_NAME = 'meta_llm_msp'
+DB_USER = 'BCTONE'
+DB_PASSWORD = 'PASSWORD'
+DB_SERVER = 'ADDRESS'
+DB_PORT = 'PORT'
+DB_NAME = 'DB NAME'
 
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
@@ -23,3 +23,8 @@ DEFAULT_CHAT_MODEL = 'gpt-3.5-turbo'
 CHROMA_PERSIST_DIRECTORY = './chroma_db'
 
 UPLOADED_FILES = "C:\\Users\\leegy\\Desktop\\2025\\back\\saved_file"
+
+
+COOL_SMS_API = 'API KEY'
+COOL_SMS_SECRET = 'SECRET KEY'
+ADMIN_PHONE_NUMBER = 'PHONE NUMBER'

@@ -138,3 +138,10 @@ class AddNewAPIkeyRequest(BaseModel):
 
 class AddNewAPIkeyResponse(BaseModel):
     message : str
+
+class FindEmailRequest(BaseModel):
+    phone_number : str
+
+class FindEmailResponse(BaseModel):
+    code : str
+    email : str
