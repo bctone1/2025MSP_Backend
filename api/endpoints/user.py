@@ -27,8 +27,9 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
     email = request.email
     password = request.password
     name = request.name
+    phone_number = request.phone_number
     try:
-        user_register(db, email = email, pw = password, name = name)
+        user_register(db, email = email, pw = password, name = name, phone_number = phone_number)
         return {"message": "Register Success"}
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
@@ -202,9 +203,10 @@ async def add_new_apikey(request: AddNewAPIkeyRequest, db : Session = Depends(ge
     except Exception as e:
         return JSONResponse(content={"message": f"오류 발생 : {str(e)}"}, status_code=500)
 
-@user_router.post("/FindEmail", response_model=FindEmailResponse)
-async def find_email_endpoint(request: FindEmailRequest, db: Session = Depends(get_db)):
+@user_router.post("/Phonerequest", response_model=PhoneResponse)
+async def find_email_endpoint(request: PhoneRequest, db: Session = Depends(get_db)):
     phone_number = request.phone_number
-    result = sms_verfication(db = db, phone_number = phone_number)
-    return JSONResponse(content={'code': f'{result[0]}', 'email' : f'{result[1]}'}, status_code=200)
+    phoneCode = request.phoneCode
 
+    result = sms_verfication(db = db, phone_number = phone_number, phoneCode = phoneCode)
+    return JSONResponse(content={'message' : f'{result}'}, status_code=200)

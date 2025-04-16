@@ -34,6 +34,7 @@ class RegisterRequest(BaseModel):
     name : str
     email : str
     password : str
+    phone_number: str
 
 class RegisterResponse(BaseModel):
     message : str
@@ -139,9 +140,9 @@ class AddNewAPIkeyRequest(BaseModel):
 class AddNewAPIkeyResponse(BaseModel):
     message : str
 
-class FindEmailRequest(BaseModel):
+class PhoneRequest(BaseModel):
     phone_number : str
+    phoneCode : str
 
-class FindEmailResponse(BaseModel):
-    code : str
-    email : str
+class PhoneResponse(BaseModel):
+    message : str

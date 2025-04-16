@@ -22,7 +22,7 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
-def user_register(db : Session, email : str, pw : str, name : str):
+def user_register(db : Session, email : str, pw : str, name : str, phone_number : str):
     hashed_pw = hash_password(pw)
     new_user = User(
         email = email,
@@ -30,7 +30,8 @@ def user_register(db : Session, email : str, pw : str, name : str):
         name = name,
         role = 'user',
         group = 'newUser',
-        register_at=datetime.utcnow()
+        register_at=datetime.utcnow(),
+        phone_number = phone_number
     )
     db.add(new_user)
     db.commit()
@@ -214,12 +215,12 @@ def add_apikey(db: Session, api_key : str, provider_id : int, provider_name : st
     db.refresh(new_apikey)
     return "success"
 
-def sms_verfication(db: Session, phone_number : str):
+def sms_verfication(db: Session, phone_number : str, phoneCode : str):
     user = db.query(User).filter(User.phone_number == phone_number).first()
     if user :
-        code = generate_verification_code()
-        send_message(phone_number=phone_number, code=code)
-        return code, user.email
+        return "이미 가입된 사용자입니다."
     else :
-        return "가입되지 않은 전화번호입니다."
+        send_message(phone_number=phone_number, code=phoneCode)
+        return "요청이 완료되었습니다."
+
 
