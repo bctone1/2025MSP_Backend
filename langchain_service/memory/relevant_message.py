@@ -4,6 +4,7 @@ import numpy as np
 
 def get_relevant_messages(db: Session, session_id: str, query_vector: list, top_n=5):
     history_messages = get_chat_history(db, session_id)
+    print(f"✅ history_messages : {history_messages}")
     if not history_messages:
         return []
 

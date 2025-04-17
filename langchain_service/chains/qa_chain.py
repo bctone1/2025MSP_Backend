@@ -8,7 +8,6 @@ from langchain.prompts import PromptTemplate
 from langchain_service.llms.get_cost import *
 from crud.user import update_usage
 from langchain_service.agents.session_agent import get_session_agent
-from fastapi import BackgroundTasks
 
 
 def qa_chain(db: Session, session_id, conversation, provider="openai", model=None, api_key : str = None):

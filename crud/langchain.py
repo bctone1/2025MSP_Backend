@@ -93,6 +93,7 @@ def get_chat_history(db: Session, session_id: int):
         })
     return history_messages
 
+
 def get_model_list(db: Session):
     models = db.execute(select(AIModel.id, AIModel.model_name, AIModel.provider_id, AIModel.provider_name)).all()
     return {
