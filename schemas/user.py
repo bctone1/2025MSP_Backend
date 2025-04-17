@@ -146,3 +146,12 @@ class PhoneRequest(BaseModel):
 
 class PhoneResponse(BaseModel):
     message : str
+
+class FindEmailRequest(BaseModel):
+    name : str
+    phone : str
+    secretCode : str
+
+class FindEmailResponse(BaseModel):
+    message : str
+    email : str

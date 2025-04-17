@@ -210,3 +210,17 @@ async def find_email_endpoint(request: PhoneRequest, db: Session = Depends(get_d
 
     result = sms_verfication(db = db, phone_number = phone_number, phoneCode = phoneCode)
     return JSONResponse(content={'message' : f'{result}'}, status_code=200)
+
+@user_router.post("/findemail", response_model=FindEmailResponse)
+async def find_email_endpoint(request: FindEmailRequest, db: Session = Depends(get_db)):
+    phone = request.phone
+    name = request.name
+    secretCode = request.secretCode
+
+    result =findemail_method(db =db, phone=phone, name = name, secretCode=secretCode)
+
+    if result :
+        return JSONResponse(content={'email' : f'{result}', 'message' : '성공'}, status_code=200)
+    else :
+        return JSONResponse(content={'email' : '가입된 이메일이 없습니다.', 'message' : '실패'}, status_code=200)
+

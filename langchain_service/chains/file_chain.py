@@ -3,7 +3,6 @@ from langchain_service.document_loaders.indexer import *
 from crud.langchain import *
 
 def get_file_chain(db: Session, id : int, file_path: str):
-    get_embedding_key(db = db)
     documents = load_document(file_path)
     index_documents(db=db, id=id, documents=documents)
     return documents

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from models.project import ProjectInfoBase, InfoList, User
 from models.api import ConversationLog, AIModel, Provider, ApiKey, ConversationSession
 from sqlalchemy import select
+from fastapi import HTTPException
 from sqlalchemy.sql import func
 import numpy as np
 
@@ -253,22 +254,20 @@ def change_session_title(db : Session, session_id : str, content : str):
     db.refresh(session)
     return session
 
-def get_embedding_key(db : Session):
-    api = db.query(ApiKey).filter(ApiKey.user_id == 1).first()
-    config.EMBEDDING_API = api.api_key
-    return config.EMBEDDING_API
 
-def get_api_key(db : Session, user_email : str, provider = str):
+def get_api_key(db: Session, user_email: str, provider: str):
     user = db.query(User).filter(User.email == user_email).first()
+
     user_id = user.id
     if provider == 'openai':
         api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id==4).first()
-        config.GPT_API = api.api_key
-        get_embedding_key(db=db)
+        if not api:
+            return None
+        return api.api_key
     elif provider == "anthropic":
         api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id==2).first()
-        config.CLAUDE_API = api.api_key
-        get_embedding_key(db=db)
-    if provider:
+        if not api:
+            return None
         return api.api_key
+
 

@@ -1,15 +1,15 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, Depends, status
 from database.session import get_db
 from fastapi.responses import JSONResponse
 from fastapi import Request
 from crud.langchain import *
 from schemas.langchain import *
 from langchain_service.chains.file_chain import get_file_chain
-from langchain_service.chains.qa_chain import qa_chain
+from langchain_service.chains.qa_chain import qa_chain, process_usage_in_background, get_session_title
 from langchain_service.agents.session_agent import get_session_agent
 from langchain_service.embeddings.get_vector import text_to_vector
 import core.config as config
-from fastapi import UploadFile, File, Form
+from fastapi import BackgroundTasks
 import os
 
 langchain_router = APIRouter()
@@ -47,27 +47,40 @@ async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
 
 
 @langchain_router.post('/RequestMessage')
-async def request_message(request: RequestMessageRequest, db: Session = Depends(get_db)):
+async def request_message(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     email = request.user_email
     project_id = request.project_id
     message = request.messageInput
     session = request.session
     model = request.selected_model
-    first = is_this_first(db=db, session_id = session)
     if model in config.OPENAI_MODELS:
         provider = "openai"
     elif model in config.ANTHROPIC_MODELS:
         provider = "anthropic"
     else:
-        return JSONResponse(content={"message": "해당 모델은 META LLM MSP에서 제공하지 않는 모델입니다."})
-    get_api_key(db=db, user_email=email, provider=provider)
+        return "해당 모델은 아직 지원되지 않는 모델입니다.\n다른 모델을 선택해주세요."
+    api_key = get_api_key(db=db, user_email=email, provider=provider)
+    if not api_key:
+        return "보유 중인 API키가 없습니다.\n우선 API키를 등록해주세요."
+    try :
+        response_text, vector, formatted_history = qa_chain(
+            db = db, session_id=session, conversation=message, provider=provider, model=model, api_key=api_key
+        )
+        background_tasks.add_task(
+            get_session_title,
+            db, session, message
+        )
+        background_tasks.add_task(
+            process_usage_in_background,
+            db, session, project_id, email, provider, model,
+            message, response_text, formatted_history, vector
+        )
 
-    if first:
-        agent_executor = get_session_agent(session)
-        response = agent_executor(message)
-        change_session_title(db=db, session_id=session, content=response.content)
-    a = qa_chain(db = db, session_id=session, project_id=project_id, user_email=email, conversation=message, provider=provider, model=model)
-    return a
+        print("✅ 응답을 넘겼습니다.")
+        return response_text
+    except Exception as e:
+        print(f"Error Occured f{e}")
+        return "현재 등록하신 API 키는 유효하지 않습니다.\n유효하는 API키를 등록해주세요."
 
 @langchain_router.post("/modelsList", response_model=ModelListResponse)
 async def model_list(db: Session = Depends(get_db)):

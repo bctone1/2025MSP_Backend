@@ -224,3 +224,10 @@ def sms_verfication(db: Session, phone_number : str, phoneCode : str):
         return "요청이 완료되었습니다."
 
 
+def findemail_method(db: Session, phone :str, name:str, secretCode:str):
+    user = db.query(User).filter(User.phone_number == phone, User.name == name).first()
+    if user :
+        send_message(phone_number=phone, code = secretCode)
+        return user.email
+    else:
+        return
