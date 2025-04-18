@@ -8,13 +8,14 @@ from fastapi import HTTPException
 from sqlalchemy.sql import func
 import numpy as np
 
-def upload_file(db: Session, project: int, email: str, url: str):
+def upload_file(db: Session, project: int, email: str, url: str, name : str):
     try:
         new_file = ProjectInfoBase(
             project_id=project,
             user_email=email,
             file_url=url,
-            upload_at = datetime.now(UTC)
+            upload_at = datetime.now(UTC),
+            file_name = name
         )
         db.add(new_file)
         db.commit()

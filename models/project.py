@@ -37,9 +37,9 @@ class ProjectInfoBase(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     project_id = Column(Integer, ForeignKey("project_table.project_id", ondelete="CASCADE"), nullable=False)
     user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
+    file_name = Column(String(255))
     file_url = Column(Text, nullable=True)
     upload_at = Column(TIMESTAMP, default=func.current_timestamp())
-
     project = relationship("Project", backref="info")
     user = relationship("User", backref="project_info")
 

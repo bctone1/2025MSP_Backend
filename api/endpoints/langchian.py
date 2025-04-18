@@ -10,6 +10,7 @@ from langchain_service.agents.file_agent import get_file_agent
 from langchain_service.embeddings.get_vector import text_to_vector
 import core.config as config
 from fastapi import BackgroundTasks
+from service.sms.make_code import generate_verification_code
 import os
 
 langchain_router = APIRouter()
@@ -23,17 +24,22 @@ async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
         user_email = form_data.get("user_email")
         session_id = form_data.get("session_id")
         files = form_data.getlist("files[]")
+
         save_dir = config.UPLOADED_FILES
-        os.makedirs(save_dir, exist_ok=True)
+        user_dir = os.path.join(save_dir, user_email)
+        os.makedirs(user_dir, exist_ok=True)
+
         file_name, file_path = "", ""
         for file in files:
-            file_name = file.filename
-            file_location = os.path.join(save_dir, file.filename)
+            random_number = generate_verification_code()
+            new_file_name = f"{project_id}_{random_number}_{file.filename}"  # 파일명에 project_id와 랜덤번호 추가
+            file_location = os.path.join(user_dir, new_file_name)  # 사용자 폴더에 저장할 경로
+
             with open(file_location, "wb") as f:
-                content = await file.read()
-                f.write(content)
-            file_path = f"{save_dir}/{file.filename}"
-        file_id = upload_file(db=db, project = project_id, email=user_email, url=file_path)
+                content = await file.read()  # 파일 내용 읽기
+                f.write(content)  # 파일 내용 저장
+
+        file_id = upload_file(db=db, project = project_id, email=user_email, url=file_path, name=file_name)
         original_file = get_file_chain(db=db, id = file_id, file_path=file_path)
         file_content = original_file[0].page_content
 
