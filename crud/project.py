@@ -43,3 +43,9 @@ def delete_infobase(db: Session, infobase_id : int):
     if file:
         db.delete(file)
         db.commit()
+
+def select_and_delete_infobase(db: Session, project_id : int, file_name = str):
+    files = db.query(ProjectInfoBase).filter(ProjectInfoBase.project_id == project_id, ProjectInfoBase.file_url == file_name).all()
+    for file in files:
+        db.delete(file)
+        db.commit()

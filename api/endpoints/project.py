@@ -65,6 +65,13 @@ async def delete_session_endpoint(request : DeleteSessionRequest, db: Session = 
 
 @project_router.post("/DeleteFile", response_model=DeleteFileResponse)
 async def delete_session_endpoint(request : DeleteFileRequest, db: Session = Depends(get_db)):
-    infobase_id = request.infobase_id
-    delete_infobase(db = db, infobase_id = infobase_id)
+    infobase_id = request.file.id
+    file_name = request.file.name
+    project_id = request.activeProject.project_id
+
+    if infobase_id:
+        delete_infobase(db=db, infobase_id=infobase_id)
+    else:
+        print("There is no Infobase ID")
+        select_and_delete_infobase(db=db, project_id=project_id, file_name=file_name)
     return JSONResponse(content={"message": "삭제 성공"})

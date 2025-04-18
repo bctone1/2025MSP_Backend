@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 class ProjectInfo(BaseModel):
     project_name: str
@@ -8,6 +8,21 @@ class ProjectInfo(BaseModel):
     model: str
     user_email: str
     provider: str
+
+class FileData(BaseModel):
+    id: Optional[int]
+    name: str
+    source: str
+
+class ActiveProject(BaseModel):
+    project_id: int
+    user_email: str
+    project_name: str
+    category: str
+    description: str
+    provider: str
+    ai_model: str
+
 
 class CreateProjectRequest(BaseModel):
     projectInfo: ProjectInfo
@@ -44,7 +59,8 @@ class DeleteSessionResponse(BaseModel):
     message : str
 
 class DeleteFileRequest(BaseModel):
-    infobase_id :int
+    file: FileData
+    activeProject: ActiveProject
 
 class DeleteFileResponse(BaseModel):
     message :str
