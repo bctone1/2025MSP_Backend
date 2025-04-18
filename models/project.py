@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, func
 from database.base import Base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from pgvector.sqlalchemy import Vector
 
 
@@ -52,4 +52,8 @@ class InfoList(Base):
     vector_memory = Column(Vector(1536))
     upload_at = Column(TIMESTAMP, default=func.current_timestamp())
 
-    infobase = relationship("ProjectInfoBase", backref="info_list")
+    infobase = relationship(
+        "ProjectInfoBase",
+        backref=backref("info_list", passive_deletes=True)
+    )
+

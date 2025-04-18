@@ -6,7 +6,6 @@ from crud.langchain import *
 from schemas.langchain import *
 from langchain_service.chains.file_chain import get_file_chain
 from langchain_service.chains.qa_chain import qa_chain, process_usage_in_background, get_session_title
-from langchain_service.agents.session_agent import get_session_agent
 from langchain_service.agents.file_agent import get_file_agent
 from langchain_service.embeddings.get_vector import text_to_vector
 import core.config as config
