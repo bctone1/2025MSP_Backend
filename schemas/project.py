@@ -10,7 +10,7 @@ class ProjectInfo(BaseModel):
     provider: str
 
 class FileData(BaseModel):
-    id: Optional[int]
+    id: Optional[int] = None
     name: str
     source: str
 

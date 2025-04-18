@@ -64,11 +64,13 @@ async def delete_session_endpoint(request : DeleteSessionRequest, db: Session = 
 
 
 @project_router.post("/DeleteFile", response_model=DeleteFileResponse)
-async def delete_session_endpoint(request : DeleteFileRequest, db: Session = Depends(get_db)):
+async def delete_file_endpoint(request : DeleteFileRequest, db: Session = Depends(get_db)):
     infobase_id = request.file.id
     file_name = request.file.name
     project_id = request.activeProject.project_id
-
+    print(f"✅ 파일 아이디 : {infobase_id}")
+    print(f"✅ 파일 이름 : {file_name}")
+    print(f"✅ 프로젝트 아이디 : {project_id}")
     if infobase_id:
         delete_infobase(db=db, infobase_id=infobase_id)
     else:
