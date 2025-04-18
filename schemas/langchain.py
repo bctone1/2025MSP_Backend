@@ -142,3 +142,15 @@ class NewSessionResponse(BaseModel):
     session_title : str
     register_at : datetime
     user_email : str
+
+class ActiveProject(BaseModel):
+    project_id: int
+    user_email: str
+    project_name: str
+    category: str
+    description: str
+    provider: str
+    ai_model: str
+
+class GetInfoBaseRequest(BaseModel):
+    activeProject: ActiveProject

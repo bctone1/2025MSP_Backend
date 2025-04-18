@@ -35,5 +35,16 @@ class Provider(BaseModel):
     description: str
 
 class ProviderListResponse(BaseModel):
-    providers: List[Provider]
+    providers : List[Provider]
 
+class DeleteSessionRequest(BaseModel):
+    session_id : str
+
+class DeleteSessionResponse(BaseModel):
+    message : str
+
+class DeleteFileRequest(BaseModel):
+    infobase_id :int
+
+class DeleteFileResponse(BaseModel):
+    message :str

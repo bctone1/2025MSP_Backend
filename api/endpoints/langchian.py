@@ -7,6 +7,7 @@ from schemas.langchain import *
 from langchain_service.chains.file_chain import get_file_chain
 from langchain_service.chains.qa_chain import qa_chain, process_usage_in_background, get_session_title
 from langchain_service.agents.session_agent import get_session_agent
+from langchain_service.agents.file_agent import get_file_agent
 from langchain_service.embeddings.get_vector import text_to_vector
 import core.config as config
 from fastapi import BackgroundTasks
@@ -34,14 +35,20 @@ async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
                 f.write(content)
             file_path = f"{save_dir}/{file.filename}"
         file_id = upload_file(db=db, project = project_id, email=user_email, url=file_path)
-        get_file_chain(db=db, id = file_id, file_path=file_path)
+        original_file = get_file_chain(db=db, id = file_id, file_path=file_path)
+        file_content = original_file[0].page_content
+
+        agent = get_file_agent(file_content)
+        summary = agent()
+        print(f"요약 : \n{summary}")
+
         message1 = f"파일 업로드 : {file_name}"
-        message2 = "파일이 지식 베이스에 추가되었습니다. 어떤 도움이 필요하신가요?"
+        message2 = summary
         vector1 = text_to_vector(message1)
         vector2 = text_to_vector(message2)
         add_message(db = db, session_id = session_id, project_id = project_id, user_email=user_email, message_role='user', conversation=message1, vector_memory=vector1)
         add_message(db=db, session_id = session_id, project_id = project_id, user_email=user_email, message_role='assistant', conversation=message2, vector_memory=vector2)
-        return JSONResponse(content={"message": "파일 업로드 성공"})
+        return JSONResponse(content={"message": summary})
     except Exception:
         raise HTTPException(status_code=500, detail="파일 업로드 중 오류 발생")
 
@@ -184,3 +191,15 @@ async def new_session_endpoint(request : NewSessionRequest, db: Session = Depend
     if response == "already_exist":
         return JSONResponse(content={"message": "요청이 너무 빈번합니다."})
     return response
+
+@langchain_router.post("/getInfoBase")
+async def getInfoBase(request : GetInfoBaseRequest, db: Session = Depends(get_db)):
+    project = request.activeProject
+    email = project.user_email
+    project_id = project.project_id
+
+    print(email, project_id)
+
+    infoBase = get_InfoBase(db,email,project_id)
+    print(infoBase)
+    return infoBase

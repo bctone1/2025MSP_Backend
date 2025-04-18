@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey, Float
 from database.base import Base
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from pgvector.sqlalchemy import Vector
 
 class Provider(Base):
@@ -53,7 +53,10 @@ class ConversationLog(Base):
     vector_memory = Column(Vector(1536), nullable=True)  # 벡터 크기 1536의 배열로 저장
     request_at = Column(TIMESTAMP, default=func.current_timestamp())
 
-    session = relationship("ConversationSession", backref="logs")
+    session = relationship(
+        "ConversationSession",
+        backref=backref("logs", passive_deletes=True)
+    )
     project = relationship("Project", backref="logs")
     user = relationship("User", backref="logs")
 

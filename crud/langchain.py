@@ -272,3 +272,9 @@ def get_api_key(db: Session, user_email: str, provider: str):
         return api.api_key
 
 
+def get_InfoBase(db: Session, email: str, project_id: int):
+    stmt = select(ProjectInfoBase).where(
+        ProjectInfoBase.project_id == project_id,
+        ProjectInfoBase.user_email == email
+    )
+    return db.scalars(stmt).all()

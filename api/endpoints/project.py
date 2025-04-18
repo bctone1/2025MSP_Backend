@@ -55,3 +55,16 @@ async def projects_list(request: Request):
 async def projects_list(db: Session = Depends(get_db)):
     providers = get_provider(db = db)
     return providers
+
+@project_router.post("/DeleteSession", response_model=DeleteSessionResponse)
+async def delete_session_endpoint(request : DeleteSessionRequest, db: Session = Depends(get_db)):
+    session_id = request.session_id
+    delete_session(db = db, session_id = session_id)
+    return JSONResponse(content={"message": "삭제 성공"})
+
+
+@project_router.post("/DeleteFile", response_model=DeleteFileResponse)
+async def delete_session_endpoint(request : DeleteFileRequest, db: Session = Depends(get_db)):
+    infobase_id = request.infobase_id
+    delete_infobase(db = db, infobase_id = infobase_id)
+    return JSONResponse(content={"message": "삭제 성공"})
