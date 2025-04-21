@@ -273,9 +273,19 @@ def get_api_key(db: Session, user_email: str, provider: str):
         return api.api_key
 
 
-def get_InfoBase(db: Session, email: str, project_id: int):
+def get_infobase(db: Session, email: str, project_id: int):
     stmt = select(ProjectInfoBase).where(
         ProjectInfoBase.project_id == project_id,
         ProjectInfoBase.user_email == email
     )
     return db.scalars(stmt).all()
+
+def change_provider_status(db: Session, provider_id: int):
+    provider = db.query(Provider).filter(Provider.id == provider_id).first()
+    print(f"provider_Status : {provider.status}")
+    if provider.status == 'Active':
+        provider.status = 'Deactive'
+    elif provider.status == 'Deactive':
+        provider.status = 'Active'
+    db.commit()
+    db.refresh(provider)

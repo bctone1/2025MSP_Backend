@@ -154,3 +154,9 @@ class ActiveProject(BaseModel):
 
 class GetInfoBaseRequest(BaseModel):
     activeProject: ActiveProject
+
+class ProviderStatusRequest(BaseModel):
+    provider_id : int
+
+class ProviderStatusResponse(BaseModel):
+    message : str

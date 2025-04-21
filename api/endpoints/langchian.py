@@ -24,24 +24,22 @@ async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
         user_email = form_data.get("user_email")
         session_id = form_data.get("session_id")
         files = form_data.getlist("files[]")
-
-        save_dir = config.UPLOADED_FILES
-        user_dir = os.path.join(save_dir, user_email)
+        save_dir = config.UPLOAD_FOLDER
+        user_dir = os.path.join(save_dir, user_email, 'document')
         os.makedirs(user_dir, exist_ok=True)
 
         file_name, file_path = "", ""
         for file in files:
             random_number = generate_verification_code()
-            new_file_name = f"{project_id}_{random_number}_{file.filename}"  # 파일명에 project_id와 랜덤번호 추가
-            file_location = os.path.join(user_dir, new_file_name)  # 사용자 폴더에 저장할 경로
+            file_name = f"{project_id}_{random_number}_{file.filename}"  # 파일명에 project_id와 랜덤번호 추가
+            file_path = os.path.join(user_dir, file_name)  # 사용자 폴더에 저장할 경로
 
-            with open(file_location, "wb") as f:
+            with open(file_path, "wb") as f:
                 content = await file.read()  # 파일 내용 읽기
                 f.write(content)  # 파일 내용 저장
 
         file_id = upload_file(db=db, project = project_id, email=user_email, url=file_path, name=file_name)
-        original_file = get_file_chain(db=db, id = file_id, file_path=file_path)
-        file_content = original_file[0].page_content
+        file_content = get_file_chain(db=db, id = file_id, file_path=file_path)
 
         agent = get_file_agent(file_content)
         summary = agent()
@@ -198,13 +196,24 @@ async def new_session_endpoint(request : NewSessionRequest, db: Session = Depend
     return response
 
 @langchain_router.post("/getInfoBase")
-async def getInfoBase(request : GetInfoBaseRequest, db: Session = Depends(get_db)):
+async def get_infobase_endpoint(request : GetInfoBaseRequest, db: Session = Depends(get_db)):
     project = request.activeProject
     email = project.user_email
     project_id = project.project_id
 
     print(email, project_id)
 
-    infoBase = get_InfoBase(db,email,project_id)
+    infoBase = get_infobase(db,email,project_id)
     print(infoBase)
     return infoBase
+
+@langchain_router.post("/changeProviderStatus", response_model = ProviderStatusResponse)
+async def change_provider_status_endpoint(request : ProviderStatusRequest, db : Session = Depends(get_db)):
+    provider_id = request.provider_id
+    try:
+        change_provider_status(db = db, provider_id = provider_id)
+        return JSONResponse(content={"message" : "Provider Status 전환 성공"})
+    except Exception as e:
+        print(f"Provider Status 전환 에러 : {e}")
+        return JSONResponse(content={"message" : "Provider Status 전환 실패"})
+

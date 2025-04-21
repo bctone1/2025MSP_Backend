@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from api.routers import router
 from fastapi.middleware.cors import CORSMiddleware
-
+from core.config import UPLOAD_FOLDER
+import os
+import uvicorn
 app = FastAPI(debug=True)
 
 app.add_middleware(
@@ -15,7 +17,7 @@ app.add_middleware(
 app.include_router(router)
 
 if __name__ == "__main__":
-    import uvicorn
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     uvicorn.run(app, host="0.0.0.0", port=5000)
 
 
