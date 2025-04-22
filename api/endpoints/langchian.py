@@ -42,7 +42,7 @@ async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
         file_content = get_file_chain(db=db, id = file_id, file_path=file_path)
 
         agent = get_file_agent(file_content)
-        summary = agent()
+        summary = agent
         print(f"요약 : \n{summary}")
 
         message1 = f"파일 업로드 : {file_name}"
@@ -195,17 +195,17 @@ async def new_session_endpoint(request : NewSessionRequest, db: Session = Depend
         return JSONResponse(content={"message": "요청이 너무 빈번합니다."})
     return response
 
+
 @langchain_router.post("/getInfoBase")
 async def get_infobase_endpoint(request : GetInfoBaseRequest, db: Session = Depends(get_db)):
     project = request.activeProject
     email = project.user_email
     project_id = project.project_id
 
-    print(email, project_id)
+    infobase = get_infobase(db,email,project_id)
 
-    infoBase = get_infobase(db,email,project_id)
-    print(infoBase)
-    return infoBase
+    return infobase
+
 
 @langchain_router.post("/changeProviderStatus", response_model = ProviderStatusResponse)
 async def change_provider_status_endpoint(request : ProviderStatusRequest, db : Session = Depends(get_db)):

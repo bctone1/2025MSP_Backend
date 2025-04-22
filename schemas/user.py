@@ -115,6 +115,7 @@ class NewProfileData(BaseModel):
     name : str
     group : str
 
+
 class ChangeProfileRequest(BaseModel):
     newProfileData : NewProfileData
     ProfileData : ProfileData
@@ -122,12 +123,14 @@ class ChangeProfileRequest(BaseModel):
 class ChangeProfileResponse(BaseModel):
     message: str
 
+
 class FindPasswordRequest(BaseModel):
     newPasswordData : str
     email : str
 
 class FindPasswordResponse(BaseModel):
     message : str
+
 
 class AddNewAPIkeyRequest(BaseModel):
     api_key : str
@@ -140,12 +143,14 @@ class AddNewAPIkeyRequest(BaseModel):
 class AddNewAPIkeyResponse(BaseModel):
     message : str
 
+
 class PhoneRequest(BaseModel):
     phone_number : str
     phoneCode : str
 
 class PhoneResponse(BaseModel):
     message : str
+
 
 class FindEmailRequest(BaseModel):
     name : str

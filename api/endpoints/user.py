@@ -169,7 +169,7 @@ async def change_password_endpoint(request: ChangePasswordRequest, db: Session =
     user_id = request.ProfileData.id
     current_pw = request.newPasswordData.password
     new_pw = request.newPasswordData.newpassword
-    messages = change_password(db = db, id = user_id, current_pw = current_pw, new_pw = new_pw)
+    messages = change_password(db = db, user_id = user_id, current_pw = current_pw, new_pw = new_pw)
     return JSONResponse(content={'message': messages}, status_code=200)
 
 @user_router.post("/FindPassword", response_model=FindPasswordResponse)
@@ -185,7 +185,7 @@ async def change_profile_endpoint(request: ChangeProfileRequest, db: Session = D
     user_id = request.ProfileData.id
     name = request.newProfileData.name
     group = request.newProfileData.group
-    change_profile(db = db, id = user_id, name = name, group = group)
+    change_profile(db = db, user_id = user_id, name = name, group = group)
     return JSONResponse(content={'message': '프로필 변경 완료.'}, status_code=200)
 
 @user_router.post("/AddNewAPIkey", response_model = AddNewAPIkeyResponse)
@@ -206,18 +206,18 @@ async def add_new_apikey(request: AddNewAPIkeyRequest, db : Session = Depends(ge
 @user_router.post("/Phonerequest", response_model=PhoneResponse)
 async def find_email_endpoint(request: PhoneRequest, db: Session = Depends(get_db)):
     phone_number = request.phone_number
-    phoneCode = request.phoneCode
+    phone_code = request.phoneCode
 
-    result = sms_verfication(db = db, phone_number = phone_number, phoneCode = phoneCode)
+    result = sms_verfication(db = db, phone_number = phone_number, phoneCode = phone_code)
     return JSONResponse(content={'message' : f'{result}'}, status_code=200)
 
 @user_router.post("/findemail", response_model=FindEmailResponse)
 async def find_email_endpoint(request: FindEmailRequest, db: Session = Depends(get_db)):
     phone = request.phone
     name = request.name
-    secretCode = request.secretCode
+    secret_code = request.secretCode
 
-    result =findemail_method(db =db, phone=phone, name = name, secretCode=secretCode)
+    result =findemail_method(db =db, phone=phone, name = name, secretCode=secret_code)
 
     if result :
         return JSONResponse(content={'email' : f'{result}', 'message' : '성공'}, status_code=200)

@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, func
 from models.project import User
 from models.api import ApiKey
-from service.sms.make_code import  generate_verification_code
 from service.sms.send_message import send_message
 from fastapi import HTTPException
 import bcrypt
@@ -151,8 +150,8 @@ def get_user_info(db: Session, email : str):
         "group" : user.group
     }
 
-def change_password(db : Session, id : int, current_pw : str, new_pw : str):
-    user = db.query(User).filter(User.id == id).first()
+def change_password(db : Session, user_id : int, current_pw : str, new_pw : str):
+    user = db.query(User).filter(User.id == user_id).first()
     hashed_pw = hash_password(new_pw)
     if user.password.startswith("$2b$"):
         if verify_password(current_pw, user.password):
@@ -176,8 +175,8 @@ def find_password(db : Session, email : str, new_pw : str):
     else :
         return "관리자 권한으로 생성된 계정입니다."
 
-def change_profile(db : Session, id : int, name : str, group : str):
-    user = db.query(User).filter(User.id == id).first()
+def change_profile(db : Session, user_id : int, name : str, group : str):
+    user = db.query(User).filter(User.id == user_id).first()
     if user:
         user.name = name
         user.group = group

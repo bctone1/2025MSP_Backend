@@ -4,9 +4,6 @@ from fastapi import Request
 from database.session import get_db_connection, get_db
 from schemas.project import *
 from crud.project import *
-from service.sms.make_code import generate_verification_code
-import core.config as config
-import os
 
 project_router = APIRouter()
 
