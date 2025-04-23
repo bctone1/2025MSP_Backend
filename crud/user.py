@@ -89,7 +89,7 @@ def create_google_user(db : Session, email : str, name : str):
     return new_user
 
 def get_member(db : Session):
-    members = db.execute(select(User.id, User.email, User.password, User.name, User.role, User.group, User.register_at)).all()
+    members = db.execute(select(User.id, User.email, User.password, User.name, User.role, User.group, User.register_at, User.phone_number)).all()
 
     return {
         "members": [
@@ -98,10 +98,12 @@ def get_member(db : Session):
                 "name": m.name,
                 "email": m.email,
                 "role": m.role,
-                "group": m.group
+                "group": m.group,
+                "phone_number" : m.phone_number
             } for m in members
         ]
     }
+
 
 def register_by_admin(db : Session, email : str, name : str, role : str, group : str):
     new_user = User(
@@ -126,12 +128,13 @@ def delete_user(db : Session, email : str):
     else:
         raise HTTPException(status_code=404, detail="User not found")
 
-def change_user_info(db: Session, name : str, email : str, role : str, group : str):
+def change_user_info(db: Session, name : str, email : str, role : str, group : str, phone_number:str):
     user = db.query(User).filter(User.email == email).first()
     if user:
         user.name = name,
         user.role = role,
-        user.group = group
+        user.group = group,
+        user.phone_number = phone_number
 
         db.commit()
         db.refresh(user)
@@ -147,7 +150,8 @@ def get_user_info(db: Session, email : str):
         "password" : user.password,
         "name" : user.name,
         "role" : user.role,
-        "group" : user.group
+        "group" : user.group,
+        "phone_number": user.phone_number
     }
 
 def change_password(db : Session, user_id : int, current_pw : str, new_pw : str):
@@ -175,11 +179,13 @@ def find_password(db : Session, email : str, new_pw : str):
     else :
         return "관리자 권한으로 생성된 계정입니다."
 
-def change_profile(db : Session, user_id : int, name : str, group : str):
+def change_profile(db : Session, user_id : int, name : str, group : str, phone_number : str):
     user = db.query(User).filter(User.id == user_id).first()
     if user:
         user.name = name
-        user.group = group
+        user.group = group,
+        user.phone_number = phone_number
+
     db.commit()
     db.refresh(user)
     return user.password

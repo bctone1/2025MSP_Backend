@@ -155,8 +155,11 @@ async def change_user_info_endpoint(request: ChangeMemberRequest, db: Session = 
     email = request.email
     role = request.role
     group = request.group
-    change_user_info(db = db, name = name, email = email, role = role, group = group)
+    phone_number = request.phone_number
+
+    change_user_info(db = db, name = name, email = email, role = role, group = group, phone_number = phone_number)
     return JSONResponse(content={'message': '변경 완료.'}, status_code=200)
+
 
 @user_router.post("/getUserInfo", response_model=GetUserInfoResponse)
 async def get_user_info_endpoint(request: GetUserInfoRequest, db: Session = Depends(get_db)):
@@ -185,8 +188,11 @@ async def change_profile_endpoint(request: ChangeProfileRequest, db: Session = D
     user_id = request.ProfileData.id
     name = request.newProfileData.name
     group = request.newProfileData.group
-    change_profile(db = db, user_id = user_id, name = name, group = group)
+    phone_number = request.newProfileData.phone_number
+
+    change_profile(db = db, user_id = user_id, name = name, group = group, phone_number = phone_number)
     return JSONResponse(content={'message': '프로필 변경 완료.'}, status_code=200)
+
 
 @user_router.post("/AddNewAPIkey", response_model = AddNewAPIkeyResponse)
 async def add_new_apikey(request: AddNewAPIkeyRequest, db : Session = Depends(get_db)):

@@ -17,8 +17,8 @@ def get_file_agent(file: str, provider: str = "openai", model: str = "gpt-3.5-tu
     )
 
     def agent_executor(_: None = None) -> str:
-        formatted_prompt = prompt.format_messages(content=file)
-        response = llm(formatted_prompt)
+        messages = prompt.format_messages(content=file)
+        response = llm.invoke(messages)
         return response.content if hasattr(response, "content") else response
 
     return agent_executor

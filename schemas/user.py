@@ -51,6 +51,8 @@ class Members(BaseModel):
     email : str
     role : str
     group : str
+    phone_number: Optional[str] = None
+
 
 class GetMembersResponse(BaseModel):
     members: List[Members]
@@ -75,6 +77,8 @@ class ChangeMemberRequest(BaseModel):
     email : str
     role : str
     group : str
+    phone_number : str
+
 
 class ChangeMemberResponse(BaseModel):
     message : str
@@ -90,6 +94,8 @@ class GetUserInfoResponse(BaseModel):
     name : str
     role : str
     group : str
+    phone_number: Optional[str] = None
+
 
 class NewPasswordData(BaseModel):
     password : str
@@ -114,6 +120,7 @@ class ChangePasswordResponse(BaseModel):
 class NewProfileData(BaseModel):
     name : str
     group : str
+    phone_number: str
 
 
 class ChangeProfileRequest(BaseModel):

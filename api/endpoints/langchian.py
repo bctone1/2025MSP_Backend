@@ -27,7 +27,7 @@ async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
         save_dir = config.UPLOAD_FOLDER
         user_dir = os.path.join(save_dir, user_email, 'document')
         os.makedirs(user_dir, exist_ok=True)
-
+        print(f"파일1 ")
         file_name, file_path = "", ""
         for file in files:
             random_number = generate_verification_code()
@@ -40,9 +40,10 @@ async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
 
         file_id = upload_file(db=db, project = project_id, email=user_email, url=file_path, name=file_name)
         file_content = get_file_chain(db=db, id = file_id, file_path=file_path)
+        print(f"파일 체인 {file_content}")
 
         agent = get_file_agent(file_content)
-        summary = agent
+        summary = agent()
         print(f"요약 : \n{summary}")
 
         message1 = f"파일 업로드 : {file_name}"
