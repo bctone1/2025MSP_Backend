@@ -1,8 +1,9 @@
 import core.config as config
 from datetime import datetime, UTC
 from sqlalchemy.orm import Session
-from models.project import ProjectInfoBase, InfoList, User
-from models.api import ConversationLog, AIModel, Provider, ApiKey, ConversationSession
+from models.user import User
+from models.project import ProjectInfoBase, InfoList
+from models.llm import ConversationLog, AIModel, Provider, ApiKey, ConversationSession
 from sqlalchemy import select
 from fastapi import HTTPException
 from sqlalchemy.sql import func

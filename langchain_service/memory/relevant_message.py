@@ -1,4 +1,4 @@
-from crud.langchain import *
+from crud.llm import *
 from sqlalchemy.orm import Session
 import numpy as np
 

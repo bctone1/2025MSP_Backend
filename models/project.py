@@ -3,21 +3,6 @@ from database.base import Base
 from sqlalchemy.orm import relationship, backref
 from pgvector.sqlalchemy import Vector
 
-
-class User(Base):
-    __tablename__ = "user_table"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    email = Column(String(255), unique=True, nullable=False)
-    password = Column(Text, nullable=False)
-    name = Column(String(100), nullable=False)
-    role = Column(String(50))
-    group = Column(String(100))
-    register_at = Column(TIMESTAMP, server_default=func.current_timestamp())
-    phone_number = Column(String(20), unique=True)
-
-    projects = relationship("Project", back_populates="user", lazy="dynamic")
-
 class Project(Base):
     __tablename__ = "project_table"
 

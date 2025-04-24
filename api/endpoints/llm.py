@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, status
 from database.session import get_db
 from fastapi.responses import JSONResponse
 from fastapi import Request
-from crud.langchain import *
-from schemas.langchain import *
+from crud.llm import *
+from schemas.llm import *
 from langchain_service.chains.file_chain import get_file_chain
 from langchain_service.chains.qa_chain import qa_chain, process_usage_in_background, get_session_title
 from langchain_service.agents.file_agent import get_file_agent
@@ -28,8 +28,9 @@ async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
         user_dir = os.path.join(save_dir, user_email, 'document')
         os.makedirs(user_dir, exist_ok=True)
         print(f"파일1 ")
-        file_name, file_path = "", ""
+        origin_name, file_name, file_path = "", "", ""
         for file in files:
+            origin_name = file.filename
             random_number = generate_verification_code()
             file_name = f"{project_id}_{random_number}_{file.filename}"  # 파일명에 project_id와 랜덤번호 추가
             file_path = os.path.join(user_dir, file_name)  # 사용자 폴더에 저장할 경로
@@ -38,7 +39,7 @@ async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
                 content = await file.read()  # 파일 내용 읽기
                 f.write(content)  # 파일 내용 저장
 
-        file_id = upload_file(db=db, project = project_id, email=user_email, url=file_path, name=file_name)
+        file_id = upload_file(db=db, project = project_id, email=user_email, url=file_path, name=origin_name)
         file_content = get_file_chain(db=db, id = file_id, file_path=file_path)
         print(f"파일 체인 {file_content}")
 

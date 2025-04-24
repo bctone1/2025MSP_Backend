@@ -2,8 +2,8 @@ import core.config as config
 from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
-from models.project import User
-from models.api import ApiKey
+from models.user import User
+from models.llm import ApiKey
 from service.sms.send_message import send_message
 from fastapi import HTTPException
 import bcrypt

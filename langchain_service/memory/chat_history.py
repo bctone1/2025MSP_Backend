@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from models.api import ConversationLog
+from models.llm import ConversationLog
 from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
 
 class ChatHistoryManager:

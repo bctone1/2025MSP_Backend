@@ -4,7 +4,7 @@ from langchain_service.embeddings.get_vector import text_to_vector
 from typing import List
 from langchain.schema import Document
 from sqlalchemy.orm import Session
-from crud.langchain import save_info
+from crud.llm import save_info
 
 def split_documents(documents: List[Document], chunk_size=1000, chunk_overlap=200):
     text_splitter = RecursiveCharacterTextSplitter(

@@ -3,7 +3,7 @@ from langchain_service.llms.setup import get_llm
 from langchain_service.memory.relevant_message import get_relevant_messages
 from langchain_community.callbacks.manager import get_openai_callback
 from langchain_core.output_parsers import StrOutputParser
-from crud.langchain import *
+from crud.llm import *
 from langchain.prompts import PromptTemplate
 from langchain_service.llms.get_cost import *
 from crud.user import update_usage

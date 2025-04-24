@@ -3,9 +3,8 @@ import os
 import json
 from langchain_community.chat_models import ChatOpenAI
 from core.config import EMBEDDING_API
-import time
+
 base_path = r"C:\Users\leegy\Desktop\mcp_test"
-import re
 
 def new_window(*args, **kwargs):
     try:

@@ -1,5 +1,5 @@
 from core.config import DOCUMENT_EXTENSION, IMAGE_EXTENSION
-from crud.langchain import *
+from crud.llm import *
 from langchain_service.document_loaders.file_loader import load_document
 from langchain_service.document_loaders.indexer import *
 from pathlib import Path

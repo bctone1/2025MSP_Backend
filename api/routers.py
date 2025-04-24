@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from api.endpoints import user
 from api.endpoints import project
 from api.endpoints import mcp
-from api.endpoints import langchian
+from api.endpoints import llm
 
 router = APIRouter()
 
