@@ -8,5 +8,5 @@ router = APIRouter()
 
 router.include_router(user.user_router)
 router.include_router(project.project_router)
-router.include_router(langchian.langchain_router)
+router.include_router(llm.langchain_router)
 router.include_router(mcp.mcp_router)
