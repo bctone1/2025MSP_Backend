@@ -244,3 +244,10 @@ def delete_apikey(db: Session, key_id : int):
 
     db.delete(api_key)
     db.commit()
+
+def change_apikey(db: Session, key_id : int, api_key : str):
+    key = db.query(ApiKey).filter(ApiKey.id == key_id).first()
+    if key:
+        key.api_key = api_key
+    db.commit()
+    db.refresh(key)

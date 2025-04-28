@@ -173,3 +173,11 @@ class DeleteKeyRequest(BaseModel):
 
 class DeleteKeyResponse(BaseModel):
     message : str
+
+
+class ChangeKeyrequest(BaseModel):
+    api_key : str
+    id: int
+
+class ChangeKeyResponse(BaseModel):
+    message : str

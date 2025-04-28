@@ -244,3 +244,13 @@ async def delete_apikey_endpoint(request: DeleteKeyRequest, db: Session = Depend
         return JSONResponse(content={'message': 'API 키가 삭제되었습니다.'}, status_code=200)
     except Exception as e:
         return JSONResponse(content={'message' : f'에러 발생 : {e}'}, status_code=500)
+
+@user_router.post("/ChangeAPIKey", response_model=ChangeKeyResponse)
+async def change_key_endpoint(request: ChangeKeyrequest, db: Session = Depends(get_db)):
+    key_id = request.id
+    api_key = request.api_key
+    try :
+        change_apikey(db = db, key_id = key_id, api_key=api_key)
+        return JSONResponse(content={'message': 'API 키가 변경되었습니다..'}, status_code=200)
+    except Exception as e:
+        return JSONResponse(content={'message' : f'에러 발생 : {e}'}, status_code=500)
