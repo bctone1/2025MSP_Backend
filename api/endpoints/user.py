@@ -207,7 +207,7 @@ async def add_new_apikey(request: AddNewAPIkeyRequest, db : Session = Depends(ge
         await verify_api_key(provider=provider_name, api_key=api_key)
     except Exception as e:
         print(f"error occured : {e}")
-        return JSONResponse(content={"message": f"오류 발생"}, status_code=500)
+        return JSONResponse(content={"message": f"{api_key}"}, status_code=500)
     try :
         add_apikey(db=db, api_key=api_key, provider_id=provider_id, provider_name=provider_name,
                    usage_limit=usage_limit, usage_count=usage_count, user_id=user_id)
