@@ -77,3 +77,11 @@ async def delete_file_endpoint(request : DeleteFileRequest, db: Session = Depend
         print("There is no Infobase ID")
         select_and_delete_infobase(db=db, project_id=project_id, file_name=file_name)
     return JSONResponse(content={"message": "삭제 성공"})
+
+
+@project_router.post("/DeleteProject", response_model = DeleteProjectResponse)
+async def DeleteProject(request: DeleteProjectRequest, db : Session = Depends(get_db)):
+    project_ids = request.project_ids
+    print(project_ids)
+    delete_project(db=db,project_ids=project_ids)
+    return JSONResponse(content={"message": "삭제 성공"})

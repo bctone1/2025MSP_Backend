@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from models.project import *
 from models.llm import *
+from typing import List
 
 def create_new_project(db : Session, name : str, desc : str, category : str, model : str, user_email : str, provider : str):
     new_project = Project(
@@ -50,3 +51,8 @@ def select_and_delete_infobase(db: Session, project_id : int, file_name = str):
     for file in files:
         db.delete(file)
         db.commit()
+
+def delete_project(db: Session, project_ids:List[int]):
+    db.query(Project).filter(Project.project_id.in_(project_ids)).delete(synchronize_session=False)
+    db.commit()
+    return "deleted"

@@ -64,3 +64,9 @@ class DeleteFileRequest(BaseModel):
 
 class DeleteFileResponse(BaseModel):
     message :str
+
+class DeleteProjectRequest(BaseModel):
+    project_ids: List[int]
+
+class DeleteProjectResponse(BaseModel):
+    message:str
