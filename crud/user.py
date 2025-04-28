@@ -236,3 +236,11 @@ def findemail_method(db: Session, phone :str, name:str, secretCode:str):
         return user.email
     else:
         return
+
+def delete_apikey(db: Session, key_id : int):
+    api_key = db.query(ApiKey).filter(ApiKey.id == key_id).first()
+    if not api_key:
+        raise ValueError("해당 API Key를 찾을 수 없습니다.")
+
+    db.delete(api_key)
+    db.commit()

@@ -1,6 +1,4 @@
-from fastapi import APIRouter, FastAPI, Request
-from schemas.mcp import *
-import subprocess
+from fastapi import APIRouter
 
 mcp_router = APIRouter()
 

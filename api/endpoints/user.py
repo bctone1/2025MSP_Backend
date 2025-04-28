@@ -7,6 +7,7 @@ import smtplib
 from schemas.user import *
 from crud.user import *
 from fastapi import Request
+from crud.llm import verify_api_key
 import json
 
 user_router = APIRouter()
@@ -202,6 +203,11 @@ async def add_new_apikey(request: AddNewAPIkeyRequest, db : Session = Depends(ge
     usage_limit = request.usage_limit
     usage_count = request.usage_count
     user_id = request.user.user_id
+    try:
+        await verify_api_key(provider=provider_name, api_key=api_key)
+    except Exception as e:
+        print(f"error occured : {e}")
+        return JSONResponse(content={"message": f"오류 발생"}, status_code=500)
     try :
         add_apikey(db=db, api_key=api_key, provider_id=provider_id, provider_name=provider_name,
                    usage_limit=usage_limit, usage_count=usage_count, user_id=user_id)
@@ -230,3 +236,11 @@ async def find_email_endpoint(request: FindEmailRequest, db: Session = Depends(g
     else :
         return JSONResponse(content={'email' : '가입된 이메일이 없습니다.', 'message' : '실패'}, status_code=200)
 
+@user_router.post("/DeleteAPIKey", response_model=DeleteKeyResponse)
+async def delete_apikey_endpoint(request: DeleteKeyRequest, db: Session = Depends(get_db)):
+    key_id = request.id
+    try :
+        delete_apikey(db = db, key_id = key_id)
+        return JSONResponse(content={'message': 'API 키가 삭제되었습니다.'}, status_code=200)
+    except Exception as e:
+        return JSONResponse(content={'message' : f'에러 발생 : {e}'}, status_code=500)

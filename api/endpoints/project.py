@@ -80,7 +80,7 @@ async def delete_file_endpoint(request : DeleteFileRequest, db: Session = Depend
 
 
 @project_router.post("/DeleteProject", response_model = DeleteProjectResponse)
-async def DeleteProject(request: DeleteProjectRequest, db : Session = Depends(get_db)):
+async def delete_project_endpoint(request: DeleteProjectRequest, db : Session = Depends(get_db)):
     project_ids = request.project_ids
     print(project_ids)
     delete_project(db=db,project_ids=project_ids)

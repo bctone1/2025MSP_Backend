@@ -167,3 +167,9 @@ class FindEmailRequest(BaseModel):
 class FindEmailResponse(BaseModel):
     message : str
     email : str
+
+class DeleteKeyRequest(BaseModel):
+    id : int
+
+class DeleteKeyResponse(BaseModel):
+    message : str

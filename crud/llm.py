@@ -7,7 +7,9 @@ from models.llm import ConversationLog, AIModel, Provider, ApiKey, ConversationS
 from sqlalchemy import select
 from fastapi import HTTPException
 from sqlalchemy.sql import func
+from langchain_service.llms.setup import get_llm
 import numpy as np
+from langchain_core.prompts import ChatPromptTemplate
 
 def upload_file(db: Session, project: int, email: str, url: str, name : str):
     try:
@@ -290,3 +292,27 @@ def change_provider_status(db: Session, provider_id: int):
         provider.status = 'Active'
     db.commit()
     db.refresh(provider)
+
+async def verify_api_key(provider: str, api_key: str, model: str = None):
+    try:
+        provider = provider.lower()
+        llm = get_llm(provider=provider, model=model, api_key=api_key)
+
+        # 간단한 프롬프트
+        prompt = ChatPromptTemplate.from_messages([
+            ("user", "Say hello")
+        ])
+
+        chain = prompt | llm
+
+        # 실제 요청 (최소 토큰 요청)
+        response = await chain.ainvoke({})
+
+        if not response:
+            raise ValueError("Empty response received.")
+
+    except Exception as e:
+        # 예외 발생하면 키가 유효하지 않다고 판단
+        raise ValueError(f"API Key 검증 실패: {str(e)}")
+
+    return {"message": "API Key is valid"}
