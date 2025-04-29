@@ -247,8 +247,8 @@ async def delete_apikey_endpoint(request: DeleteKeyRequest, db: Session = Depend
 
 @user_router.post("/ChangeAPIKey", response_model=ChangeKeyResponse)
 async def change_key_endpoint(request: ChangeKeyrequest, db: Session = Depends(get_db)):
-    key_id = request.id
-    api_key = request.api_key
+    api_key = request.new_key.api_key
+    key_id = request.new_key.id
     try :
         change_apikey(db = db, key_id = key_id, api_key=api_key)
         return JSONResponse(content={'message': 'API 키가 변경되었습니다..'}, status_code=200)
