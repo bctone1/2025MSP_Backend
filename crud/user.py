@@ -86,7 +86,7 @@ def create_google_user(db : Session, email : str, name : str):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user
+    return new_user.id
 
 def get_member(db : Session):
     members = db.execute(select(User.id, User.email, User.password, User.name, User.role, User.group, User.register_at, User.phone_number)).all()
@@ -117,7 +117,7 @@ def register_by_admin(db : Session, email : str, name : str, role : str, group :
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user
+    return new_user.id
 
 def delete_user(db : Session, email : str):
     user = db.query(User).filter(User.email == email).first()

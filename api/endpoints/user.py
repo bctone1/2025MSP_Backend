@@ -102,7 +102,8 @@ async def login(request: GoogleLoginRequest, db : Session = Depends(get_db)):
         user = get_user_data(db, email)
 
         if not user:
-            user = create_google_user(db, email, name)
+            user_id = user = create_google_user(db, email, name)
+            add_default_apikey(db=db, user_id=user_id)
             return JSONResponse(
                 content={
                     "message": f"{user.name}님 반갑습니다! 새 계정이 생성되었습니다.",
@@ -140,7 +141,8 @@ async def projects_list(request: AddUserRequest, db: Session = Depends(get_db)):
     role = request.role
     group = request.group
     try :
-        register_by_admin(db = db, email = email, name = name, role = role, group = group)
+        user_id = register_by_admin(db = db, email = email, name = name, role = role, group = group)
+        add_default_apikey(db=db, user_id=user_id)
         return JSONResponse(content={'message': '사용자가 추가 되었습니다.'}, status_code=200)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
