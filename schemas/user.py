@@ -34,7 +34,7 @@ class RegisterRequest(BaseModel):
     name : str
     email : str
     password : str
-    phone_number: str
+    phone: str
 
 class RegisterResponse(BaseModel):
     message : str

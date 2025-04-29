@@ -35,7 +35,7 @@ def user_register(db : Session, email : str, pw : str, name : str, phone_number 
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user
+    return new_user.id
 
 
 def user_login(db: Session, email: str, pw: str):
@@ -251,3 +251,18 @@ def change_apikey(db: Session, key_id : int, api_key : str):
         key.api_key = api_key
     db.commit()
     db.refresh(key)
+
+def add_default_apikey(db : Session, user_id : int):
+    new_apikey = ApiKey(
+        api_key='Default API Key',
+        provider_id=2,
+        provider_name = 'Anthropic',
+        usage_limit = 500,
+        usage_count = 0,
+        user_id = user_id,
+        status = "Active"
+    )
+    db.add(new_apikey)
+    db.commit()
+    db.refresh(new_apikey)
+    return "success"

@@ -273,7 +273,10 @@ def get_api_key(db: Session, user_email: str, provider: str):
         api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id==2).first()
         if not api:
             return None
+        elif api.api_key == 'Default API Key':
+            return config.DEFAULT_API_KEY
         return api.api_key
+
 
 
 def get_infobase(db: Session, email: str, project_id: int):

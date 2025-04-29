@@ -28,12 +28,13 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
     email = request.email
     password = request.password
     name = request.name
-    phone_number = request.phone_number
+    phone_number = request.phone
     try:
-        user_register(db, email = email, pw = password, name = name, phone_number = phone_number)
+        user_id = user_register(db, email = email, pw = password, name = name, phone_number = phone_number)
+        add_default_apikey(db = db, user_id = user_id)
         return {"message": "Register Success"}
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        return JSONResponse(content={"message": str(e)}, status_code=500)
 
 @user_router.post('/login', response_model=LoginResponse)
 async def login(request: LoginRequest, db : Session = Depends(get_db)):
