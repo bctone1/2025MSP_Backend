@@ -1,5 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
+from core.tools import fit_anthropic_model
 import core.config as config
 
 def get_llm(provider="openai", model=None, api_key : str = None):
@@ -11,6 +12,7 @@ def get_llm(provider="openai", model=None, api_key : str = None):
             temperature=0.7
         )
     elif provider == "anthropic":
+        model = fit_anthropic_model(model_name = model)
         model_name = model or "claude-3-sonnet-20240229"
         return ChatAnthropic(
             anthropic_api_key = api_key,

@@ -40,7 +40,8 @@ class DeleteModelRequest(BaseModel):
     id : int
     provider_name : str
     name : str
-    settings : ModelSettings
+    # settings : ModelSettings
+
 
 class DeleteModelResponse(BaseModel):
     message : str
@@ -74,8 +75,8 @@ class AddModelSetting(BaseModel):
 class AddModelRequest(BaseModel):
     provider_name : str
     name : str
-    settings : AddModelSetting
-    parameter : str
+    # settings : AddModelSetting
+    # parameter : str
 
 class AddModelResponse(BaseModel):
     message : str
