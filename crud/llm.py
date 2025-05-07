@@ -5,11 +5,11 @@ from models.user import User
 from models.project import ProjectInfoBase, InfoList
 from models.llm import ConversationLog, AIModel, Provider, ApiKey, ConversationSession
 from sqlalchemy import select
-from fastapi import HTTPException
 from sqlalchemy.sql import func
 from langchain_service.llms.setup import get_llm
 import numpy as np
 from langchain_core.prompts import ChatPromptTemplate
+from core.tools import mask_api_key
 
 def upload_file(db: Session, project: int, email: str, url: str, name : str):
     try:
@@ -180,7 +180,7 @@ def get_api_keys(db: Session, email: str):
                 "provider_id": k.provider_id,
                 "provider_name": k.provider_name,
                 "user_id": k.user_id,
-                "api_key": k.api_key,
+                "api_key": mask_api_key(k.api_key),
                 "status": k.status,
                 "create_at": k.create_at,
                 "usage_limit": k.usage_limit,

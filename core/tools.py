@@ -10,3 +10,21 @@ def fit_anthropic_model(model_name : str):
     else:
         return model_name
 
+
+def mask_api_key(api_key: str) -> str:
+    if not isinstance(api_key, str):
+        raise ValueError("API 키는 문자열이어야 합니다.")
+
+    if not api_key.startswith("sk-"):
+        return "*" * len(api_key)
+
+    prefix = "sk-"
+    key_body = api_key[len(prefix):]
+
+    if len(key_body) <= 4:
+        masked = "*" * len(key_body)
+        return prefix + masked
+
+    num_visible = 4
+    masked_body = "*" * (len(key_body) - num_visible) + key_body[-num_visible:]
+    return prefix + masked_body
