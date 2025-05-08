@@ -232,6 +232,7 @@ def get_conversation(db: Session, email : str):
                 } for s in session
             ]
         }
+
 def add_new_session(db: Session, id : str, project_id : int, session_title : str, user_email : str):
     already_exists = db.query(ConversationSession).filter(ConversationSession.id == id).first()
     if already_exists :
