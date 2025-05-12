@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from database.session import get_db
 from fastapi.responses import JSONResponse
 from fastapi import Request
