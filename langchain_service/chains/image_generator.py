@@ -1,11 +1,11 @@
 from langchain_community.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-from core.config import GPT_API
+from core.config import EMBEDDING_API
 # OpenAI API 키 설정
 import os
 import openai
-os.environ["OPENAI_API_KEY"] = GPT_API
+os.environ["OPENAI_API_KEY"] = EMBEDDING_API
 
 # 1. 프롬프트 템플릿 정의
 template = """
@@ -29,7 +29,7 @@ llm = ChatOpenAI(
     model_name="gpt-3.5-turbo",
     temperature=0,
     streaming=True,
-    openai_api_key=GPT_API
+    openai_api_key=EMBEDDING_API
 )
 
 # 3. Chain 구성
@@ -69,7 +69,7 @@ def translateToenglish(input:str):
 
 def generate_image_with_openai(message: str, model: str) -> str:
     print(f"[DEBUG] Calling OpenAI API with message: {message}")
-    openai.api_key = GPT_API  # API 키를 전역적으로 설정
+    openai.api_key = EMBEDDING_API  # API 키를 전역적으로 설정
     response = openai.images.generate(  # api_key 인수는 제거
         # model="dall-e-2",
         model = model,
