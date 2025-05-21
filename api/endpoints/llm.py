@@ -8,6 +8,7 @@ from langchain_service.chains.file_chain import get_file_chain
 from langchain_service.chains.qa_chain import qa_chain, process_usage_in_background, get_session_title
 from langchain_service.agents.file_agent import get_file_agent
 from langchain_service.embeddings.get_vector import text_to_vector
+from langchain_service.chains.image_generator import *
 import core.config as config
 from fastapi import BackgroundTasks
 from service.sms.make_code import generate_verification_code
@@ -57,7 +58,7 @@ async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
     except Exception:
         raise HTTPException(status_code=500, detail="파일 업로드 중 오류 발생")
 
-
+'''
 @langchain_router.post('/RequestMessage')
 async def request_message(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     email = request.user_email
@@ -93,7 +94,7 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
     except Exception as e:
         print(f"Error Occured f{e}")
         return "현재 등록하신 API 키는 유효하지 않습니다.\n유효하는 API키를 등록해주세요."
-
+'''
 @langchain_router.post("/modelsList", response_model=ModelListResponse)
 async def model_list(db: Session = Depends(get_db)):
     models_list = get_model_list(db)
@@ -219,3 +220,61 @@ async def change_provider_status_endpoint(request : ProviderStatusRequest, db : 
         print(f"Provider Status 전환 에러 : {e}")
         return JSONResponse(content={"message" : "Provider Status 전환 실패"})
 
+
+@langchain_router.post('/RequestMessage')
+async def request_message(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    email = request.user_email
+    project_id = request.project_id
+    message = request.messageInput
+    session = request.session
+    model = request.selected_model
+
+    if model in config.OPENAI_MODELS:
+        provider = "openai"
+    elif model in config.ANTHROPIC_MODELS:
+        provider = "anthropic"
+    else:
+        return "해당 모델은 아직 지원되지 않는 모델입니다.\n다른 모델을 선택해주세요."
+    api_key = get_api_key(db=db, user_email=email, provider=provider)
+
+    translate_prompt = discrimination(message)
+    # print(translate_prompt)
+
+    if translate_prompt == 1:
+        translate_english = translateToenglish(message)
+        print(translate_english)
+
+        # 이미지 생성 처리
+        response_url = generate_image_with_openai(translate_english, "dall-e-2")
+        print("=========================================================================================")
+        print(response_url)
+        vector = text_to_vector(message)
+        vector2 = text_to_vector(response_url)
+        add_message(db=db, session_id=session, project_id=project_id, user_email=email,
+                    message_role='user', conversation=message, vector_memory=vector)
+
+        add_message(db=db, session_id=session, project_id=project_id, user_email=email,
+                    message_role='assistant', conversation=response_url, vector_memory=vector2)
+        return response_url
+
+    if not api_key:
+        return "보유 중인 API키가 없습니다.\n우선 API키를 등록해주세요."
+    try :
+        response_text, vector, formatted_history = qa_chain(
+            db = db, session_id=session, conversation=message, provider=provider, model=model, api_key=api_key
+        )
+        background_tasks.add_task(
+            get_session_title,
+            db, session, message
+        )
+        background_tasks.add_task(
+            process_usage_in_background,
+            db, session, project_id, email, provider, model,
+            message, response_text, formatted_history, vector
+        )
+
+        print("✅ 응답을 넘겼습니다.")
+        return response_text
+    except Exception as e:
+        print(f"Error Occured f{e}")
+        return "현재 등록하신 API 키는 유효하지 않습니다.\n유효하는 API키를 등록해주세요."
