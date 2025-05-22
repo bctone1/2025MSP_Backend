@@ -123,6 +123,7 @@ def delete_user(db : Session, email : str):
     user = db.query(User).filter(User.email == email).first()
 
     if user:
+        db.query(ApiKey).filter(ApiKey.user_id == user.id).delete()
         db.delete(user)
         db.commit()
     else:

@@ -238,13 +238,11 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
     api_key = get_api_key(db=db, user_email=email, provider=provider)
 
     translate_prompt = discrimination(message)
-    # print(translate_prompt)
 
     if translate_prompt == 1:
         translate_english = translateToenglish(message)
         print(translate_english)
 
-        # 이미지 생성 처리
         response_url = generate_image_with_openai(translate_english, "dall-e-3")
         print("=========================================================================================")
         print(response_url)
