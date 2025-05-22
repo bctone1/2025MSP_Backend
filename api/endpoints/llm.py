@@ -95,6 +95,8 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
         print(f"Error Occured f{e}")
         return "현재 등록하신 API 키는 유효하지 않습니다.\n유효하는 API키를 등록해주세요."
 '''
+
+
 @langchain_router.post("/modelsList", response_model=ModelListResponse)
 async def model_list(db: Session = Depends(get_db)):
     models_list = get_model_list(db)
