@@ -245,7 +245,7 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
         print(translate_english)
 
         # 이미지 생성 처리
-        response_url = generate_image_with_openai(translate_english, "dall-e-2")
+        response_url = generate_image_with_openai(translate_english, "dall-e-3")
         print("=========================================================================================")
         print(response_url)
         vector = text_to_vector(message)

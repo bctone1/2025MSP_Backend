@@ -10,7 +10,8 @@ from langchain_service.llms.setup import get_llm
 import numpy as np
 from langchain_core.prompts import ChatPromptTemplate
 from core.tools import mask_api_key
-
+import os
+import requests
 def upload_file(db: Session, project: int, email: str, url: str, name : str):
     try:
         new_file = ProjectInfoBase(
@@ -320,3 +321,14 @@ async def verify_api_key(provider: str, api_key: str, model: str = None):
         raise ValueError(f"API Key 검증 실패: {str(e)}")
 
     return {"message": "API Key is valid"}
+
+def download_image(url: str, save_path: str):
+    try:
+        response = requests.get(url)
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+        with open(save_path, 'wb') as f :
+            f.write(response.content)
+        print("이미지 저장 완료")
+    except requests.exceptions.RequestException as e:
+        print(f"실패 : {e}")
