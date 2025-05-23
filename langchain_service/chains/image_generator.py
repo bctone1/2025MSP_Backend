@@ -13,10 +13,19 @@ template = """
 
 "{input}"
 
-이 요청이 이미지 생성을 위한 요청인지 판단해주세요.
+이 요청이 어떤 요청인지 번호를 알려주세요.
 
-이미지 생성 요청이면 "1", 아니면 "2"만 대답해주세요.
-다른 설명은 하지 말고 숫자만 출력하세요.
+텍스트 응답 요청 : 1
+
+이미지 생성 요청 : 2
+
+비디오 생성 요청 : 3
+
+데이터(표, 차트, 그래프) 생성 요청 : 4
+
+오디오 생성 요청: 5
+
+다른 불필요한 설명 없이 번호만 답변으로 제공해주세요.  
 """
 
 prompt = PromptTemplate(
@@ -54,11 +63,22 @@ def discrimination(input: str) -> int:
         "input": input
     })
     if "1" in response:
+        print("DISCRIMINATION : TEXT")
         return 1
     elif "2" in response:
+        print("DISCRIMINATION : IMAGE")
         return 2
+    elif "3" in response:
+        print("DISCRIMINATION : VIDEO")
+        return 3
+    elif "4" in response:
+        print("DISCRIMINATION : DATA")
+        return 4
+    elif "5" in response:
+        print("DISCRIMINATION : AUDIO")
+        return 5
     else :
-        return 2
+        return 1
 
 def translateToenglish(input:str):
     response = chain2.run({

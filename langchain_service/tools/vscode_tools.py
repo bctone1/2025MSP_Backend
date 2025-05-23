@@ -18,7 +18,7 @@ vs_code_tools = [
     ),
     Tool(
     name="CreatePythonFile",
-    func=python_file_tool,  # func에 함수 전달
+    func=python_file_tool,  # func에 함수 전달r
     description="사용자가 요청한 파이썬 코드를 생성하여 VS Code로 여는 도구"
     )
 ]
