@@ -9,6 +9,7 @@ from langchain_service.chains.qa_chain import qa_chain, process_usage_in_backgro
 from langchain_service.agents.file_agent import get_file_agent
 from langchain_service.embeddings.get_vector import text_to_vector
 from langchain_service.chains.image_generator import *
+from langchain_service.vision.download_image import save_image_from_url
 import core.config as config
 from fastapi import BackgroundTasks
 from service.sms.make_code import generate_verification_code
@@ -250,11 +251,12 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
         print(response_url)
         vector = text_to_vector(message)
         vector2 = text_to_vector(response_url)
+        image_path = save_image_from_url(response_url, email)
         add_message(db=db, session_id=session, project_id=project_id, user_email=email,
                     message_role='user', conversation=message, vector_memory=vector)
 
         add_message(db=db, session_id=session, project_id=project_id, user_email=email,
-                    message_role='assistant', conversation=response_url, vector_memory=vector2)
+                    message_role='assistant', conversation=image_path, vector_memory=vector2)
         return response_url
     elif translate_prompt == 3:
         return "현재 비디오 생성은 지원되지 않습니다."
