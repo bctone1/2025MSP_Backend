@@ -258,8 +258,8 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
         return response_url
     elif translate_prompt == 3:
         return "현재 비디오 생성은 지원되지 않습니다."
-    elif translate_prompt == 4:
-        return "현재 데이터(표, 차트, 그래프, 기타 데이터 시각화) 생성은 지원되지 않습니다."
+    #elif translate_prompt == 4:
+    #    return "현재 데이터(표, 차트, 그래프, 기타 데이터 시각화) 생성은 지원되지 않습니다."
     elif translate_prompt == 5:
         return "현재 오디오 생성은 지원되지 않습니다."
 
