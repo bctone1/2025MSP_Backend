@@ -218,7 +218,7 @@ def get_session(db: Session, email : str):
     return result
 
 def get_conversation(db: Session, email : str):
-    session = db.query(ConversationLog).filter(ConversationLog.user_email == email).all()
+    session = db.query(ConversationLog).filter(ConversationLog.user_email == email).order_by(ConversationLog.id).all()
     if session :
         return {
             "response": [
