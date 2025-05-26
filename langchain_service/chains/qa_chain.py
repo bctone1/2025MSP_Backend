@@ -7,7 +7,7 @@ from crud.llm import *
 from langchain.prompts import PromptTemplate
 from langchain_service.llms.get_cost import *
 from crud.user import update_usage
-from langchain_service.agents.session_agent import get_session_agent
+from langchain_service.agents.session_agent import generate_title
 
 
 def qa_chain(db: Session, session_id, conversation, provider="openai", model=None, api_key : str = None):
@@ -58,6 +58,10 @@ def get_session_title(db : Session, session_id : str, message : str):
     print("✅ 세션 제목 짓기.")
     first = is_this_first(db=db, session_id = session_id)
     if first:
-        agent_executor = get_session_agent(session_id)
-        response = agent_executor(message)
-        change_session_title(db=db, session_id=session_id, content=response.content)
+        '''
+        agent = get_session_agent("openai", "gpt-4o", message=message)
+        result = agent(message)
+        
+        '''
+        result = generate_title(message=message)
+        change_session_title(db=db, session_id=session_id, content=result)
