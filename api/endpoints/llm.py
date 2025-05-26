@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, File, UploadFile
 from database.session import get_db
 from fastapi.responses import JSONResponse
 from fastapi import Request
@@ -12,34 +12,35 @@ from langchain_service.chains.image_generator import *
 from langchain_service.vision.download_image import save_image_from_url
 import core.config as config
 from fastapi import BackgroundTasks
+import json
 from service.sms.make_code import generate_verification_code
+from fastapi import Form
 import os
 
 langchain_router = APIRouter()
 
-@langchain_router.post("/UploadFile", response_model=FileUploadResponse)
-async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
+@langchain_router.post("/UploadFile")
+async def upload_file_endpoint(request: Request, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    print(f"FILE NAME  : {file.filename}")
+
     try:
         form_data = await request.form()
         project_id = form_data.get("project_id")
         project_id = int(project_id) if project_id is not None else None
         user_email = form_data.get("user_email")
         session_id = form_data.get("session_id")
-        files = form_data.getlist("files[]")
         save_dir = config.UPLOAD_FOLDER
         user_dir = os.path.join(save_dir, user_email, 'document')
         os.makedirs(user_dir, exist_ok=True)
         print(f"파일1 ")
-        origin_name, file_name, file_path = "", "", ""
-        for file in files:
-            origin_name = file.filename
-            random_number = generate_verification_code()
-            file_name = f"{project_id}_{random_number}_{file.filename}"  # 파일명에 project_id와 랜덤번호 추가
-            file_path = os.path.join(user_dir, file_name)  # 사용자 폴더에 저장할 경로
+        origin_name = file.filename
+        random_number = generate_verification_code()
+        file_name = f"{project_id}_{random_number}_{origin_name}"  # 파일명에 project_id와 랜덤번호 추가
+        file_path = os.path.join(user_dir, file_name)  # 사용자 폴더에 저장할 경로
 
-            with open(file_path, "wb") as f:
-                content = await file.read()  # 파일 내용 읽기
-                f.write(content)  # 파일 내용 저장
+        with open(file_path, "wb") as f:
+            content = await file.read()  # 파일 내용 읽기
+            f.write(content)  # 파일 내용 저장
 
         file_id = upload_file(db=db, project = project_id, email=user_email, url=file_path, name=origin_name)
         file_content = get_file_chain(db=db, id = file_id, file_path=file_path)
@@ -58,6 +59,8 @@ async def upload_file_endpoint(request: Request, db: Session = Depends(get_db)):
         return JSONResponse(content={"message": summary})
     except Exception:
         raise HTTPException(status_code=500, detail="파일 업로드 중 오류 발생")
+
+
 
 '''
 @langchain_router.post('/RequestMessage')
