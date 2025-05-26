@@ -2,9 +2,13 @@ from fastapi import FastAPI
 from api.routers import router
 from fastapi.middleware.cors import CORSMiddleware
 from core.config import UPLOAD_FOLDER
+from fastapi.staticfiles import StaticFiles
 import os
 import uvicorn
+
 app = FastAPI(debug=True)
+
+app.mount("/file", StaticFiles(directory="file"), name="file")
 
 app.add_middleware(
     CORSMiddleware,
