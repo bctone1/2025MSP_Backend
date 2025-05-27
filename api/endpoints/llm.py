@@ -235,7 +235,12 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
     message = request.messageInput
     session = request.session
     model = request.selected_model
-
+    not_existing = is_not_existing(db=db, session_id=session)
+    new = False
+    if not_existing:
+        new_session_data = add_new_session(db = db, id = session, project_id=project_id, session_title="New Chat!", user_email=email)
+        new = True
+        get_session_title(db=db, session_id=session, message=message)
     if model in config.OPENAI_MODELS:
         provider = "openai"
     elif model in config.ANTHROPIC_MODELS:
@@ -275,17 +280,27 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
             db = db, session_id=session, conversation=message, provider=provider, model=model, api_key=api_key
         )
         background_tasks.add_task(
-            get_session_title,
-            db, session, message
-        )
-        background_tasks.add_task(
             process_usage_in_background,
             db, session, project_id, email, provider, model,
             message, response_text, formatted_history, vector
         )
 
         print("✅ 응답을 넘겼습니다.")
-        return response_text
+        if not new:
+            return{
+                "response" : response_text
+            }
+        if new:
+            return {
+                "response" : response_text,
+                "session_id": new_session_data.id,
+                "project_id" : new_session_data.project,
+                "title" : new_session_data.session_title,
+                "email" : new_session_data.user_email,
+                "register_at" : new_session_data.register_at
+            }
+
+
     except Exception as e:
         print(f"Error Occured f{e}")
         return "현재 등록하신 API 키는 유효하지 않습니다.\n유효하는 API키를 등록해주세요."

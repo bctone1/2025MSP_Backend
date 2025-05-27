@@ -56,12 +56,14 @@ def process_usage_in_background(db, session_id, project_id, user_email, provider
 
 def get_session_title(db : Session, session_id : str, message : str):
     print("✅ 세션 제목 짓기.")
+
+    '''    
     first = is_this_first(db=db, session_id = session_id)
     if first:
-        '''
+
         agent = get_session_agent("openai", "gpt-4o", message=message)
         result = agent(message)
-        
-        '''
-        result = generate_title(message=message)
-        change_session_title(db=db, session_id=session_id, content=result)
+    '''
+
+    result = generate_title(message=message)
+    change_session_title(db=db, session_id=session_id, content=result)

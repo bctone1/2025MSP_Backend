@@ -254,6 +254,13 @@ def is_this_first(db: Session, session_id : str):
     first_conversation = db.query(ConversationLog).filter_by(session_id=session_id).order_by(ConversationLog.request_at.asc()).first()
     return first_conversation is None
 
+def is_not_existing(db: Session, session_id : str):
+    existing = db.query(ConversationSession).filter(ConversationSession.id == session_id).first()
+    if not existing:
+        return True
+    else:
+        return False
+
 def change_session_title(db : Session, session_id : str, content : str):
     session = db.query(ConversationSession).filter(ConversationSession.id == session_id).first()
     session.session_title = content
@@ -343,3 +350,5 @@ def prevent_new_session(db: Session, project_id: int):
     if is_this_first(db=db, session_id=existing_sessions.id):
         return existing_sessions
     return None
+
+
