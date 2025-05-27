@@ -1,5 +1,4 @@
 import websockets
-import asyncio
 from fastapi import FastAPI, HTTPException
 
 app = FastAPI()
@@ -17,5 +16,3 @@ async def execute_unity_command(command: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
-# 예시: FastAPI 서버 실행
-# curl -X 'POST' http://localhost:8000/execute-unity-command -d "command=SetPlayerJumpHeight=2.0"

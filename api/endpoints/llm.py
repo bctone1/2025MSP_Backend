@@ -12,9 +12,7 @@ from langchain_service.chains.image_generator import *
 from langchain_service.vision.download_image import save_image_from_url
 import core.config as config
 from fastapi import BackgroundTasks
-import json
 from service.sms.make_code import generate_verification_code
-from fastapi import Form
 import os
 
 langchain_router = APIRouter()
