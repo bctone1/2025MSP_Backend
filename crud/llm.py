@@ -335,12 +335,11 @@ def download_image(url: str, save_path: str):
 
 def prevent_new_session(db: Session, project_id: int):
     existing_sessions = db.query(ConversationSession).filter(
-        ConversationSession.project_id == project_id
+        ConversationSession.project_id == project_id,
+        ConversationSession.session_title == 'New Chat!'
     ).first()
     if not existing_sessions:
         return None
-    if existing_sessions.session_title == "New Chat!":
-        return existing_sessions
     if is_this_first(db=db, session_id=existing_sessions.id):
         return existing_sessions
     return None
