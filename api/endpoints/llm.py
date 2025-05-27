@@ -199,6 +199,9 @@ async def new_session_endpoint(request : NewSessionRequest, db: Session = Depend
     session_title = request.session_title
     project_id = request.project_id
     user_email = request.user_email
+    prevent = prevent_new_session(db = db, project_id = project_id)
+    if prevent :
+        return prevent
     response = add_new_session(db=db, id = session_id, project_id=project_id, session_title=session_title, user_email=user_email)
     if response == "already_exist":
         return JSONResponse(content={"message": "요청이 너무 빈번합니다."})
