@@ -97,31 +97,36 @@ async def send_email(request: SendEmailRequest):
 async def login(request: GoogleLoginRequest, db : Session = Depends(get_db)):
     email = request.email
     name = request.name
+    image = request.image
 
     try:
-        user = get_user_data(db, email)
+        user_info = get_user_data(db, email)
 
-        if not user:
-            user_id = user = create_google_user(db, email, name)
-            add_default_apikey(db=db, user_id=user_id)
+        if not user_info:
+            user = create_google_user(db, email, name)
+            add_default_apikey(db=db, user_id=user.id)
             return JSONResponse(
                 content={
                     "message": f"{user.name}님 반갑습니다! 새 계정이 생성되었습니다.",
                     "role": user.role,
                     "email": user.email,
-                    "id":user.id
+                    "name": user.name,
+                    "id" : user.id,
+                    "image" : image
+
                 },
                 status_code=200
             )
         else:
-            message = "관리자님 반갑습니다." if user.role == "admin" else f"{user.name}님 반갑습니다."
+            message = "관리자님 반갑습니다." if user_info.role == "admin" else f"{user_info.name}님 반갑습니다."
             return JSONResponse(
                 content={
                     "message": message,
-                    "role": user.role,
-                    "email": user.email,
-                    "name": user.name,
-                    "id" : user.id
+                    "role": user_info.role,
+                    "email": user_info.email,
+                    "name": user_info.name,
+                    "id" : user_info.id,
+                    "image": image
                 },
                 status_code=200
             )

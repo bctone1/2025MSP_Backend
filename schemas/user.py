@@ -28,6 +28,7 @@ class GoogleLoginResponse(BaseModel):
     message : str
     email : str
     name : str
+    role : str
     image : Optional[str] = None
 
 class RegisterRequest(BaseModel):

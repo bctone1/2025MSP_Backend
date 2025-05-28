@@ -79,14 +79,14 @@ def create_google_user(db : Session, email : str, name : str):
         email = email,
         password = hashed_pw,
         name = name,
-        role = 'googleUser',
+        role = 'socialUser',
         group = 'newUser',
         register_at = datetime.utcnow()
     )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user.id
+    return new_user
 
 def get_member(db : Session):
     members = db.execute(select(User.id, User.email, User.password, User.name, User.role, User.group, User.register_at, User.phone_number)).all()
