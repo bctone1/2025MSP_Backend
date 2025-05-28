@@ -1,5 +1,4 @@
 from langchain_service.embeddings.get_vector import text_to_vector
-from langchain_service.llms.setup import get_llm
 from langchain_service.memory.relevant_message import get_relevant_messages
 from langchain_community.callbacks.manager import get_openai_callback
 from langchain_core.output_parsers import StrOutputParser

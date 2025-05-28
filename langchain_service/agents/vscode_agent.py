@@ -1,5 +1,4 @@
 from langchain.agents import initialize_agent, AgentType
-from langchain_community.chat_models import ChatOpenAI
 from langchain_service.tools.vscode_tools import *
 from core.config import EMBEDDING_API
 tools = vs_code_tools

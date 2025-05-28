@@ -2,7 +2,7 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from core.config import EMBEDDING_API
-# OpenAI API 키 설정
+
 import os
 import openai
 os.environ["OPENAI_API_KEY"] = EMBEDDING_API
