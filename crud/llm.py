@@ -230,7 +230,8 @@ def get_conversation(db: Session, email : str):
                     "user_email": s.user_email,
                     "message_role" : s.message_role,
                     "conversation" : s.conversation,
-                    "request_at" : s.request_at
+                    "request_at" : s.request_at,
+                    "case" : s.case
                 } for s in session
             ]
         }
