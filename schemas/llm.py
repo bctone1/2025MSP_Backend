@@ -123,8 +123,8 @@ class Conversation(BaseModel):
     user_email : str
     message_role : str
     conversation : str
-    #vector_memory : conlist(float, min_length=1536, max_length=1536)
     request_at : datetime
+    case : str
 
 class GetConversationResponse(BaseModel):
     response: List[Conversation]
