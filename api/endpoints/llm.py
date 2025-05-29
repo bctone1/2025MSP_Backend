@@ -246,11 +246,12 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
     elif model in config.ANTHROPIC_MODELS:
         provider = "anthropic"
     else:
-        return "해당 모델은 아직 지원되지 않는 모델입니다.\n다른 모델을 선택해주세요."
+        return{
+            "response" : "해당 모델은 아직 지원되지 않는 모델입니다.\n다른 모델을 선택해주세요."
+        }
     api_key = get_api_key(db=db, user_email=email, provider=provider)
 
     translate_prompt = discrimination(message)
-    case = ""
     if translate_prompt == 2:
         translate_english = translateToenglish(message)
         print(translate_english)
@@ -279,7 +280,9 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
         }
 
     if not api_key:
-        return "보유 중인 API키가 없습니다.\n우선 API키를 등록해주세요."
+        return {
+            "response" : "보유 중인 API키가 없습니다.\n우선 API키를 등록해주세요."
+        }
     try :
         response_text, vector, formatted_history = qa_chain(
             db = db, session_id=session, conversation=message, provider=provider, model=model, api_key=api_key
