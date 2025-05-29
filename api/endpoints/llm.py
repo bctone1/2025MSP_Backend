@@ -265,13 +265,18 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
 
         add_message(db=db, session_id=session, project_id=project_id, user_email=email,
                     message_role='assistant', conversation=image_path, vector_memory=vector2)
-        return response_url
+        return {
+            "response" : response_url,
+            "case" : "image"
+        }
     elif translate_prompt == 3:
-        return "현재 비디오 생성은 지원되지 않습니다."
-    #elif translate_prompt == 4:
-    #    return "현재 데이터(표, 차트, 그래프, 기타 데이터 시각화) 생성은 지원되지 않습니다."
-    elif translate_prompt == 5:
-        return "현재 오디오 생성은 지원되지 않습니다."
+        return {
+            "response" : "현재 비디오 생성은 지원되지 않습니다."
+        }
+    elif translate_prompt == 4:
+        return {
+            "response" : "현재 오디오 생성은 지원되지 않습니다."
+        }
 
     if not api_key:
         return "보유 중인 API키가 없습니다.\n우선 API키를 등록해주세요."
