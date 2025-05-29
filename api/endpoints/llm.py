@@ -52,8 +52,8 @@ async def upload_file_endpoint(request: Request, file: UploadFile = File(...), d
         message2 = summary
         vector1 = text_to_vector(message1)
         vector2 = text_to_vector(message2)
-        add_message(db = db, session_id = session_id, project_id = project_id, user_email=user_email, message_role='user', conversation=message1, vector_memory=vector1)
-        add_message(db=db, session_id = session_id, project_id = project_id, user_email=user_email, message_role='assistant', conversation=message2, vector_memory=vector2)
+        add_message(db = db, session_id = session_id, project_id = project_id, user_email=user_email, message_role='user', conversation=message1, vector_memory=vector1, case="")
+        add_message(db=db, session_id = session_id, project_id = project_id, user_email=user_email, message_role='assistant', conversation=message2, vector_memory=vector2, case="")
         return JSONResponse(content={"message": summary})
     except Exception:
         raise HTTPException(status_code=500, detail="파일 업로드 중 오류 발생")
@@ -250,7 +250,7 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
     api_key = get_api_key(db=db, user_email=email, provider=provider)
 
     translate_prompt = discrimination(message)
-
+    case = ""
     if translate_prompt == 2:
         translate_english = translateToenglish(message)
         print(translate_english)
@@ -261,10 +261,10 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
         vector2 = text_to_vector(response_url)
         image_path = save_image_from_url(response_url, email)
         add_message(db=db, session_id=session, project_id=project_id, user_email=email,
-                    message_role='user', conversation=message, vector_memory=vector)
+                    message_role='user', conversation=message, vector_memory=vector, case="")
 
         add_message(db=db, session_id=session, project_id=project_id, user_email=email,
-                    message_role='assistant', conversation=image_path, vector_memory=vector2)
+                    message_role='assistant', conversation=image_path, vector_memory=vector2, case = "image")
         return {
             "response" : response_url,
             "case" : "image"

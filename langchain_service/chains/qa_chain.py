@@ -47,10 +47,10 @@ def process_usage_in_background(db, session_id, project_id, user_email, provider
     vector2 = text_to_vector(response_text)
     add_message(db=db, session_id=session_id, project_id=project_id, user_email=user_email,
 
-                message_role='user', conversation=conversation, vector_memory=vector)
+                message_role='user', conversation=conversation, vector_memory=vector, case="")
 
     add_message(db=db, session_id=session_id, project_id=project_id, user_email=user_email,
-                message_role='assistant', conversation=response_text, vector_memory=vector2)
+                message_role='assistant', conversation=response_text, vector_memory=vector2, case="")
 
 
 def get_session_title(db : Session, session_id : str, message : str):

@@ -45,7 +45,7 @@ def save_info(db: Session, infobase_id : int, content : str, vector_memory : lis
         raise e
 
 
-def add_message(db : Session, session_id : str, project_id : int, user_email : str, message_role : str, conversation : str, vector_memory : list):
+def add_message(db : Session, session_id : str, project_id : int, user_email : str, message_role : str, conversation : str, vector_memory : list, case : str):
     try:
         vector = np.array(vector_memory)
         vector = vector.flatten()
@@ -57,7 +57,8 @@ def add_message(db : Session, session_id : str, project_id : int, user_email : s
             message_role = message_role,
             conversation = conversation,
             vector_memory = vector,
-            request_at = datetime.now(UTC)
+            request_at = datetime.now(UTC),
+            case = case
         )
         db.add(new_message)
         db.commit()
