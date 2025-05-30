@@ -7,7 +7,7 @@ def fit_anthropic_model(model_name : str):
         return CLAUDE_MODELS[1]
     if model_name == 'claude-3-haiku':
         return CLAUDE_MODELS[2]
-    if model_name == 'claude-3.7-sonnect':
+    if model_name == 'claude-3.5-haiku':
         return CLAUDE_MODELS[3]
     if model_name == 'claude-4-opus':
         return CLAUDE_MODELS[4]
