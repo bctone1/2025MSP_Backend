@@ -197,7 +197,7 @@ def get_session(db: Session, email : str):
             ConversationLog.session_id,
             func.count().label("messages")
         )
-        .filter(ConversationLog.message_role == 'assistant')
+        .filter(ConversationLog.message_role != 'user')
         .group_by(ConversationLog.session_id)
         .subquery()
     )

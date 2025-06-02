@@ -53,7 +53,7 @@ async def upload_file_endpoint(request: Request, file: UploadFile = File(...), d
         vector1 = text_to_vector(message1)
         vector2 = text_to_vector(message2)
         add_message(db = db, session_id = session_id, project_id = project_id, user_email=user_email, message_role='user', conversation=message1, vector_memory=vector1, case="")
-        add_message(db=db, session_id = session_id, project_id = project_id, user_email=user_email, message_role='assistant', conversation=message2, vector_memory=vector2, case="")
+        add_message(db=db, session_id = session_id, project_id = project_id, user_email=user_email, message_role='file uploader', conversation=message2, vector_memory=vector2, case="")
         return JSONResponse(content={"message": summary})
     except Exception:
         raise HTTPException(status_code=500, detail="파일 업로드 중 오류 발생")
@@ -265,7 +265,7 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
                     message_role='user', conversation=message, vector_memory=vector, case="")
 
         add_message(db=db, session_id=session, project_id=project_id, user_email=email,
-                    message_role='assistant', conversation=image_path, vector_memory=vector2, case = "image")
+                    message_role=model, conversation=image_path, vector_memory=vector2, case = "image")
         return {
             "response" : response_url,
             "case" : "image"

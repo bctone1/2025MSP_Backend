@@ -51,7 +51,7 @@ class ConversationLog(Base):
     conversation = Column(Text, nullable=False)
     vector_memory = Column(Vector(1536), nullable=True)  # 벡터 크기 1536의 배열로 저장
     request_at = Column(TIMESTAMP, default=func.current_timestamp())
-    case = Column(Text)
+    case = Column(String(50))
 
     session = relationship(
         "ConversationSession",
