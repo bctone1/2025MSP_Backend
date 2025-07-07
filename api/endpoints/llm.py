@@ -278,6 +278,22 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
         return {
             "response" : "현재 오디오 생성은 지원되지 않습니다."
         }
+    elif translate_prompt == 5:
+        return {
+            "response" : "리서치 에이전트"
+        }
+    elif translate_prompt == 6:
+        return {
+            "response" : "코딩 에이전트"
+        }
+    elif translate_prompt == 7:
+        return {
+            "response" : "분석 에이전트"
+        }
+    elif translate_prompt == 8:
+        return {
+            "response" : "문서 에이전트"
+        }
 
     if not api_key:
         return {

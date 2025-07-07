@@ -3,7 +3,7 @@ from langchain_service.tools.vscode_tools import *
 from core.config import EMBEDDING_API
 tools = vs_code_tools
 
-llm = ChatOpenAI(model="gpt-4", temperature=0.7, openai_api_key=EMBEDDING_API)
+llm = ChatOpenAI(model="gpt-4o", temperature=0.7, openai_api_key=EMBEDDING_API)
 
 agent = initialize_agent(tools, llm, agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
 

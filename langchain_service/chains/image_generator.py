@@ -5,6 +5,7 @@ from core.config import EMBEDDING_API
 
 import os
 import openai
+import re
 os.environ["OPENAI_API_KEY"] = EMBEDDING_API
 
 # 1. 프롬프트 템플릿 정의
@@ -20,13 +21,21 @@ template = """
 (ex - "파이썬에서 이미지 생성하는 방법" -> 코드 요청 -> 1 )
 (ex - "이 그림에 대해 설명해주세요." -> 텍스트 요청 -> 1 )
 
-텍스트, 코드 응답 요청 : 1
+간단한 텍스트, 코드 응답 요청 : 1
 
 이미지 생성 요청 : 2
 
 비디오 생성 요청 : 3
 
 오디오 생성 요청 : 4
+
+복잡한 조사 & 검색 기반 응답 ( 전문적 지식, 최신 정보 필요 ) : 5
+
+복잡한 코드 응답 요청 ( 여러 단계에 거친 코드 작성 ) : 6
+
+분석 에이전트 ( 데이터 분석 및 시각화) : 7
+
+문서 작성 ( 단순한 텍스트 생성을 넘어선 고퀄리티 문서 작성 ) : 8
 
 다른 불필요한 설명 없이 번호만 답변으로 제공해주세요.  
 """
@@ -64,24 +73,31 @@ chain2 = LLMChain(llm=llm, prompt=prompt2)
 def discrimination(input: str) -> int:
     response = chain.run({
         "input": input
-    })
-    if "1" in response:
-        print("DISCRIMINATION : TEXT")
-        return 1
-    elif "2" in response:
-        print("DISCRIMINATION : IMAGE")
-        return 2
-    elif "3" in response:
-        print("DISCRIMINATION : VIDEO")
-        return 3
-    elif "4" in response:
-        print("DISCRIMINATION : DATA")
-        return 4
-    elif "5" in response:
-        print("DISCRIMINATION : AUDIO")
-        return 5
-    else :
-        return 1
+    }).strip()
+
+    # 정규표현식으로 숫자만 추출 (1~99)
+    match = re.search(r'\b([1-9][0-9]?)\b', response)
+
+    if match:
+        number = int(match.group(1))
+        agent_map = {
+            1: "TEXT",
+            2: "IMAGE",
+            3: "VIDEO",
+            4: "AUDIO",
+            5: "Research Agent",
+            6: "CODE Agent",
+            7: "Analysis Agent",
+            8: "Write Agent"
+        }
+
+        label = agent_map.get(number, "TEXT")  # 기본값: TEXT
+        print(f"DISCRIMINATION : {label}")
+        return number
+
+    # 분류 실패 시 기본값 1
+    print("DISCRIMINATION : TEXT (fallback)")
+    return 1
 
 def translateToenglish(input:str):
     response = chain2.run({
