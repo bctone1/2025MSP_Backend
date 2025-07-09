@@ -6,7 +6,7 @@ from models.project import ProjectInfoBase, InfoList
 from models.llm import ConversationLog, AIModel, Provider, ApiKey, ConversationSession
 from sqlalchemy import select
 from sqlalchemy.sql import func
-from langchain_service.llms.setup import get_llm
+from langchain_service.llm.setup import get_llm
 import numpy as np
 from langchain_core.prompts import ChatPromptTemplate
 from core.tools import mask_api_key

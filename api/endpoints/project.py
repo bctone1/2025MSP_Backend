@@ -20,8 +20,6 @@ async def create_project(request: CreateProjectRequest, db: Session = Depends(ge
         created_project = create_new_project(db, name, desc, category, model, user_email, provider)
         if created_project is None:
             raise HTTPException(status_code=500, detail="프로젝트 생성 실패")
-
-        print(f"created: {created_project.project_id}")
         return created_project
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -68,9 +66,6 @@ async def delete_file_endpoint(request : DeleteFileRequest, db: Session = Depend
     infobase_id = request.file.id
     file_name = request.file.name
     project_id = request.activeProject.project_id
-    print(f"✅ 파일 아이디 : {infobase_id}")
-    print(f"✅ 파일 이름 : {file_name}")
-    print(f"✅ 프로젝트 아이디 : {project_id}")
     if infobase_id:
         delete_infobase(db=db, infobase_id=infobase_id)
     else:

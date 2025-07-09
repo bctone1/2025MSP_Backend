@@ -4,23 +4,21 @@ from fastapi.responses import JSONResponse
 from fastapi import Request
 from crud.llm import *
 from schemas.llm import *
-from langchain_service.chains.file_chain import get_file_chain
-from langchain_service.chains.qa_chain import qa_chain, process_usage_in_background, get_session_title
-from langchain_service.agents.file_agent import get_file_agent
-from langchain_service.embeddings.get_vector import text_to_vector
-from langchain_service.chains.image_generator import *
+from langchain_service.chain.file_chain import get_file_chain
+from langchain_service.chain.qa_chain import qa_chain, process_usage_in_background, get_session_title
+from langchain_service.prompt.file_agent import get_file_agent
+from langchain_service.embedding.get_vector import text_to_vector
+from langchain_service.chain.image_generator import *
 from langchain_service.vision.download_image import save_image_from_url
 import core.config as config
 from fastapi import BackgroundTasks
-from service.sms.make_code import generate_verification_code
+from service.sms.generate_random_code import generate_verification_code
 import os
 
 langchain_router = APIRouter()
 
 @langchain_router.post("/UploadFile")
 async def upload_file_endpoint(request: Request, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    print(f"FILE NAME  : {file.filename}")
-
     try:
         form_data = await request.form()
         project_id = form_data.get("project_id")
@@ -30,7 +28,6 @@ async def upload_file_endpoint(request: Request, file: UploadFile = File(...), d
         save_dir = config.UPLOAD_FOLDER
         user_dir = os.path.join(save_dir, user_email, 'document')
         os.makedirs(user_dir, exist_ok=True)
-        print(f"파일1 ")
         origin_name = file.filename
         random_number = generate_verification_code()
         file_name = f"{project_id}_{random_number}_{origin_name}"  # 파일명에 project_id와 랜덤번호 추가
@@ -42,11 +39,9 @@ async def upload_file_endpoint(request: Request, file: UploadFile = File(...), d
 
         file_id = upload_file(db=db, project = project_id, email=user_email, url=file_path, name=origin_name)
         file_content = get_file_chain(db=db, id = file_id, file_path=file_path)
-        print(f"파일 체인 {file_content}")
 
         agent = get_file_agent(file_content)
         summary = agent()
-        print(f"요약 : \n{summary}")
 
         message1 = f"파일 업로드 : {file_name}"
         message2 = summary
@@ -57,47 +52,6 @@ async def upload_file_endpoint(request: Request, file: UploadFile = File(...), d
         return JSONResponse(content={"message": summary})
     except Exception:
         raise HTTPException(status_code=500, detail="파일 업로드 중 오류 발생")
-
-
-
-'''
-@langchain_router.post('/RequestMessage')
-async def request_message(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    email = request.user_email
-    project_id = request.project_id
-    message = request.messageInput
-    session = request.session
-    model = request.selected_model
-    if model in config.OPENAI_MODELS:
-        provider = "openai"
-    elif model in config.ANTHROPIC_MODELS:
-        provider = "anthropic"
-    else:
-        return "해당 모델은 아직 지원되지 않는 모델입니다.\n다른 모델을 선택해주세요."
-    api_key = get_api_key(db=db, user_email=email, provider=provider)
-    if not api_key:
-        return "보유 중인 API키가 없습니다.\n우선 API키를 등록해주세요."
-    try :
-        response_text, vector, formatted_history = qa_chain(
-            db = db, session_id=session, conversation=message, provider=provider, model=model, api_key=api_key
-        )
-        background_tasks.add_task(
-            get_session_title,
-            db, session, message
-        )
-        background_tasks.add_task(
-            process_usage_in_background,
-            db, session, project_id, email, provider, model,
-            message, response_text, formatted_history, vector
-        )
-
-        print("✅ 응답을 넘겼습니다.")
-        return response_text
-    except Exception as e:
-        print(f"Error Occured f{e}")
-        return "현재 등록하신 API 키는 유효하지 않습니다.\n유효하는 API키를 등록해주세요."
-'''
-
 
 @langchain_router.post("/modelsList", response_model=ModelListResponse)
 async def model_list(db: Session = Depends(get_db)):
@@ -254,10 +208,8 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
     translate_prompt = discrimination(message)
     if translate_prompt == 2:
         translate_english = translateToenglish(message)
-        print(translate_english)
 
         response_url = generate_image_with_openai(translate_english, "dall-e-3")
-        print(response_url)
         vector = text_to_vector(message)
         vector2 = text_to_vector(response_url)
         image_path = save_image_from_url(response_url, email)
@@ -308,8 +260,6 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
             db, session, project_id, email, provider, model,
             message, response_text, formatted_history, vector
         )
-
-        print("✅ 응답을 넘겼습니다.")
         if not new:
             return{
                 "response" : response_text
@@ -323,7 +273,6 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
                 "email" : new_session_data.user_email,
                 "register_at" : new_session_data.register_at
             }
-
 
     except Exception as e:
         print(f"Error Occured f{e}")
