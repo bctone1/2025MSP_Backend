@@ -24,7 +24,7 @@ async def create_project(request: CreateProjectRequest, db: Session = Depends(ge
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@project_router.post("/projectsList")
+@project_router.post("/projectsList", response_model = List[ProjectListResponse])
 async def projects_list(request: ProjectListRequest, db: Session = Depends(get_db)):
     email = request.email
     if not email:

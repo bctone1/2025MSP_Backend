@@ -35,11 +35,17 @@ class ProjectListRequest(BaseModel):
     email : str
 
 class ProjectListResponse(BaseModel):
-    projects : str
-    categories : str
-    models : str
-    selectProject : int
-    setView : str
+    project_id: int
+    user_email: str
+    project_name: str
+    category: Optional[str] = None
+    description: Optional[str] = None
+    provider: Optional[str] = None
+    ai_model: Optional[str] = None
+
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class Provider(BaseModel):
