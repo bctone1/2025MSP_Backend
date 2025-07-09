@@ -70,3 +70,5 @@ class DeleteProjectRequest(BaseModel):
 
 class DeleteProjectResponse(BaseModel):
     message:str
+
+

@@ -25,27 +25,16 @@ async def create_project(request: CreateProjectRequest, db: Session = Depends(ge
         raise HTTPException(status_code=500, detail=str(e))
 
 @project_router.post("/projectsList")
-async def projects_list(request: Request):
-    body = await request.json()
-    email = body.get('email')
+async def projects_list(request: ProjectListRequest, db: Session = Depends(get_db)):
+    email = request.email
+    if not email:
+        raise HTTPException(status_code=400, detail="이메일이 필요합니다.")
+
     try:
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                if email!='admin':
-                    cur.execute(
-                        'SELECT * FROM project_table WHERE LOWER(user_email) = %s ORDER BY project_id DESC',
-                        (email,)
-                    )
-                else:
-                    cur.execute('SELECT * FROM project_table  ORDER BY project_id DESC')
-
-                column_names = [desc[0] for desc in cur.description]
-                result = [dict(zip(column_names, row)) for row in cur.fetchall()]
-
-                if not result:
-                    return JSONResponse(content={"message": "프로젝트가 없습니다."}, status_code=404)
-                else :
-                    return result
+        result = get_project_list(db, email)
+        if not result:
+            return JSONResponse(content={"message": "프로젝트가 없습니다."}, status_code=404)
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
