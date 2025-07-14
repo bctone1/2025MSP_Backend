@@ -10,9 +10,11 @@ from langchain_service.prompt.file_agent import get_file_agent
 from langchain_service.embedding.get_vector import text_to_vector
 from langchain_service.chain.image_generator import *
 from langchain_service.vision.download_image import save_image_from_url
+from langchain_service.agent.code_agent import code_agent
 import core.config as config
 from fastapi import BackgroundTasks
 from service.sms.generate_random_code import generate_verification_code
+from core.config import EMBEDDING_API
 import os
 
 langchain_router = APIRouter()
@@ -277,3 +279,11 @@ async def request_message(request: RequestMessageRequest, background_tasks: Back
     except Exception as e:
         print(f"Error Occured f{e}")
         return "현재 등록하신 API 키는 유효하지 않습니다.\n유효하는 API키를 등록해주세요."
+
+@langchain_router.post('/CodeAgentTest')
+async def agent_test(request: TestRequest, db: Session = Depends(get_db)):
+    user_email = request.user_email
+    message = request.message
+    result = code_agent(db = db, user_email = user_email, provider = "openai", model = "gpt-4o", api_key = EMBEDDING_API, message = message)
+    print(result)
+    return result

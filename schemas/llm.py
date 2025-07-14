@@ -2,6 +2,10 @@ from pydantic import BaseModel
 from typing import List
 from datetime import datetime
 
+class TestRequest(BaseModel):
+    message: str
+    user_email : str
+
 class RequestMessageRequest(BaseModel):
     messageInput: str
     project_id: int

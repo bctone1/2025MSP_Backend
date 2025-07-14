@@ -67,6 +67,7 @@ def search_engine(keywords, api_key, max_results_per_keyword=3):
 
     return all_results
 
+# 검색 결과 중 유효한 정보만 추출하여 LLM에게 넘기기 위한 텍스트로 재조합
 def build_text_for_ai(all_results: dict) -> str:
     texts = []
     for keyword, items in all_results.items():

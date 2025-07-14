@@ -1,5 +1,7 @@
 from crud.llm import *
 from sqlalchemy.orm import Session
+from sqlalchemy import text
+from typing import List
 import numpy as np
 
 def get_relevant_messages(db: Session, session_id: str, query_vector: list, top_n=5):
@@ -24,3 +26,37 @@ def get_relevant_messages(db: Session, session_id: str, query_vector: list, top_
 
     return relevant_messages
 
+def get_session_log_by_user_info(
+    db: Session,
+    user_email: str,
+    embedding_message: list[float],
+    top_k: int = 5
+) -> str:
+    vector_str = "[" + ",".join(map(str, embedding_message)) + "]"
+
+    query = text("""
+        SELECT id, message_role, conversation, vector_memory <-> CAST(:embedding AS vector) AS distance
+        FROM conversation_logs
+        WHERE user_email = :user_email
+        ORDER BY distance ASC
+        LIMIT :top_k;
+    """)
+
+    rows = db.execute(query, {
+        "embedding": vector_str,
+        "user_email": user_email,
+        "top_k": top_k
+    }).fetchall()
+
+    if not rows:
+        return ""
+
+    # id로 정렬 후 message_role: conversation 형식으로 묶기
+    sorted_rows = sorted(rows, key=lambda row: row._mapping["id"])
+
+    chat_lines = [
+        f"{row._mapping['message_role']}: {row._mapping['conversation']}"
+        for row in sorted_rows
+    ]
+
+    return "\n".join(chat_lines)
