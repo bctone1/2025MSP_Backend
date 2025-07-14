@@ -20,8 +20,6 @@ def make_requirements(provider: str, model: str, api_key: str, message: str, ses
         만약 요구사항을 정의하기 위해 필요한 데이터라고 판단되면 참고하고, 
         그렇지 않다고 판단되면 무시하세요.
         
-        **사용자가 따로 선택한 프로그래밍 언어가 없을 시, Python을 기준으로 요구사항을 작성해주세요.**
-        
         # 기존 대화 이력
         {session_logs}
         """
