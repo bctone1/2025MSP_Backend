@@ -95,6 +95,3 @@ def creative_writing_agent(provider, model, api_key, user_prompt):
         "생성된 글": article,
         "품질 평가": quality_review
     }
-
-prompt = "인공지능이 예술 창작에 미치는 긍정적 영향에 대해 창의적인 시각으로 글을 써줘"
-answer = creative_writing_agent("openai", "gpt-4o", EMBEDDING_API, prompt)
