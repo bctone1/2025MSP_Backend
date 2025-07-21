@@ -20,7 +20,6 @@ def extract_writing_intent(provider, model, api_key, user_prompt):
     response = llm.invoke(prompt)
     return response.content
 
-# 글의 구조 설계
 def design_creative_structure(provider, model, api_key, writing_intent):
     llm = get_llm(provider=provider, model=model, api_key=api_key, temperature=0.4)
     prompt = f"""
@@ -90,8 +89,8 @@ def creative_writing_agent(provider, model, api_key, user_prompt):
     quality_review = evaluate_creative_quality(provider, model, api_key, article)
 
     return {
-        "요구사항 정리": writing_intent,
-        "글 구조 및 아이디어": structure_plan,
-        "생성된 글": article,
-        "품질 평가": quality_review
+        "requirement": writing_intent,
+        "structure": structure_plan,
+        "result": article,
+        "quality": quality_review
     }
