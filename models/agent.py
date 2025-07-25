@@ -25,12 +25,12 @@ class AgentStats(Base):
     __tablename__ = 'agent_stats'
 
     agent_id = Column(String, ForeignKey('agents.id'), primary_key=True)
-    tasksCompleted = Column(Integer)
-    successRate = Column(Float)
+    tasks_completed = Column(Integer)
+    success_rate = Column(Float)
 
 class AgentSettings(Base):
     __tablename__ = 'agent_settings'
-
-    maxTokens = Column(Integer)
+    agent_id = Column(String, ForeignKey('agents.id'), primary_key=True)
+    max_tokens = Column(Integer)
     temperature = Column(Float)
-    searchDepth = Column(String(255))
+    search_depth = Column(String(255))
