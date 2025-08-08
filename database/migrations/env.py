@@ -1,8 +1,10 @@
+from models import *
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 from database.base import DATABASE_URL, Base
+
 
 # Alembic Config 객체, .ini 파일에서 값을 읽어옴
 config = context.config

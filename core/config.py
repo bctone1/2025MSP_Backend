@@ -1,9 +1,9 @@
 DB = 'postgresql'
 DB_USER = 'postgres'
-DB_PASSWORD = '1234'
+DB_PASSWORD = '3636'
 DB_SERVER = 'localhost'
-DB_PORT = '5432'
-DB_NAME = 'postgres'
+DB_PORT = '5433'
+DB_NAME = 'msp_database'
 
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
