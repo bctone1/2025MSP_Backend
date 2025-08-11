@@ -2,18 +2,30 @@ from pydantic import BaseModel
 from typing import List
 from datetime import datetime
 
+from enum import Enum
+
 # ==============================================================
 # AGENT MODULE ROADMAP (구조 개요: 앞으로 채워 넣을 큰 틀)
 # --------------------------------------------------------------
 # 이 파일은 "에이전트 실행 요청 스키마"부터 시작하며,
-# 이후 리서치/코딩/분석/글쓰기 에이전트 공통 구조를 담는 방향으로 확장됩니다.
-#
+# 이후 리서치/코딩/분석/글쓰기 에이전트 공통 구조를 담는 방향으로 확장
+
 # 1) 에이전트 타입
 #    - research:     웹/문서 리서치, 인용/출처 포함 요약
 #    - coding:       코드 생성/리팩토링/테스트, 샌드박스 실행
 #    - analysis:     데이터/통계 분석, 표/차트 아티팩트 생성
 #    - writing:      아웃라인→초안→개정(스텝 기반) 글쓰기
-#
+
+class AgentType(str,Enum):
+    research = "research"
+    coding = "coding"
+    analysis = "analysis"
+    writing = "writing"
+
+# class AgentStatus(str,Enum):
+
+
+
 # 2) 공통 요청/응답 규격 (schemas/agent.py에 정의 예정)
 #    - Request: agent_type, message, project_id, session_id, provider, model,
 #               parameters(temperature/top_p...), tools, attachments
@@ -48,7 +60,7 @@ from datetime import datetime
 
 
 # --------------------------------------------------------------
-# ✍️ Writing 에이전트 스텝2 요청 (현재 구현된 유일한 요청 스키마)
+# ✍️ Writing 에이전트 스텝2 요청
 #    - message:        사용자가 원하는 글쓰기 지시/컨텍스트
 #    - provider/model: 사용할 LLM 프로바이더/모델 지정
 #    - api_key:        (임시) 외부 키 전달; 추후 서버 보관 키로 대체 권장
@@ -58,6 +70,9 @@ class WriteAgentStep2Request(BaseModel):
     provider : str
     model : str
     api_key : str
+
+
+
 
 
 # ==============================================================

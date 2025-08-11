@@ -22,6 +22,10 @@ from core.config import EMBEDDING_API
 
 agent_router = APIRouter()
 
+#### Agent 타입 정의
+
+
+
 @agent_router.post("/WriteAgentStep1")
 async def write_agent_ask_again_endpoint():
     resposne = f"""
@@ -58,3 +62,4 @@ async def extract_writing_intent_endpoint(request: WriteAgentStep2Request, db: S
         "result" : response["result"],
         "quality" : response["quality"]
     })
+
