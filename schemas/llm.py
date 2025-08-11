@@ -2,10 +2,16 @@ from pydantic import BaseModel
 from typing import List
 from datetime import datetime
 
+# =======================================
+#  테스트 요청
+# =======================================
 class TestRequest(BaseModel):
     message: str
     user_email : str
 
+# =======================================
+# 💬 LLM 메시지 요청
+# =======================================
 class RequestMessageRequest(BaseModel):
     messageInput: str
     project_id: int
@@ -13,6 +19,9 @@ class RequestMessageRequest(BaseModel):
     session : str
     selected_model : str
 
+# =======================================
+#  모델 목록 및 설정
+# =======================================
 class ModelList(BaseModel):
     id : int
     model_name : str
@@ -30,17 +39,21 @@ class ModelSettings(BaseModel):
     presencePenalty : int
     isDefault : bool
 
-
+# =======================================
+# ️ 모델 삭제
+# =======================================
 class DeleteModelRequest(BaseModel):
     id : int
     provider_name : str
     name : str
     # settings : ModelSettings
 
-
 class DeleteModelResponse(BaseModel):
     message : str
 
+# =======================================
+# ️ 제공자 삭제
+# =======================================
 class DeleteProviderRequest(BaseModel):
     id : int
     name : str
@@ -51,6 +64,9 @@ class DeleteProviderRequest(BaseModel):
 class DeleteProviderResponse(BaseModel):
     message : str
 
+# =======================================
+#  제공자 추가
+# =======================================
 class AddNewProviderRequest(BaseModel):
     name : str
     status : str
@@ -60,6 +76,9 @@ class AddNewProviderRequest(BaseModel):
 class AddNewProviderResponse(BaseModel):
     message : str
 
+# =======================================
+#  모델 추가
+# =======================================
 class AddModelSetting(BaseModel):
     temperature : float
     maxTokens : int
@@ -76,6 +95,9 @@ class AddModelRequest(BaseModel):
 class AddModelResponse(BaseModel):
     message : str
 
+# =======================================
+#  모델 변경
+# =======================================
 class ChangeModelBefore(BaseModel):
     id : int
     provider_name : str
@@ -95,6 +117,9 @@ class ChangeModelRequest(BaseModel):
 class ChangeModelResponse(BaseModel):
     message : str
 
+# =======================================
+#  세션 조회
+# =======================================
 class GetSessionRequest(BaseModel):
     email : str
 
@@ -108,6 +133,9 @@ class Session(BaseModel):
 class GetSessionResponse(BaseModel):
     response: List[Session]
 
+# =======================================
+#  대화 조회
+# =======================================
 class GetConversationRequest(BaseModel):
     email : str
 
@@ -124,6 +152,9 @@ class Conversation(BaseModel):
 class GetConversationResponse(BaseModel):
     response: List[Conversation]
 
+# =======================================
+#  새 세션 생성
+# =======================================
 class NewSessionRequest(BaseModel):
     id : str
     project_id : int
@@ -139,6 +170,9 @@ class NewSessionResponse(BaseModel):
     register_at : datetime
     user_email : str
 
+# =======================================
+#  활성 프로젝트 정보
+# =======================================
 class ActiveProject(BaseModel):
     project_id: int
     user_email: str
@@ -151,6 +185,9 @@ class ActiveProject(BaseModel):
 class GetInfoBaseRequest(BaseModel):
     activeProject: ActiveProject
 
+# =======================================
+#  제공자 상태 확인
+# =======================================
 class ProviderStatusRequest(BaseModel):
     provider_id : int
 

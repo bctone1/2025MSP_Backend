@@ -2,11 +2,17 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from typing import List
 
+# =======================================
+#  유저 기본 정보
+# =======================================
 class UserInfo(BaseModel):
     user_id: int = Field(..., alias="id")
     user_name: str = Field(..., alias="name")
     email: str
 
+# =======================================
+#  로그인 & 소셜 로그인
+# =======================================
 class LoginRequest(BaseModel):
     email : str
     password : str
@@ -31,6 +37,9 @@ class GoogleLoginResponse(BaseModel):
     role : str
     image : Optional[str] = None
 
+# =======================================
+#  회원 가입
+# =======================================
 class RegisterRequest(BaseModel):
     name : str
     email : str
@@ -40,6 +49,9 @@ class RegisterRequest(BaseModel):
 class RegisterResponse(BaseModel):
     message : str
 
+# =======================================
+#  이메일 인증
+# =======================================
 class SendEmailRequest(BaseModel):
     email : str
     secretCode : str
@@ -47,13 +59,15 @@ class SendEmailRequest(BaseModel):
 class SendEmailResponse(BaseModel):
     message : str
 
+# =======================================
+#  멤버 관리
+# =======================================
 class Members(BaseModel):
     name : str
     email : str
     role : str
     group : str
     phone_number: Optional[str] = None
-
 
 class GetMembersResponse(BaseModel):
     members: List[Members]
@@ -80,13 +94,14 @@ class ChangeMemberRequest(BaseModel):
     group : str
     phone_number : str
 
-
 class ChangeMemberResponse(BaseModel):
     message : str
 
+# =======================================
+#  유저 정보 조회
+# =======================================
 class GetUserInfoRequest(BaseModel):
     email : str
-
 
 class GetUserInfoResponse(BaseModel):
     id : int
@@ -97,7 +112,9 @@ class GetUserInfoResponse(BaseModel):
     group : str
     phone_number: Optional[str] = None
 
-
+# =======================================
+#  비밀번호 변경
+# =======================================
 class NewPasswordData(BaseModel):
     password : str
     newpassword : str
@@ -118,11 +135,13 @@ class ChangePasswordRequest(BaseModel):
 class ChangePasswordResponse(BaseModel):
     message : str
 
+# =======================================
+#  프로필 변경
+# =======================================
 class NewProfileData(BaseModel):
     name : str
     group : str
     phone_number: str
-
 
 class ChangeProfileRequest(BaseModel):
     newProfileData : NewProfileData
@@ -131,7 +150,9 @@ class ChangeProfileRequest(BaseModel):
 class ChangeProfileResponse(BaseModel):
     message: str
 
-
+# =======================================
+#  비밀번호 찾기/재설정
+# =======================================
 class FindPasswordRequest(BaseModel):
     newPasswordData : str
     email : str
@@ -139,7 +160,9 @@ class FindPasswordRequest(BaseModel):
 class FindPasswordResponse(BaseModel):
     message : str
 
-
+# =======================================
+#  API Key 관리
+# =======================================
 class AddNewAPIkeyRequest(BaseModel):
     api_key : str
     provider_id : int
@@ -151,30 +174,11 @@ class AddNewAPIkeyRequest(BaseModel):
 class AddNewAPIkeyResponse(BaseModel):
     message : str
 
-
-class PhoneRequest(BaseModel):
-    phone_number : str
-    phoneCode : str
-
-class PhoneResponse(BaseModel):
-    message : str
-
-
-class FindEmailRequest(BaseModel):
-    name : str
-    phone : str
-    secretCode : str
-
-class FindEmailResponse(BaseModel):
-    message : str
-    email : str
-
 class DeleteKeyRequest(BaseModel):
     id : int
 
 class DeleteKeyResponse(BaseModel):
     message : str
-
 
 class NewKey(BaseModel):
     id: int
@@ -186,3 +190,24 @@ class ChangeKeyrequest(BaseModel):
 class ChangeKeyResponse(BaseModel):
     message : str
 
+# =======================================
+#  전화번호 인증
+# =======================================
+class PhoneRequest(BaseModel):
+    phone_number : str
+    phoneCode : str
+
+class PhoneResponse(BaseModel):
+    message : str
+
+# =======================================
+#  이메일 찾기
+# =======================================
+class FindEmailRequest(BaseModel):
+    name : str
+    phone : str
+    secretCode : str
+
+class FindEmailResponse(BaseModel):
+    message : str
+    email : str
