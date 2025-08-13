@@ -31,8 +31,16 @@ class Agent(Base):
     created_at = Column(DateTime, server_default=func.now())     # 현재값 추가
     last_active = Column(DateTime)
 
-# 관계 설정: Agent.agent_type 로 접근 가능
-agent_type = relationship(
+    # 여기 추가 provider_id 로 사용. 왜냐하면 provider_table에 id가 PK임.
+    # ai_models 는 provider_id를 FK로 갖고 있음.
+    provider_id = Column(Integer, ForeignKey('provider_table.id'), nullable=True)
+    model_id = Column(Integer, ForeignKey('ai_models.id'), nullable=True)
+    # provider_name = Column(String(255), ForeignKey('provider_table.name'), nullable=True)
+    # model = Column(String(255))
+
+
+    # 관계 설정: Agent.agent_type 로 접근 가능
+    agent_type = relationship(
     "AgentTypeRef",
     backref=backref("agents", lazy="dynamic"),
     lazy="joined",

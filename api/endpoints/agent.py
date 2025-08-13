@@ -1,5 +1,11 @@
 from fastapi import APIRouter, Depends, status, HTTPException, File, UploadFile
 from database.session import get_db
+
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+from models.llm import Provider, AIModel
+from models.agent import Agent
+
 from fastapi.responses import JSONResponse
 from langchain_service.agent.writing_agent import *
 from fastapi import Request
@@ -24,6 +30,74 @@ agent_router = APIRouter()
 
 #### Agent 타입 정의
 
+# @agent_router.post("/agents", response_model=AgentResponse)
+# def create_agent(payload: AgentCreate, db: Session = Depends(get_db)):
+#     # 1) provider 해석
+#     provider_id = payload.provider_id
+#     if not provider_id and payload.provider_name:
+#         provider = db.execute(
+#             select(Provider).where(Provider.name == payload.provider_name)
+#         ).scalar_one_or_none()
+#         if not provider:
+#             raise HTTPException(422, detail="존재하지 않는 provider_name")
+#         provider_id = provider.id
+#
+#     # 2) model 해석
+#     model_id = payload.model_id
+#     model_obj = None
+#     if not model_id and payload.model_name:
+#         model_obj = db.execute(
+#             select(AIModel).where(AIModel.model_name == payload.model_name)
+#         ).scalar_one_or_none()
+#         if not model_obj:
+#             raise HTTPException(422, detail="존재하지 않는 model_name")
+#         model_id = model_obj.id
+#
+#     # 3) provider-model 일관성 체크(선택)
+#     if model_id:
+#         model_obj = model_obj or db.get(AIModel, model_id)
+#         if not model_obj:
+#             raise HTTPException(422, detail="유효하지 않은 model_id")
+#         if provider_id and model_obj.provider_id != provider_id:
+#             raise HTTPException(422, detail="provider_id와 model_id의 제공자가 일치하지 않습니다.")
+#
+#     # 4) 저장
+#     agent = Agent(
+#         id=... ,  # id 생성 로직
+#         name=payload.name,
+#         type=payload.type.value,
+#         status="active",
+#         provider_id=provider_id,
+#         model_id=model_id,
+#         avatar=payload.avatar,
+#         description=payload.description,
+#         capabilities=payload.capabilities or [],
+#     )
+#     db.add(agent)
+#     db.commit()
+#     db.refresh(agent)
+#
+#     # 5) 응답 확장(이름 포함)
+#     prov = db.get(Provider, agent.provider_id) if agent.provider_id else None
+#     mdl = db.get(AIModel, agent.model_id) if agent.model_id else None
+#
+#     return AgentResponse(
+#         id=agent.id,
+#         name=agent.name,
+#         type=agent.type,
+#         status=agent.status,
+#         avatar=agent.avatar,
+#         description=agent.description,
+#         capabilities=agent.capabilities or [],
+#         provider_id=agent.provider_id,
+#         provider_name=prov.name if prov else None,
+#         model_id=agent.model_id,
+#         model_name=mdl.model_name if mdl else None,
+#         created_at=agent.created_at,
+#         last_active=agent.last_active,
+#         tasks_completed=getattr(agent, "stats", None).tasks_completed if getattr(agent, "stats", None) else 0,
+#         success_rate=getattr(agent, "stats", None).success_rate if getattr(agent, "stats", None) else 0.0,
+#     )
 
 
 @agent_router.post("/WriteAgentStep1")

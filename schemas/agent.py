@@ -1,8 +1,11 @@
-from pydantic import BaseModel
-from typing import List
+from __future__ import annotations
+
+from pydantic import BaseModel, Field, field_validator, model_validator
+from typing import List, Optional, Dict, Set
 from datetime import datetime
 
 from enum import Enum
+
 
 # ==============================================================
 # AGENT MODULE ROADMAP (구조 개요: 앞으로 채워 넣을 큰 틀)
@@ -16,21 +19,97 @@ from enum import Enum
 #    - analysis:     데이터/통계 분석, 표/차트 아티팩트 생성
 #    - writing:      아웃라인→초안→개정(스텝 기반) 글쓰기
 
-class AgentType(str,Enum):
+class AgentType(str, Enum):
     research = "research"
     coding = "coding"
     analysis = "analysis"
     writing = "writing"
 
-# class AgentStatus(str,Enum):
+
+class AgentStatus(str, Enum):
+    active = "active"  # 동작 중 (UI: 활성)
+    inactive = "inactive"  # 비활성
+
+# 상태 변화 규칙
+ALLOWED_STATUS_TRANSITIONS: Dict[AgentStatus, Set[AgentStatus]] = {
+    AgentStatus.active:   {AgentStatus.inactive},
+    AgentStatus.inactive: {AgentStatus.active},
+}
+
+# 2) 공통 요청/응답 규격
+# ====== 공통 베이스 ======
+class AgentBase(BaseModel):
+    name: str
+    type: AgentType
+    status: AgentStatus = AgentStatus.active
+    avatar: str    # 모델 아이콘 .svg
+    description: str
+    provider_id: str    # models 와 일치 네이밍
+    model_id: str
+    capabilities: List[str] = None    # Agent 수행 기능 목록을 저장 하는 필드
+    # capabilities: list[str] = Field(default_factory=list)
+
+    @field_validator("capabilities", mode="before")    # None으로 들어오면, @field_validator가 실행 기본값채움
+    @classmethod
+    def _default_caps(cls, v):
+        return v or []    # 기본값을 []로 채우는 역할
+
+class AgentUpdate(BaseModel):
+    name: str
+    status: AgentStatus
+    avatar: str
+    description: str
+    provider_id: str
+    model_id: str
+    capabilities: List[str]
+
+
+class AgentResponse(AgentBase):
+    id: str
+    name: str
+    type: AgentType
+    status: AgentStatus
+    avatar: str  # 모델 아이콘 .svg
+    description: str
+    capabilities: List[str] = None  # Agent 수행 기능 목록을 저장 하는 필드
+
+    provider_id: str
+    provider_name: str
+    model_id: str
+    model_name: str
+
+
+    created_at: datetime   # DB에서 채워줌
+    last_active: datetime
+    tasks_completed: int = 0    # 완료된 작업 수
+    success_rate: float = 0.0    # 완료작업/ 전체 수행 해야 할 작업 비율
 
 
 
-# 2) 공통 요청/응답 규격 (schemas/agent.py에 정의 예정)
+
+
+
+# ====== status transition 요청 ======
+class AgentStatusChangeRequest(BaseModel):
+    agent_id: str
+    from_status: AgentStatus
+    to_status: AgentStatus
+
+    @model_validator(mode="after")    # model 단위 검증_model_validator
+    def _check_transition(self):
+        allowed = ALLOWED_STATUS_TRANSITIONS.get(self.from_status, set())
+        if self.to_status not in allowed:
+            raise ValueError(f"활성/비활성 전이 불가: {self.from_status.value} → {self.to_status.value}")
+        return self
+
+
+####### LLM.PY 에서 FK로 provider 받아오기 ######
+
 #    - Request: agent_type, message, project_id, session_id, provider, model,
 #               parameters(temperature/top_p...), tools, attachments
 #    - Response: content, artifacts(code/table/chart/json/text), citations, usage
-#
+
+
 # 3) 라이프사이클(모든 에이전트 공통)
 #    - prepare: 컨텍스트 수집(세션/메모리/RAG), 프롬프트 구성
 #    - run:     LLM 호출(+필요 시 tool 호출)
@@ -66,14 +145,10 @@ class AgentType(str,Enum):
 #    - api_key:        (임시) 외부 키 전달; 추후 서버 보관 키로 대체 권장
 # --------------------------------------------------------------
 class WriteAgentStep2Request(BaseModel):
-    message : str
-    provider : str
-    model : str
-    api_key : str
-
-
-
-
+    message: str
+    provider: str
+    model: str
+    api_key: str
 
 # ==============================================================
 # 앞으로 추가될 섹션(주석만, 실제 코드는 추후 추가)
@@ -132,4 +207,3 @@ class WriteAgentStep2Request(BaseModel):
 # - 통합: mock provider/tool로 executor 경로 테스트
 # - 회귀: 프롬프트 변경에 대한 골든 테스트
 # ==============================================================
-
