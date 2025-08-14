@@ -22,6 +22,7 @@ def create_new_project(db : Session, name : str, desc : str, category : str, mod
 def get_provider(db: Session):
     providers = db.execute(select(Provider.id, Provider.name, Provider.status, Provider.website, Provider.description)).all()
 
+# 여러 개의 딕셔너리로 구성된 리스트
     return {
         "providers": [
             {
