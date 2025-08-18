@@ -6,7 +6,6 @@ from pgvector.sqlalchemy import Vector
 
 # =======================================
 # Project (프로젝트 메타 정보)
-# - user_table.email FK 참조
 # - 프로젝트 기본 속성 관리
 # =======================================
 class Project(Base):
@@ -22,25 +21,30 @@ class Project(Base):
 
     # 관계: User ↔ Project (1:N)
     user = relationship("User", back_populates="projects")    ## 관례상 다수가 되는 projects로 작명
+    model = relationship("AIModel", back_populates="projects")
+    info_bases = relationship("ProjectInfoBase", back_populates="project", cascade="all,delete")  # 명시
+
 
 # =======================================
 # ProjectInfoBase (프로젝트 파일/지식베이스 메타)
 # - project_table.project_id FK 참조
-# - user_table.email FK 참조
 # - 프로젝트에 업로드된 파일 관리
 # =======================================
 class ProjectInfoBase(Base):
     __tablename__ = "project_info_base"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    project_id = Column(Integer, ForeignKey("project_table.project_id", ondelete="CASCADE"), nullable=False)
-    owner_user_id = Column(Integer, ForeignKey("user_table.id", ondelete="RESTRICT"), nullable=False, index=True)
+    project_id = Column(Integer, ForeignKey("project_table.project_id", ondelete="CASCADE"), nullable=False, index=True)
+    uploaded_by_user_id = Column(Integer, ForeignKey("user_table.id", ondelete="SET NULL"),
+                                 nullable=True, index=True)
     file_name = Column(String(255))
     file_url = Column(Text, nullable=True)
     upload_at = Column(TIMESTAMP, default=func.current_timestamp())
 
     # 관계: Project ↔ ProjectInfoBase (1:N)
     project = relationship("Project", backref="info")
+    uploader = relationship("User", backref="uploaded_info_bases")
+
     # 관계: User ↔ ProjectInfoBase (1:N)
     user = relationship("User", backref="project_info")
 
@@ -54,7 +58,7 @@ class InfoList(Base):
     __tablename__ = "info_list"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    infobase_id = Column(Integer, ForeignKey("project_info_base.id", ondelete="CASCADE"), nullable=False)
+    infobase_id = Column(Integer, ForeignKey("project_info_base.id", ondelete="CASCADE"), nullable=False, index=True)
     content = Column(Text)
     vector_memory = Column(Vector(1536))
     upload_at = Column(TIMESTAMP, default=func.current_timestamp())
@@ -62,5 +66,4 @@ class InfoList(Base):
     # 관계: ProjectInfoBase ↔ InfoList (1:N)
     infobase = relationship(
         "ProjectInfoBase",
-        backref=backref("info_list", passive_deletes=True)
-    )
+        backref=backref("info_list", passive_deletes=True))

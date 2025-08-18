@@ -83,9 +83,10 @@ class ConversationLog(Base):
     __tablename__ = "conversation_logs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    author_user_id = Column(Integer, ForeignKey("user_table.id", ondelete="SET NULL"), nullable=True, index=True)
     session_id = Column(String(255), ForeignKey("conversation_session.id", ondelete="CASCADE"), nullable=False)
     project_id = Column(Integer, ForeignKey("project_table.project_id", ondelete="CASCADE"), nullable=False)
-    user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
+
 
     message_role = Column(String(255), nullable=False)   # user / assistant / system
     conversation = Column(Text, nullable=False)
