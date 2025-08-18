@@ -276,6 +276,7 @@ def get_api_key(db: Session, user_email: str, provider: str):
 
     user_id = user.id
     if provider == 'openai':
+        ## id 값이 유동적인 4번값이 들어와 있음 고정된 값으로 수정 필요
         api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id==4).first()
         if not api:
             return None
