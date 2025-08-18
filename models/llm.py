@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey, Float, select
 from database.base import Base
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, column_property
 from pgvector.sqlalchemy import Vector
 
 
@@ -30,8 +30,14 @@ class ApiKey(Base):
     __tablename__ = "api_key"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    provider_id = Column(Integer, ForeignKey("provider_table.id", ondelete="CASCADE"), unique=True, nullable=False)
-    user_id = Column(Integer, ForeignKey("user_table.id", ondelete="CASCADE"), unique=True, nullable=False)
+    provider_id = Column(Integer, ForeignKey("provider.id", ondelete="CASCADE"), unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), unique=True, nullable=False)
+    provider_name = column_property(
+        select(Provider.name)
+        .where(Provider.id == provider_id)
+        .correlate_except(Provider)
+        .scalar_subquery()
+    )
 
     api_key = Column(Text, nullable=False)
     status = Column(String(50))
@@ -57,7 +63,7 @@ class ConversationSession(Base):
     session_title = Column(String(255), nullable=False)
 
     project_id = Column(Integer, ForeignKey('project_table.project_id', ondelete='CASCADE'))
-    user_email = Column(String(255), ForeignKey('user_table.email', ondelete='CASCADE'))
+    user_email = Column(String(255), ForeignKey('user.email', ondelete='CASCADE'))
     register_at = Column(TIMESTAMP, default=func.current_timestamp())
 
     # 관계: Project ↔ ConversationSession (1:N)
@@ -79,7 +85,7 @@ class ConversationLog(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     session_id = Column(String(255), ForeignKey("conversation_session.id", ondelete="CASCADE"), nullable=False)
     project_id = Column(Integer, ForeignKey("project_table.project_id", ondelete="CASCADE"), nullable=False)
-    user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
+    user_email = Column(String(255), ForeignKey("user.email", ondelete="CASCADE"), nullable=False)
 
     message_role = Column(String(255), nullable=False)   # user / assistant / system
     conversation = Column(Text, nullable=False)
@@ -109,8 +115,8 @@ class AIModel(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     model_name = Column(String(255), unique=True, nullable=False)
 
-    provider_id = Column(Integer, ForeignKey('provider_table.id', ondelete='CASCADE'), unique=True, nullable=False)
-    provider_name = Column(String(255), ForeignKey('provider_table.name', ondelete='CASCADE'), nullable=False)
+    provider_id = Column(Integer, ForeignKey('provider.id', ondelete='CASCADE'), unique=True, nullable=False)
+    provider_name = Column(String(255), ForeignKey('provider.name', ondelete='CASCADE'), nullable=False)
 
     # 관계: Provider ↔ AIModel (1:N)
     provider = relationship('Provider', backref='ai_models', foreign_keys=[provider_id])
