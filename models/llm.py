@@ -120,3 +120,4 @@ class AIModel(Base):
 
     # 관계: Provider ↔ AIModel (1:N)
     provider = relationship('Provider', backref='ai_models', foreign_keys=[provider_id])
+    projects = relationship("Project", back_populates="model")
