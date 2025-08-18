@@ -13,12 +13,12 @@ class Project(Base):
     __tablename__ = "project_table"
 
     project_id = Column(Integer, primary_key=True, autoincrement=True)
-    user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
+    owner_user_id = Column(Integer, ForeignKey("user_table.id", ondelete="RESTRICT"), nullable=False, index=True)
+    model_id = Column(Integer, ForeignKey("ai_models.id", ondelete="SET NULL"), nullable=True, index=True)
     project_name = Column(String(255), nullable=False)
     category = Column(String(100))
     description = Column(Text)
-    provider = Column(String(255))
-    ai_model = Column(String(255))
+    created_at = Column(TIMESTAMP, server_default=func.now())
 
     # 관계: User ↔ Project (1:N)
     user = relationship("User", back_populates="projects")    ## 관례상 다수가 되는 projects로 작명
@@ -35,7 +35,7 @@ class ProjectInfoBase(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     project_id = Column(Integer, ForeignKey("project_table.project_id", ondelete="CASCADE"), nullable=False)
-    user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
+    owner_user_id = Column(Integer, ForeignKey("user_table.id", ondelete="RESTRICT"), nullable=False, index=True)
     file_name = Column(String(255))
     file_url = Column(Text, nullable=True)
     upload_at = Column(TIMESTAMP, default=func.current_timestamp())
