@@ -6,7 +6,6 @@ from datetime import datetime
 
 from enum import Enum
 
-
 # ==============================================================
 # AGENT MODULE ROADMAP (구조 개요: 앞으로 채워 넣을 큰 틀)
 # --------------------------------------------------------------
@@ -78,15 +77,10 @@ class AgentResponse(AgentBase):
     model_id: str
     model_name: str
 
-
     created_at: datetime   # DB에서 채워줌
     last_active: datetime
     tasks_completed: int = 0    # 완료된 작업 수
     success_rate: float = 0.0    # 완료작업/ 전체 수행 해야 할 작업 비율
-
-
-
-
 
 
 # ====== status transition 요청 ======
@@ -95,12 +89,12 @@ class AgentStatusChangeRequest(BaseModel):
     from_status: AgentStatus
     to_status: AgentStatus
 
-    @model_validator(mode="after")    # model 단위 검증_model_validator
-    def _check_transition(self):
-        allowed = ALLOWED_STATUS_TRANSITIONS.get(self.from_status, set())
-        if self.to_status not in allowed:
-            raise ValueError(f"활성/비활성 전이 불가: {self.from_status.value} → {self.to_status.value}")
-        return self
+@model_validator(mode="after")    # model 단위 검증_model_validator
+def _check_transition(self):
+    allowed = ALLOWED_STATUS_TRANSITIONS.get(self.from_status, set())
+    if self.to_status not in allowed:
+        raise ValueError(f"활성/비활성 전이 불가: {self.from_status.value} → {self.to_status.value}")
+    return self
 
 
 ####### LLM.PY 에서 FK로 provider 받아오기 ######
