@@ -11,7 +11,7 @@ from pgvector.sqlalchemy import Vector
 # - name 은 UNIQUE
 # =======================================
 class Provider(Base):
-    __tablename__ = "provider"
+    __tablename__ = "provider_table"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), unique=True, nullable=False)
@@ -30,8 +30,8 @@ class ApiKey(Base):
     __tablename__ = "api_key"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    provider_id = Column(Integer, ForeignKey("provider.id", ondelete="CASCADE"), unique=True, nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), unique=True, nullable=False)
+    provider_id = Column(Integer, ForeignKey("provider_table.id", ondelete="CASCADE"), unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("user_table.id", ondelete="CASCADE"), unique=True, nullable=False)
     provider_name = column_property(
         select(Provider.name)
         .where(Provider.id == provider_id)
@@ -63,7 +63,7 @@ class ConversationSession(Base):
     session_title = Column(String(255), nullable=False)
 
     project_id = Column(Integer, ForeignKey('project_table.project_id', ondelete='CASCADE'))
-    user_email = Column(String(255), ForeignKey('user.email', ondelete='CASCADE'))
+    user_email = Column(String(255), ForeignKey('user_table.email', ondelete='CASCADE'))
     register_at = Column(TIMESTAMP, default=func.current_timestamp())
 
     # 관계: Project ↔ ConversationSession (1:N)
@@ -76,7 +76,7 @@ class ConversationSession(Base):
 # ConversationLog (대화 로그)
 # - FK: session_id → ConversationSession.id
 # - FK: project_id → Project.project_id
-# - FK: user_email → User.email
+# - FK: user_email → User_table.email
 # - pgvector.Vector(1536) 로 임베딩 저장
 # =======================================
 class ConversationLog(Base):
@@ -85,7 +85,7 @@ class ConversationLog(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     session_id = Column(String(255), ForeignKey("conversation_session.id", ondelete="CASCADE"), nullable=False)
     project_id = Column(Integer, ForeignKey("project_table.project_id", ondelete="CASCADE"), nullable=False)
-    user_email = Column(String(255), ForeignKey("user.email", ondelete="CASCADE"), nullable=False)
+    user_email = Column(String(255), ForeignKey("user_table.email", ondelete="CASCADE"), nullable=False)
 
     message_role = Column(String(255), nullable=False)   # user / assistant / system
     conversation = Column(Text, nullable=False)

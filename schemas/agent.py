@@ -1,203 +1,204 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field, field_validator, model_validator
-from typing import List, Optional, Dict, Set
 from datetime import datetime
-
 from enum import Enum
+from typing import Dict, List, Optional, Set
+from pydantic import BaseModel, Field, field_validator, model_validator
+
 
 # ==============================================================
-# AGENT MODULE ROADMAP (구조 개요: 앞으로 채워 넣을 큰 틀)
+# AGENT MODULE ROADMAP
+# ==============================================================
+
 # --------------------------------------------------------------
-# 이 파일은 "에이전트 실행 요청 스키마"부터 시작하며,
-# 이후 리서치/코딩/분석/글쓰기 에이전트 공통 구조를 담는 방향으로 확장
-
-# 1) 에이전트 타입
-#    - research:     웹/문서 리서치, 인용/출처 포함 요약
-#    - coding:       코드 생성/리팩토링/테스트, 샌드박스 실행
-#    - analysis:     데이터/통계 분석, 표/차트 아티팩트 생성
-#    - writing:      아웃라인→초안→개정(스텝 기반) 글쓰기
-
+# 1) 에이전트 타입/상태 + 전이 규칙
+# --------------------------------------------------------------
 class AgentType(str, Enum):
-    research = "research"
-    coding = "coding"
-    analysis = "analysis"
-    writing = "writing"
+    research = "research"   # 웹/문서 리서치
+    coding   = "coding"     # 코드 생성/리팩토링/테스트
+    analysis = "analysis"   # 데이터/통계 분석
+    writing  = "writing"    # 글쓰기
 
 
 class AgentStatus(str, Enum):
-    active = "active"  # 동작 중 (UI: 활성)
-    inactive = "inactive"  # 비활성
+    active = "active"
+    inactive = "inactive"
 
-# 상태 변화 규칙
+
 ALLOWED_STATUS_TRANSITIONS: Dict[AgentStatus, Set[AgentStatus]] = {
     AgentStatus.active:   {AgentStatus.inactive},
     AgentStatus.inactive: {AgentStatus.active},
 }
 
-# 2) 공통 요청/응답 규격
-# ====== 공통 베이스 ======
+
+# --------------------------------------------------------------
+# 2) 공통 베이스/응답
+#   - models.Agent 의 컬럼 타입에 맞춰 교정:
+#     provider_id, model_id → int(Optional)
+#     avatar, description → Optional[str]
+# --------------------------------------------------------------
 class AgentBase(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, max_length=255)
     type: AgentType
     status: AgentStatus = AgentStatus.active
-    avatar: str    # 모델 아이콘 .svg
-    description: str
-    provider_id: str    # models 와 일치 네이밍
-    model_id: str
-    capabilities: List[str] = None    # Agent 수행 기능 목록을 저장 하는 필드
-    # capabilities: list[str] = Field(default_factory=list)
-
-    @field_validator("capabilities", mode="before")    # None으로 들어오면, @field_validator가 실행 기본값채움
-    @classmethod
-    def _default_caps(cls, v):
-        return v or []    # 기본값을 []로 채우는 역할
-
-class AgentUpdate(BaseModel):
-    name: str
-    status: AgentStatus
-    avatar: str
-    description: str
-    provider_id: str
-    model_id: str
+    avatar: Optional[str] = None              # 모델 아이콘 .svg 경로 등
+    description: Optional[str] = None
+    provider_id: Optional[int] = None         # FK → provider_table.id
+    model_id: Optional[int] = None            # FK → ai_models.id
     capabilities: List[str]
+
+    @field_validator("capabilities", mode="before")
+    @classmethod
+    def _caps_none_to_list(cls, v):
+        if v is None:
+            return []
+        if isinstance(v, str):
+            return [v]
+        return list(v)
+
+    @field_validator("capabilities", mode="after")
+    @classmethod
+    def _caps_dedup(cls, v: List[str]):
+        seen, out = set(), []
+        for x in v:
+            if x not in seen:
+                seen.add(x)
+                out.append(x)
+        return out
 
 
 class AgentResponse(AgentBase):
     id: str
-    name: str
-    type: AgentType
+    provider_name: Optional[str] = None
+    model_name: Optional[str] = None
+
+    created_at: Optional[datetime] = None
+    last_active: Optional[datetime] = None
+    tasks_completed: int = 0
+    success_rate: float = 0.0
+
+
+# --------------------------------------------------------------
+# 3) 생성/수정/상태 변경 요청
+# --------------------------------------------------------------
+class AgentCreate(AgentBase):
+    # 엔드포인트에서 제공 시 사용. 미제공 시 서버에서 생성(예: agt_xxx)
+    id: Optional[str] = None
+
+
+class AgentUpdate(BaseModel):
+    name: Optional[str] = None
+    status: Optional[AgentStatus] = None
+    avatar: Optional[str] = None
+    description: Optional[str] = None
+    provider_id: Optional[int] = None
+    model_id: Optional[int] = None
+    capabilities: Optional[List[str]] = None
+
+    @field_validator("capabilities", mode="before")
+    @classmethod
+    def _caps_none_to_list(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            return [v]
+        return list(v)
+
+
+class AgentStatusUpdate(BaseModel):
     status: AgentStatus
-    avatar: str  # 모델 아이콘 .svg
-    description: str
-    capabilities: List[str] = None  # Agent 수행 기능 목록을 저장 하는 필드
-
-    provider_id: str
-    provider_name: str
-    model_id: str
-    model_name: str
-
-    created_at: datetime   # DB에서 채워줌
-    last_active: datetime
-    tasks_completed: int = 0    # 완료된 작업 수
-    success_rate: float = 0.0    # 완료작업/ 전체 수행 해야 할 작업 비율
 
 
-# ====== status transition 요청 ======
 class AgentStatusChangeRequest(BaseModel):
     agent_id: str
     from_status: AgentStatus
     to_status: AgentStatus
 
-@model_validator(mode="after")    # model 단위 검증_model_validator
-def _check_transition(self):
-    allowed = ALLOWED_STATUS_TRANSITIONS.get(self.from_status, set())
-    if self.to_status not in allowed:
-        raise ValueError(f"활성/비활성 전이 불가: {self.from_status.value} → {self.to_status.value}")
-    return self
-
-
-####### LLM.PY 에서 FK로 provider 받아오기 ######
-
-#    - Request: agent_type, message, project_id, session_id, provider, model,
-#               parameters(temperature/top_p...), tools, attachments
-#    - Response: content, artifacts(code/table/chart/json/text), citations, usage
-
-
-# 3) 라이프사이클(모든 에이전트 공통)
-#    - prepare: 컨텍스트 수집(세션/메모리/RAG), 프롬프트 구성
-#    - run:     LLM 호출(+필요 시 tool 호출)
-#    - post:    결과 정규화(content/artifacts/citations/usage)
-#
-# 4) 툴(추후 주입, 독립 모듈)
-#    - web_search, url_reader, pdf_reader, code_runner, sql_runner, table_maker, citation
-#    - 각 툴은 입력/출력 Pydantic 모델로 IO 계약 명확화
-#
-# 5) 프로바이더/모델 레지스트리
-#    - provider_registry: 공급자별 클라이언트/모델 매핑
-#    - parameter_mapper: 공급자별 파라미터 호환(temperature, top_p 등)
-#
-# 6) 메모리/RAG
-#    - session_memory: 최근 대화 요약
-#    - retriever(pgvector): 프로젝트 지식/문서 검색
-#
-# 7) 운영/안전장치
-#    - 관측: run_id, 사용량, 툴 호출 로그, 지연시간
-#    - 레이트/쿼터: user/project/provider 단위 제한
-#    - 보안: 키 관리, PII/secret 레드액션, 권한검증
-#
-# 8) FastAPI 엔드포인트 (api/endpoints/agent.py)
-#    - POST /agents/run → 공통 에이전트 실행
-#    - (옵션) 스트리밍 응답, 작업 취소, 히스토리 조회
-# ==============================================================
+    @model_validator(mode="after")
+    def _check_transition(self):
+        allowed = ALLOWED_STATUS_TRANSITIONS.get(self.from_status, set())
+        if self.to_status not in allowed:
+            raise ValueError(f"활성/비활성 전이 불가: {self.from_status.value} → {self.to_status.value}")
+        return self
 
 
 # --------------------------------------------------------------
-# ✍️ Writing 에이전트 스텝2 요청
-#    - message:        사용자가 원하는 글쓰기 지시/컨텍스트
-#    - provider/model: 사용할 LLM 프로바이더/모델 지정
-#    - api_key:        (임시) 외부 키 전달; 추후 서버 보관 키로 대체 권장
+# 4) 설정/통계 업데이트
+# --------------------------------------------------------------
+class AgentSettingsUpdate(BaseModel):
+    max_tokens: Optional[int] = Field(default=None, ge=1)
+    temperature: Optional[float] = Field(default=None)
+    search_depth: Optional[str] = None
+
+
+class AgentStatsUpdate(BaseModel):
+    tasks_completed: int = Field(..., ge=0)
+    success_rate: float = Field(..., ge=0.0, le=1.0)  # 0~1 사이 비율
+
+
+# --------------------------------------------------------------
+# 5) 실행 요청/응답 공통 (Dispatcher: /agents/run)
+# --------------------------------------------------------------
+class AgentRunRequest(BaseModel):
+    agent_type: AgentType
+    message: str
+
+    # 선택 파라미터
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    api_key: Optional[str] = None
+
+    # 컨텍스트(필요시 사용)
+    user_email: Optional[str] = None
+    project_id: Optional[int] = None
+    session_id: Optional[str] = None
+
+    # 선택적 샘플 파라미터
+    temperature: Optional[float] = None
+    top_p: Optional[float] = None
+    max_tokens: Optional[int] = None
+
+    tools: Optional[List[str]] = None
+    attachments: Optional[List[str]] = None
+
+
+class AgentRunResponse(BaseModel):
+    agent_type: AgentType
+    content: str
+    artifacts: Dict[str, object]   # code/table/chart/json/text 등
+    citations: List[str]
+    usage: Dict[str, object]
+    meta: Dict[str, object]
+
+
+# --------------------------------------------------------------
+# 6) Writing 전용 요청 (기존 유지, 선택형으로 교정)
 # --------------------------------------------------------------
 class WriteAgentStep2Request(BaseModel):
     message: str
-    provider: str
-    model: str
-    api_key: str
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    api_key: Optional[str] = None
 
-# ==============================================================
-# 앞으로 추가될 섹션(주석만, 실제 코드는 추후 추가)
+
+# --------------------------------------------------------------
+# 7) 주석: 이후 확장 포인트
+#   - BaseAgent 인터페이스, 개별 Agent 구현, Tool I/O 모델,
+#     Registry, Memory/RAG, Observability/Safety 등
 # --------------------------------------------------------------
 # [A] BaseAgent (추상 인터페이스)
-# class BaseAgent:
-#     def prepare(self, context) -> str: ...
-#     def run(self, prompt, tools) -> dict: ...
-#     def postprocess(self, result) -> dict: ...
-
+# class BaseAgent: ...
 # [B] Agents 구현체
-# class ResearchAgent(BaseAgent):  # 리서치 전용 프롬프트/후처리
-#     pass
-# class CodingAgent(BaseAgent):    # 코드 생성/리팩토링/테스트
-#     pass
-# class AnalysisAgent(BaseAgent):  # 데이터 분석/표/차트 산출
-#     pass
-# class WritingAgent(BaseAgent):   # 아웃라인→초안→개정
-#     pass
-
-# [C] Tools 인터페이스
-# class ToolBase: ...
-# class WebSearchTool(ToolBase): ...
-# class CodeRunnerTool(ToolBase): ...
-# class SqlRunnerTool(ToolBase): ...
-# class PdfReaderTool(ToolBase): ...
-# class CitationTool(ToolBase): ...
-
-# [D] Provider/Model Runtime
-# class ProviderRegistry: ...
-# class ParameterMapper: ...
-# class AgentExecutor: ...
-#   - prepare(context) -> prompt
-#   - call LLM(model/provider)
-#   - route tools
-#   - normalize response (content/artifacts/citations/usage)
-
-# [E] Prompts 템플릿 (prompts/*.md)
-# - research.md / coding.md / analysis.md / writing.md
-
-# [F] Memory/RAG 통합
-# - session_memory: 최근 k-turn 요약
-# - retriever(pgvector): 프로젝트 문서 검색
-
-# [G] Observability & Safety
-# - run_id, latency, usage, tool_calls 로그
-# - rate limit / quota
-# - PII/secret redaction, 권한검증
-
-# [H] FastAPI Endpoint 연결
-# - POST /agents/run → AgentRunRequest → executor.run() → AgentRunResponse
-# - 오류 시 표준 에러 스키마 반환
-
-# [I] 테스트 전략
-# - 단위: prepare/postprocess validator
-# - 통합: mock provider/tool로 executor 경로 테스트
-# - 회귀: 프롬프트 변경에 대한 골든 테스트
-# ==============================================================
+# class ResearchAgent(BaseAgent): ...
+# class CodingAgent(BaseAgent): ...
+# class AnalysisAgent(BaseAgent): ...
+# class WritingAgent(BaseAgent): ...
+# [C] Tools I/O 모델
+# class WebSearchInput(BaseModel): ...
+# class WebSearchOutput(BaseModel): ...
+# [D] Registry / Mapper
+# class ProviderBinding(BaseModel): ...
+# [E] Memory/RAG
+# class RetrievalQuery(BaseModel): ...
+# [F] Observability
+# class AgentRunLog(BaseModel): ...

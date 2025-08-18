@@ -1,12 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
-from fastapi import Request
-from database.session import get_db_connection, get_db
+from database.session import get_db
 from schemas.project import *
 from crud.project import *
 
 project_router = APIRouter()
 
+
+# =======================================
+# 프로젝트 생성
+# - Request: CreateProjectRequest
+# - CRUD: create_new_project()
+# =======================================
 @project_router.post('/createproject')
 async def create_project(request: CreateProjectRequest, db: Session = Depends(get_db)):
     name = request.projectInfo.project_name
@@ -24,7 +29,13 @@ async def create_project(request: CreateProjectRequest, db: Session = Depends(ge
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@project_router.post("/projectsList", response_model = List[ProjectListResponse])
+
+# =======================================
+# 사용자별 프로젝트 목록 조회
+# - Request: ProjectListRequest
+# - Response: List[ProjectListResponse]
+# =======================================
+@project_router.post("/projectsList", response_model=List[ProjectListResponse])
 async def projects_list(request: ProjectListRequest, db: Session = Depends(get_db)):
     email = request.email
     if not email:
@@ -38,20 +49,36 @@ async def projects_list(request: ProjectListRequest, db: Session = Depends(get_d
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
+
+# =======================================
+# Provider 목록 조회
+# - Response: ProviderListResponse
+# =======================================
 @project_router.post("/providerList", response_model=ProviderListResponse)
 async def projects_list(db: Session = Depends(get_db)):
-    providers = get_provider(db = db)
+    providers = get_provider(db=db)
     return providers
 
+
+# =======================================
+#  세션 삭제
+# - Request: DeleteSessionRequest
+# - CRUD: delete_session()
+# =======================================
 @project_router.post("/DeleteSession", response_model=DeleteSessionResponse)
-async def delete_session_endpoint(request : DeleteSessionRequest, db: Session = Depends(get_db)):
-    session_id = request.session_id
-    delete_session(db = db, session_id = session_id)
+async def delete_session_endpoint(request: DeleteSessionRequest, db: Session = Depends(get_db)):
+    delete_session(db=db, session_id=request.session_id)
     return JSONResponse(content={"message": "삭제 성공"})
 
 
+# =======================================
+#  파일 삭제
+# - Request: DeleteFileRequest
+# - infobase_id 있으면 delete_infobase()
+# - 없으면 select_and_delete_infobase()
+# =======================================
 @project_router.post("/DeleteFile", response_model=DeleteFileResponse)
-async def delete_file_endpoint(request : DeleteFileRequest, db: Session = Depends(get_db)):
+async def delete_file_endpoint(request: DeleteFileRequest, db: Session = Depends(get_db)):
     infobase_id = request.file.id
     file_name = request.file.name
     project_id = request.activeProject.project_id
@@ -63,9 +90,12 @@ async def delete_file_endpoint(request : DeleteFileRequest, db: Session = Depend
     return JSONResponse(content={"message": "삭제 성공"})
 
 
-@project_router.post("/DeleteProject", response_model = DeleteProjectResponse)
-async def delete_project_endpoint(request: DeleteProjectRequest, db : Session = Depends(get_db)):
-    project_ids = request.project_ids
-    print(project_ids)
-    delete_project(db=db,project_ids=project_ids)
+# =======================================
+#  프로젝트 삭제
+# - Request: DeleteProjectRequest
+# - 여러 개 project_ids 삭제 가능
+# =======================================
+@project_router.post("/DeleteProject", response_model=DeleteProjectResponse)
+async def delete_project_endpoint(request: DeleteProjectRequest, db: Session = Depends(get_db)):
+    delete_project(db=db, project_ids=request.project_ids)
     return JSONResponse(content={"message": "삭제 성공"})

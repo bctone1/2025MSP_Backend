@@ -24,6 +24,3 @@ if __name__ == "__main__":
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     uvicorn.run(app, host="0.0.0.0", port=5000)
 
-
-# 2025-08-08 메인 변경 -영빈
-## 2025-08-08 : 메인 변경 인식
