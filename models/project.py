@@ -23,7 +23,6 @@ class Project(Base):
     # 관계: User ↔ Project (1:N)
     user = relationship("User", back_populates="projects")    ## 관례상 다수가 되는 projects로 작명
 
-
 # =======================================
 # ProjectInfoBase (프로젝트 파일/지식베이스 메타)
 # - project_table.project_id FK 참조
