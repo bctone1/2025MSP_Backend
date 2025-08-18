@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship
 # - email, phone_number는 UNIQUE 제약
 # =======================================
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "user_table"
 
     # 기본 정보
     id = Column(Integer, primary_key=True, autoincrement=True)
