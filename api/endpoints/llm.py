@@ -11,7 +11,7 @@ from langchain_service.chain.image_generator import *
 from langchain_service.vision.download_image import save_image_from_url
 from langchain_service.agent.code_agent import code_agent
 from service.sms.generate_random_code import generate_verification_code
-from core.config import EMBEDDING_API
+from core.config import EMBEDDING_API, EXAONE_API
 import core.config as config
 import os
 
@@ -268,7 +268,22 @@ async def agent_test(request: TestRequest, db: Session = Depends(get_db)):
 ###### 20205-08-19 #######
 
 @langchain_router.post('/RequestMessage2')
-async def request_message2():
-    return {"response" : "요청 성공"}
+async def request_message2(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    email = request.user_email
+    project_id = request.project_id
+    message = request.messageInput
+    session = request.session
+    model = request.selected_model
+    print(f"사용중인 모델 : {model}")
+
+    if model in config.OPENAI_MODELS:
+        provider = "openai"
+    elif model in config.ANTHROPIC_MODELS:
+        provider = "anthropic"
+    elif model in config.LGAI_MODELS:
+        provider = "lgai"
+    else:
+        return {"response": "해당 모델은 아직 지원되지 않습니다.\n다른 모델을 선택해주세요."}
+    api_key = EXAONE_API  # 하드코딩 키, config.py:: EXAONE_API
 
 
