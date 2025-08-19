@@ -17,6 +17,7 @@ import os
 
 
 langchain_router = APIRouter(tags=["llm"], prefix="/LLM")
+# langchain_router = APIRouter()
 
 # =======================================
 # 파일 업로드 → 요약/벡터화 → DB 저장
@@ -124,7 +125,8 @@ async def get_session_endpoint(request: GetSessionRequest, db: Session = Depends
     return response
 
 @langchain_router.post("/getConversations", response_model=GetConversationResponse)
-async def get_conversation_endpoint(request: GetConversationRequest, db: Session = Depends(get_db)):
+async def get_conversation_endpoint(request: GetConversationRequest, db: Session = Depends(get_db),
+                                    get_conversation=None):
     email = request.email
     if not email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is required")
@@ -149,7 +151,7 @@ async def new_session_endpoint(request: NewSessionRequest, db: Session = Depends
 # InfoBase 조회
 # =======================================
 @langchain_router.post("/getInfoBase")
-async def get_infobase_endpoint(request: GetInfoBaseRequest, db: Session = Depends(get_db)):
+async def get_infobase_endpoint(request: GetInfoBaseRequest, db: Session = Depends(get_db), get_infobase=None):
     return get_infobase(db, request.activeProject.user_email, request.activeProject.project_id)
 
 
@@ -157,7 +159,8 @@ async def get_infobase_endpoint(request: GetInfoBaseRequest, db: Session = Depen
 # Provider Status 토글
 # =======================================
 @langchain_router.post("/changeProviderStatus", response_model=ProviderStatusResponse)
-async def change_provider_status_endpoint(request: ProviderStatusRequest, db: Session = Depends(get_db)):
+async def change_provider_status_endpoint(request: ProviderStatusRequest, db: Session = Depends(get_db),
+                                          change_provider_status=None):
     try:
         change_provider_status(db=db, provider_id=request.provider_id)
         return JSONResponse(content={"message": "Provider Status 전환 성공"})
@@ -169,6 +172,10 @@ async def change_provider_status_endpoint(request: ProviderStatusRequest, db: Se
 # =======================================
 # LLM 질의 (QA 체인 + 백그라운드 Usage 기록)
 # =======================================
+def is_not_existing(db, session_id):    ## 임시조치 email 수정
+    pass
+
+
 @langchain_router.post('/RequestMessage')
 async def request_message(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     email = request.user_email
@@ -261,3 +268,11 @@ async def agent_test(request: TestRequest, db: Session = Depends(get_db)):
                         api_key=EMBEDDING_API, message=request.message)
     print(result)
     return result
+
+###### 20205-08-19 #######
+
+@langchain_router.post('/RequestMessage2')
+async def request_message2():
+    return {"response" : "요청 성공"}
+
+
