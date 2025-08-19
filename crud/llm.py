@@ -388,3 +388,85 @@ def is_not_existing(db: Session, session_id : str):
         return True
     else:
         return False
+
+
+    ############### 삭제된 함수들 #################
+# def get_conversation(db: Session, email : str):
+#     session = db.query(ConversationLog).filter(ConversationLog.user_email == email).order_by(ConversationLog.id).all()
+#     if session :
+#         return {
+#             "response": [
+#                 {
+#                     "id": s.id,
+#                     "session_id": s.session_id,
+#                     "project_id": s.project_id,
+#                     "user_email": s.user_email,
+#                     "message_role" : s.message_role,
+#                     "conversation" : s.conversation,
+#                     "request_at" : s.request_at,
+#                     "case" : s.case
+#                 } for s in session
+#             ]
+#         }
+#
+def is_this_first(db: Session, session_id: str):
+    first_conversation = db.query(ConversationLog).filter_by(session_id=session_id).order_by(
+        ConversationLog.request_at.asc()).first()
+    return first_conversation is None
+#
+# def get_infobase(db: Session, email: str, project_id: int):
+#     stmt = select(ProjectInfoBase).where(
+#         ProjectInfoBase.project_id == project_id,
+#         ProjectInfoBase.user_email == email
+#     )
+#     return db.scalars(stmt).all()
+#
+#
+# def change_provider_status(db: Session, provider_id: int):
+#     provider = db.query(Provider).filter(Provider.id == provider_id).first()
+#     print(f"provider_Status : {provider.status}")
+#     if provider.status == 'Active':
+#         provider.status = 'Deactive'
+#     elif provider.status == 'Deactive':
+#         provider.status = 'Active'
+#     db.commit()
+#     db.refresh(provider)
+#
+#
+# def add_message(db : Session, session_id : str, project_id : int, user_email : str, message_role : str, conversation : str, vector_memory : list, case : str):
+#     try:
+#         vector = np.array(vector_memory)
+#         vector = vector.flatten()
+#
+#         new_message = ConversationLog(
+#             session_id = session_id,
+#             project_id = project_id,
+#             user_email = user_email,
+#             message_role = message_role,
+#             conversation = conversation,
+#             vector_memory = vector,
+#             request_at = datetime.now(UTC),
+#             case = case
+#         )
+#         db.add(new_message)
+#         db.commit()
+#         return {"message": "Message saved successfully!", "request_at": new_message.request_at}
+#     except Exception as e:
+#         db.rollback()
+#         raise e
+#
+# def download_image(url: str, save_path: str):
+#     try:
+#         response = requests.get(url)
+#         os.makedirs(os.path.dirname(save_path), exist_ok=True)
+#
+#         with open(save_path, 'wb') as f :
+#             f.write(response.content)
+#         print("이미지 저장 완료")
+#     except requests.exceptions.RequestException as e:
+#         print(f"실패 : {e}")
+
+##############  여기 까지 ####################
+
+
+

@@ -271,7 +271,7 @@ async def agent_test(request: TestRequest, db: Session = Depends(get_db)):
 async def request_message2(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     email = request.user_email
     project_id = request.project_id
-    message = request.messageInput
+    message: str = request.messageInput
     session = request.session
     model = request.selected_model
     print(f"사용중인 모델 : {model}")
@@ -286,4 +286,7 @@ async def request_message2(request: RequestMessageRequest, background_tasks: Bac
         return {"response": "해당 모델은 아직 지원되지 않습니다.\n다른 모델을 선택해주세요."}
     api_key = EXAONE_API  # 하드코딩 키, config.py:: EXAONE_API
 
+    llm = get_llm(provider = provider, model=model, api_key="api_key")
+    ai_message = llm.invoke(message)
+    return {"response": ai_message.content}
 

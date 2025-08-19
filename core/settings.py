@@ -1,3 +1,7 @@
+LGAI_MODELS = [
+    'exaone-3.5'
+]
+
 OPENAI_MODELS = [
     'gpt-4',
     'gpt-4o',

@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
-from core.tools import fit_anthropic_model
+from core.tools import fit_anthropic_model, ChatLgAI
 import core.config as config
 from pydantic import SecretStr
 
@@ -17,6 +17,13 @@ def get_llm(provider="openai", model = None, api_key : str = None, temperature =
         model_name = fit_anthropic_model(model_name=model_name)
         return ChatAnthropic(
             anthropic_api_key = SecretStr(api_key or ""),
+            model = model_name,
+            temperature = temperature
+        )
+    elif provider == "lgai":
+        model_name = model or "exaone-3.5"
+        return ChatLgAI(
+            lgai_api_key = "api_key",
             model = model_name,
             temperature = temperature
         )
