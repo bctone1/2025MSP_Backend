@@ -276,22 +276,29 @@ async def request_message2(request: RequestMessageRequest, background_tasks: Bac
     model = request.selected_model
     print(f"사용중인 모델 : {model}")
 
+    # if model in config.OPENAI_MODELS:
+    #     provider = "openai"
+    # elif model in config.ANTHROPIC_MODELS:
+    #     provider = "anthropic"
+    # elif model in config.LGAI_MODELS:
+    #     provider = "lgai"
+
     if model in config.OPENAI_MODELS:
-        provider = "openai"
+        provider, api_key = "openai", config.GPT_API
     elif model in config.ANTHROPIC_MODELS:
-        provider = "anthropic"
+        provider, api_key = "anthropic", config.CLAUDE_API
     elif model in config.LGAI_MODELS:
-        provider = "lgai"
+        provider, api_key = "lgai", config.EXAONE_API
     else:
         return {"response": "해당 모델은 아직 지원되지 않습니다.\n다른 모델을 선택해주세요."}
     api_key = EXAONE_API  # 하드코딩 키, config.py:: EXAONE_API
 
-    llm = get_llm(provider = provider, model=model, api_key="api_key")
+    if not api_key:
+        raise HTTPException(400, f"{provider} API 키가 없습니다.")
+
+    llm = get_llm(provider = provider, model=model, api_key=api_key)
     try:
-        ai_message = await llm.ainvoke(message)            # 또는 llm.invoke(msg)
+        ai_message = await llm.ainvoke(message)
         return {"response": ai_message.content}
     except Exception as e:
         raise HTTPException(502, f"LLM 호출 실패: {e}")
-
-    return {"response": ai_message.content}
-

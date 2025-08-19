@@ -22,12 +22,12 @@ def get_llm(provider="openai", model = None, api_key : str = None, temperature =
         )
     elif provider == "lgai":
         model_name = model or "exaone-3.5"
-        return ChatLgAI(
-            lgai_api_key = "api_key",
-            model = model_name,
+        return ChatOpenAI(
+            openai_api_key=api_key,
+            model_name = model_name,
+            base_url="https://api.friendli.ai/serverless/v1",
             temperature = temperature
         )
-    else:
         raise ValueError(f"지원되지 않는 제공자: {provider}")
 
 
