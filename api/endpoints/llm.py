@@ -286,7 +286,7 @@ async def request_message2(request: RequestMessageRequest, background_tasks: Bac
     if model in config.OPENAI_MODELS:
         provider, api_key = "openai", config.GPT_API
     elif model in config.ANTHROPIC_MODELS:
-        provider, api_key = "anthropic", config.CLAUDE_API
+        provider, api_key = "anthropic", config.DEFAULT_API_KEY
     elif model in config.LGAI_MODELS:
         provider, api_key = "lgai", config.EXAONE_API
     else:
@@ -301,4 +301,4 @@ async def request_message2(request: RequestMessageRequest, background_tasks: Bac
         ai_message = await llm.ainvoke(message)
         return {"response": ai_message.content}
     except Exception as e:
-        raise HTTPException(502, f"LLM 호출 실패: {e}")
+        raise HTTPException(502, f"{provider} 호출 실패: {e.__class__.__name__}: {e}")

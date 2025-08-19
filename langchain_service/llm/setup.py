@@ -25,7 +25,7 @@ def get_llm(provider="openai", model = None, api_key : str = None, temperature =
         model_name = model or "exaone-3.5"
         return ChatOpenAI(
             openai_api_key=api_key,
-            model_name = model_name,
+            model_name = model or "meta-llama-3.3-70b-instruct",
             base_url="https://api.friendli.ai/serverless/v1",
             temperature = temperature
         )
