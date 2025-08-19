@@ -39,7 +39,7 @@ def mask_api_key(api_key: str) -> str:
 
 def ChatLgAI(model_name : str):
     if model_name == 'exaone-3.5':
-        return EXAONE_MODEL[0]
+        return LGAI_MODELS[0]
     else:
         return model_name
 
