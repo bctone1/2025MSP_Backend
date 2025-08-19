@@ -172,6 +172,10 @@ async def change_provider_status_endpoint(request: ProviderStatusRequest, db: Se
 # =======================================
 # LLM 질의 (QA 체인 + 백그라운드 Usage 기록)
 # =======================================
+@langchain_router.post('/RequestMessage2')
+async def request_message2(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    return {"response": "연결확인"}
+
 @langchain_router.post('/RequestMessage')
 async def request_message(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     email = request.user_email
