@@ -1,4 +1,5 @@
-from core.config import CLAUDE_MODELS
+from core.config import CLAUDE_MODELS, LGAI_MODELS
+
 
 def fit_anthropic_model(model_name : str):
     if model_name == 'claude-3-opus':
@@ -34,3 +35,11 @@ def mask_api_key(api_key: str) -> str:
     num_visible = 4
     masked_body = "*" * (len(key_body) - num_visible) + key_body[-num_visible:]
     return prefix + masked_body
+
+
+def ChatLgAI(model_name : str):
+    if model_name == 'exaone-3.5':
+        return EXAONE_MODEL[0]
+    else:
+        return model_name
+
