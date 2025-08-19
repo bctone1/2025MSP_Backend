@@ -3,6 +3,7 @@ from langchain_anthropic import ChatAnthropic
 from core.tools import fit_anthropic_model, ChatLgAI
 import core.config as config
 from pydantic import SecretStr
+from openai import OpenAI
 
 def get_llm(provider="openai", model = None, api_key : str = None, temperature = 0.7):
     if provider == "openai":

@@ -291,7 +291,7 @@ async def request_message2(request: RequestMessageRequest, background_tasks: Bac
         provider, api_key = "lgai", config.EXAONE_API
     else:
         return {"response": "해당 모델은 아직 지원되지 않습니다.\n다른 모델을 선택해주세요."}
-    api_key = EXAONE_API  # 하드코딩 키, config.py:: EXAONE_API
+
 
     if not api_key:
         raise HTTPException(400, f"{provider} API 키가 없습니다.")
