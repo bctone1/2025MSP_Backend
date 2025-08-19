@@ -11,7 +11,7 @@ from langchain_service.chain.image_generator import *
 from langchain_service.vision.download_image import save_image_from_url
 from langchain_service.agent.code_agent import code_agent
 from service.sms.generate_random_code import generate_verification_code
-from core.config import EMBEDDING_API
+from core.config import EMBEDDING_API,OPENAI_API_KEY
 import core.config as config
 import os
 
@@ -174,7 +174,22 @@ async def change_provider_status_endpoint(request: ProviderStatusRequest, db: Se
 # =======================================
 @langchain_router.post('/RequestMessage2')
 async def request_message2(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    return {"response": "연결확인"}
+    email = request.user_email
+    project_id = request.project_id
+    message = request.messageInput
+    session = request.session
+    model = request.selected_model
+    print(model)
+
+    if model in config.OPENAI_MODELS:
+        provider = "openai"
+    elif model in config.ANTHROPIC_MODELS:
+        provider = "anthropic"
+    else:
+        return {"response": "해당 모델은 아직 지원되지 않습니다.\n다른 모델을 선택해주세요."}
+    api_key = OPENAI_API_KEY #하드코딩 키
+
+    return {"response": "연결 확인"}
 
 @langchain_router.post('/RequestMessage')
 async def request_message(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
