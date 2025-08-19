@@ -55,12 +55,12 @@ from database.session import get_db
 # ===== Models / CRUD / Schemas =====
 from models.llm import Provider, AIModel
 from models.agent import Agent, AgentTypeRef
-from crud.agent import (
-    create_agent, get_agent, get_agents,
-    update_agent_status, delete_agent,
-    update_agent_stats, update_agent_settings,
-    get_agent_types
-)
+# from crud.agent import (
+#     create_agent, get_agent, get_agents,
+#     update_agent_status, delete_agent,
+#     update_agent_stats, update_agent_settings,
+#     get_agent_types
+# )
 from schemas.agent import (
     AgentCreate, AgentResponse,
     AgentStatusUpdate, AgentSettingsUpdate, AgentStatsUpdate,

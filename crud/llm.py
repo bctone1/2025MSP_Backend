@@ -380,3 +380,11 @@ def prevent_new_session(db: Session, project_id: int):
     if is_this_first(db=db, session_id=existing_sessions.id):
         return existing_sessions
     return None
+
+
+def is_not_existing(db: Session, session_id : str):
+    existing = db.query(ConversationSession).filter(ConversationSession.id == session_id).first()
+    if not existing:
+        return True
+    else:
+        return False
