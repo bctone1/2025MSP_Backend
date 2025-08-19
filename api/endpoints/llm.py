@@ -287,6 +287,11 @@ async def request_message2(request: RequestMessageRequest, background_tasks: Bac
     api_key = EXAONE_API  # 하드코딩 키, config.py:: EXAONE_API
 
     llm = get_llm(provider = provider, model=model, api_key="api_key")
-    ai_message = llm.invoke(message)
+    try:
+        ai_message = await llm.ainvoke(message)            # 또는 llm.invoke(msg)
+        return {"response": ai_message.content}
+    except Exception as e:
+        raise HTTPException(502, f"LLM 호출 실패: {e}")
+
     return {"response": ai_message.content}
 
