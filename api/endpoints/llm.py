@@ -15,8 +15,8 @@ from core.config import EMBEDDING_API
 import core.config as config
 import os
 
-langchain_router = APIRouter()
 
+langchain_router = APIRouter(tags=["llm"], prefix="/LLM")
 
 # =======================================
 # 파일 업로드 → 요약/벡터화 → DB 저장

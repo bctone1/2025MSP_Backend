@@ -9,7 +9,8 @@ from crud.user import *
 from crud.llm import verify_api_key
 import json
 
-user_router = APIRouter()
+
+user_router = APIRouter(prefix="/user", tags=["user"])
 
 # SMTP 환경변수 (이메일 전송용)
 SMTP_SERVER = config.SMTP_SERVER

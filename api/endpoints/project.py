@@ -4,8 +4,7 @@ from database.session import get_db
 from schemas.project import *
 from crud.project import *
 
-project_router = APIRouter()
-
+project_router = APIRouter(prefix="/project", tags=["project"])
 
 # =======================================
 # 프로젝트 생성
