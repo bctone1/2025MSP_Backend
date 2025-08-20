@@ -11,7 +11,7 @@ from langchain_service.chain.image_generator import *
 from langchain_service.vision.download_image import save_image_from_url
 from langchain_service.agent.code_agent import code_agent
 from service.sms.generate_random_code import generate_verification_code
-from core.config import EMBEDDING_API,OPENAI_API_KEY
+from core.config import EMBEDDING_API,OPENAI_API
 import core.config as config
 import os
 
