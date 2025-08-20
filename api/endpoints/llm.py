@@ -172,24 +172,7 @@ async def change_provider_status_endpoint(request: ProviderStatusRequest, db: Se
 # =======================================
 # LLM 질의 (QA 체인 + 백그라운드 Usage 기록)
 # =======================================
-@langchain_router.post('/RequestMessage2')
-async def request_message2(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    email = request.user_email
-    project_id = request.project_id
-    message = request.messageInput
-    session = request.session
-    model = request.selected_model
-    print(model)
 
-    if model in config.OPENAI_MODELS:
-        provider = "openai"
-    elif model in config.ANTHROPIC_MODELS:
-        provider = "anthropic"
-    else:
-        return {"response": "해당 모델은 아직 지원되지 않습니다.\n다른 모델을 선택해주세요."}
-    api_key = OPENAI_API_KEY #하드코딩 키
-
-    return {"response": "연결 확인"}
 
 @langchain_router.post('/RequestMessage')
 async def request_message(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
@@ -286,8 +269,8 @@ async def agent_test(request: TestRequest, db: Session = Depends(get_db)):
 
 ###### 20205-08-19 #######
 
-@langchain_router.post('/RequestMessage2')
-async def request_message2():
+@langchain_router.post('/Gemenitest')
+async def Gemenitest():
     return {"response" : "요청 성공"}
 
 
