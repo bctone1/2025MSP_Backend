@@ -1,3 +1,4 @@
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from core.tools import fit_anthropic_model
@@ -23,6 +24,15 @@ def get_llm(provider="openai", model = None, api_key : str = None, temperature =
             model = model_name,
             temperature = temperature
         )
+    elif provider == "google":
+        model_name = model or  "gemini-pro"
+        return ChatGoogleGenerativeAI(
+            model=model_name,
+            google_api_key = config.GOOGLE_API,
+            temperature=temperature
+        )
+
+
     elif provider in ("friendli", "lgai"):
         model_name = model or "exaone-3.5"
         return ChatOpenAI(
