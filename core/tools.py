@@ -1,4 +1,4 @@
-from core.config import CLAUDE_MODELS, LGAI_MODELS
+from core.config import CLAUDE_MODELS
 
 
 def fit_anthropic_model(model_name : str):
@@ -37,9 +37,9 @@ def mask_api_key(api_key: str) -> str:
     return prefix + masked_body
 
 
-def ChatLgAI(model_name : str):
+def FRIENDLI_AI(model_name : str):
     if model_name == 'exaone-3.5':
-        return LGAI_MODELS[0]
+        return FRIENDLI_AI[0]
     else:
         return model_name
 

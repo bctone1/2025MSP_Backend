@@ -1,5 +1,5 @@
-LGAI_MODELS = [
-    'exaone-3.5'
+FRIENDLI_MODELS = [
+    'exaone-4.0'
 ]
 
 OPENAI_MODELS = [

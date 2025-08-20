@@ -252,29 +252,35 @@ def get_api_keys(db: Session, email: str):
     }
 
 
+# def get_api_key(db: Session, user_email: str, provider: str):
+#     """
+#     특정 유저/Provider 조합으로 실제 API Key 반환
+#     - OpenAI, Anthropic 같은 경우 하드코딩된 provider_id를 사용 중
+#     """
+    # user = db.query(User).filter(User.email == user_email).first()
+    # user_id = user.id
+    #
+    # if provider == 'openai':
+    #     api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id == 4).first()
+    #     if not api:
+    #         return None
+    #     return api.api_key
+    #
+    # elif provider == "anthropic":
+    #     api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id == 2).first()
+    #     if not api:
+    #         return None
+    #     elif api.api_key == 'Default API Key':
+    #         return config.DEFAULT_API_KEY
+    #     return api.api_key
+
 def get_api_key(db: Session, user_email: str, provider: str):
-    """
-    특정 유저/Provider 조합으로 실제 API Key 반환
-    - OpenAI, Anthropic 같은 경우 하드코딩된 provider_id를 사용 중
-    """
     user = db.query(User).filter(User.email == user_email).first()
-    user_id = user.id
-
-    if provider == 'openai':
-        api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id == 4).first()
-        if not api:
-            return None
-        return api.api_key
-
-    elif provider == "anthropic":
-        api = db.query(ApiKey).filter(ApiKey.user_id == user_id, ApiKey.provider_id == 2).first()
-        if not api:
-            return None
-        elif api.api_key == 'Default API Key':
-            return config.DEFAULT_API_KEY
-        return api.api_key
-
-
+    if not user: return None
+    prov = db.query(Provider).filter(func.lower(Provider.name) == provider.lower()).first()
+    if not prov: return None
+    api = db.query(ApiKey).filter(ApiKey.user_id == user.id, ApiKey.provider_id == prov.id).first()
+    return api.api_key if api else None
 # ===============================
 # 세션 관리
 # ===============================

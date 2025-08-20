@@ -1,9 +1,11 @@
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
-from core.tools import fit_anthropic_model, ChatLgAI
+from core.tools import fit_anthropic_model
 import core.config as config
 from pydantic import SecretStr
 from openai import OpenAI
+import os
+
 
 def get_llm(provider="openai", model = None, api_key : str = None, temperature = 0.7):
     if provider == "openai":
@@ -21,13 +23,13 @@ def get_llm(provider="openai", model = None, api_key : str = None, temperature =
             model = model_name,
             temperature = temperature
         )
-    elif provider == "lgai":
-        model_name = model or "exaone-3.5"
+    elif provider in ("friendli", "lgai"):
+        model_name = model or "exaone-4.0"
         return ChatOpenAI(
-            openai_api_key=api_key,
-            model_name = model or "meta-llama-3.3-70b-instruct",
-            base_url="https://api.friendli.ai/serverless/v1",
-            temperature = temperature
+            openai_api_key=config.FRIENDLI_API,
+            model = config.EXAONE_ENDPOINT,  # (endpoint_id)
+            base_url=config.EXAONE_URL,
+            temperature=temperature
         )
         raise ValueError(f"지원되지 않는 제공자: {provider}")
 

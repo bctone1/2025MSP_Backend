@@ -11,7 +11,7 @@ from langchain_service.chain.image_generator import *
 from langchain_service.vision.download_image import save_image_from_url
 from langchain_service.agent.code_agent import code_agent
 from service.sms.generate_random_code import generate_verification_code
-from core.config import EMBEDDING_API, EXAONE_API
+from core.config import EMBEDDING_API, FRIENDLI_API, CLAUDE_API, OPENAI_API
 import core.config as config
 import os
 
@@ -276,19 +276,14 @@ async def request_message2(request: RequestMessageRequest, background_tasks: Bac
     model = request.selected_model
     print(f"사용중인 모델 : {model}")
 
-    # if model in config.OPENAI_MODELS:
-    #     provider = "openai"
-    # elif model in config.ANTHROPIC_MODELS:
-    #     provider = "anthropic"
-    # elif model in config.LGAI_MODELS:
-    #     provider = "lgai"
-
     if model in config.OPENAI_MODELS:
-        provider, api_key = "openai", config.GPT_API
+        provider, api_key = "openai", config.OPENAI_API
     elif model in config.ANTHROPIC_MODELS:
-        provider, api_key = "anthropic", config.DEFAULT_API_KEY
-    elif model in config.LGAI_MODELS:
-        provider, api_key = "lgai", config.EXAONE_API
+        provider, api_key = "anthropic", config.CLAUDE_API
+    elif model in config.GOOGLE_MODELS:
+        provider, api_key = "google", config.GOOGLE_API
+    elif model in config.FRIENDLI_MODELS:
+        provider, api_key = "friendli", config.FRIENDLI_API
     else:
         return {"response": "해당 모델은 아직 지원되지 않습니다.\n다른 모델을 선택해주세요."}
 
