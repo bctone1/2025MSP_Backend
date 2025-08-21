@@ -57,7 +57,7 @@ class ProjectListResponse(BaseModel):
     }
 
 # =======================================
-#  프로젝트 제공자(Provider) 관리
+#  프로젝트 공급자(Provider) 관리
 # =======================================
 class Provider(BaseModel):
     id : int

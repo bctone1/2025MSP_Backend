@@ -12,7 +12,7 @@ def get_llm(provider="openai", model = None, api_key : str = None, temperature =
     if provider == "openai":
         model_name = model or config.DEFAULT_CHAT_MODEL
         return ChatOpenAI(
-            openai_api_key = api_key,
+            api_key = api_key,
             model_name=model_name,
             temperature = temperature
         )
@@ -25,7 +25,7 @@ def get_llm(provider="openai", model = None, api_key : str = None, temperature =
             temperature = temperature
         )
     elif provider == "google":
-        model_name = model or  "gemini-pro"
+        model_name = model or  "gemini-2.5-pro"
         return ChatGoogleGenerativeAI(
             model=model_name,
             google_api_key = config.GOOGLE_API,
@@ -34,10 +34,10 @@ def get_llm(provider="openai", model = None, api_key : str = None, temperature =
 
 
     elif provider in ("friendli", "lgai"):
-        model_name = model or "exaone-3.5"
+        model_name = model or "LGAI-EXAONE/EXAONE-4.0.1-32B"
         return ChatOpenAI(
-            openai_api_key=config.FRIENDLI_API,
-            model = "LGAI-EXAONE/EXAONE-4.0.1-32B",  # (endpoint_id)
+            api_key=config.FRIENDLI_API,
+            model =model_name ,  # (endpoint_id)
             base_url="https://api.friendli.ai/serverless/v1",
             temperature=temperature
         )

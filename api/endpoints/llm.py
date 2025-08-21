@@ -16,7 +16,7 @@ import core.config as config
 import os
 
 
-langchain_router = APIRouter(tags=["llm"], prefix="/LLM")
+langchain_router = APIRouter(tags=["LLM"], prefix="/LLM")
 # langchain_router = APIRouter()
 
 # =======================================
@@ -287,14 +287,6 @@ async def request_message2(request: RequestMessageRequest, background_tasks: Bac
     else:
         return {"response": "해당 모델은 아직 지원되지 않습니다.\n다른 모델을 선택해주세요."}
 
-# completion = request_message2(
-#     model="LGAI-EXAONE/EXAONE-4.0.1-32B",  # 사용 모델
-#     messages=[
-#         {"role": "system", "content": "You are a helpful assistant."},
-#         {"role": "user", "content": "안녕! 간단하게 자기소개해봐."},
-#     ],
-# )
-# print(completion.choices[0].message.content)
 
 
     if not api_key:
