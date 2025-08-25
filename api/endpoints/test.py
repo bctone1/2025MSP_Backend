@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, UploadFile, File, Form
 from langchain.chains.llm import LLMChain
 from langchain_core.prompts import PromptTemplate
 
@@ -6,6 +6,8 @@ from core.config import GOOGLE_API, CLAUDE_API, OPENAI_API
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.chat_models import ChatOpenAI
 import anthropic
+
+from langchain_service.prompt.file_agent import get_file_agent
 
 test_router = APIRouter(tags=["test"], prefix="/TEST")
 
@@ -38,8 +40,6 @@ async def getModelList(request: Request):
 @test_router.post("/userInputPrompt")
 async def userInputPrompt(request: Request):
     body = await request.json()
-
-
     llm = ChatOpenAI(
         model_name="gpt-3.5-turbo",
         temperature=0,
@@ -65,15 +65,23 @@ async def userInputPrompt(request: Request):
         input_variables=["input"],
         template=template
     )
-
     chain = LLMChain(llm=llm, prompt=prompt)
-
     response = chain.invoke({"input": body["messageInput"]})
-
-    print(response)
-
+    # print(response)
     return {"response": response}
 
+@test_router.post("/uploadRAG")
+async def uploadRAG(request: Request, file: UploadFile = File(...)):
+    form_data = await request.form()
+    project_id = form_data.get("project_id")
+    # project_id = int(project_id) if project_id is not None else None
+    user_email = form_data.get("user_email")
+    session_id = form_data.get("session_id")
+    print(form_data)
+
+    print(file.filename)
+
+    # agent = get_file_agent(origin_name)
 
 
-
+    return {"filename": file.filename}
