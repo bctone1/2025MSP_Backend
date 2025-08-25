@@ -5,6 +5,7 @@ from langchain_core.prompts import PromptTemplate
 from core.config import GOOGLE_API, CLAUDE_API, OPENAI_API
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.chat_models import ChatOpenAI
+from fastapi.responses import JSONResponse
 import anthropic
 
 from langchain_service.prompt.file_agent import get_file_agent
@@ -80,8 +81,34 @@ async def uploadRAG(request: Request, file: UploadFile = File(...)):
     print(form_data)
 
     print(file.filename)
-
     # agent = get_file_agent(origin_name)
-
-
     return {"filename": file.filename}
+
+
+
+@test_router.post("/MSPLogin")
+async def MSPLogin(request: Request):
+    body = await request.json()
+    # print(body["user_email"])
+    # print(body["user_pw"])
+    # print(body["user_name"])
+    print(body)
+
+
+    if body["loginMethod"] =="user" and body["user_email"] == "user" and body["user_pw"] == "123":
+        return {
+            "response": "유저 로그인 성공",
+            "status": True,
+            "name": body["user_name"],
+            "email": body["user_email"],
+            "role" : body["loginMethod"]
+        }
+    elif body["loginMethod"] =="admin" and body["user_email"] =="admin" and body["user_pw"] == "123":
+        return {
+            "response": "관리자 로그인 성공",
+            "status": True,
+            "name": body["user_name"],
+            "email": body["user_email"],
+            "role": body["loginMethod"]
+        }
+    return JSONResponse(content={'message': '회원 정보가 없습니다.'}, status_code=404)
