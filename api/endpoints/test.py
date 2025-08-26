@@ -112,3 +112,11 @@ async def MSPLogin(request: Request):
             "role": body["loginMethod"]
         }
     return JSONResponse(content={'message': '회원 정보가 없습니다.'}, status_code=404)
+
+
+@test_router.post("/MSPSocialLogin")
+async def MSPSocialLogin(request: Request):
+    body = await request.json()
+    print(body)
+
+    return {"response":"소셜 로그인 성공"}
