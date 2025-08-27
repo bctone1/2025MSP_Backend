@@ -116,8 +116,8 @@ class AIModel(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     model_name = Column(String(255), unique=True, nullable=False)
 
-    provider_id = Column(Integer, ForeignKey('provider.id', ondelete='CASCADE'), unique=True, nullable=False)
-    provider_name = Column(String(255), ForeignKey('provider.name', ondelete='CASCADE'), nullable=False)
+    provider_id = Column(Integer, ForeignKey('provider_table.id', ondelete='CASCADE'), unique=True, nullable=False)
+    provider_name = Column(String(255), ForeignKey('provider_table.name', ondelete='CASCADE'), nullable=False)
 
     # 관계: Provider ↔ AIModel (1:N)
     provider = relationship('Provider', backref='ai_models', foreign_keys=[provider_id])
