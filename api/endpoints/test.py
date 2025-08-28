@@ -10,6 +10,18 @@ import anthropic
 
 
 from database.session import get_db #DB 커넥션
+from crud.test import create_user, get_user_by_email #CRUD 임포트
+
+from crud.user import *
+from email.mime.text import MIMEText
+import smtplib
+from email.mime.multipart import MIMEMultipart
+
+# SMTP 환경변수 (이메일 전송용)
+SMTP_SERVER = config.SMTP_SERVER
+SMTP_PORT = config.SMTP_PORT
+SENDER_EMAIL = config.SENDER_EMAIL
+SENDER_PASSWORD = config.SENDER_PASSWORD
 
 
 
@@ -17,8 +29,8 @@ from database.session import get_db #DB 커넥션
 test_router = APIRouter(tags=["test"], prefix="/TEST")
 
 # 랭체인 구글 예시
-@test_router.post("/googletest")
-async def googletest(request: Request):
+@test_router.post("/googlerequest")
+async def googlerequest(request: Request):
     # 요청 정보 출력
     body = await request.json()
     print(body["messageInput"])
@@ -81,41 +93,51 @@ async def userInputPrompt(request: Request):
 async def uploadRAG(request: Request, file: UploadFile = File(...)):
     form_data = await request.form()
     project_id = form_data.get("project_id")
-    # project_id = int(project_id) if project_id is not None else None
     user_email = form_data.get("user_email")
     session_id = form_data.get("session_id")
     print(form_data)
-
     print(file.filename)
-    # agent = get_file_agent(origin_name)
+
     return {"filename": file.filename}
 
 
 # 로그인
 @test_router.post("/MSPLogin")
-async def MSPLogin(request: Request):
+async def MSPLogin(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    # print(body["user_email"])
-    # print(body["user_pw"])
-    # print(body["user_name"])
-    print(body)
-    if body["loginMethod"] =="user" and body["user_email"] == "user" and body["user_pw"] == "123":
+    email = body.get("user_email")
+    password = body.get("user_pw")
+    login_method = body.get("loginMethod")
+
+    # ✅ DB 조회
+    user = get_user_by_email(db, email=email)
+
+    # ✅ 비회원
+    if not user:
         return {
-            "response": "유저 로그인 성공",
-            "status": True,
-            "name": body["user_name"],
-            "email": body["user_email"],
-            "role" : body["loginMethod"]
+            "response": "회원정보가 없습니다.",
+            "status": False,
         }
-    elif body["loginMethod"] =="admin" and body["user_email"] =="admin" and body["user_pw"] == "123":
+    # ✅ 사용자의 권한이 로그인 방법과 틀림
+    if user.role != login_method:
+        return{
+            "response": "로그인 정보가 없습니다. 사용자 역할을 올바르게 선택하세요",
+            "status": False,
+        }
+    # ✅ 비밀번호 검증 (bcrypt 사용 가정)
+    if not bcrypt.checkpw(password.encode("utf-8"), user.password_hash.encode("utf-8")):
         return {
-            "response": "관리자 로그인 성공",
-            "status": True,
-            "name": body["user_name"],
-            "email": body["user_email"],
-            "role": body["loginMethod"]
+            "response": "비밀번호가 틀립니다.",
+            "status": False,
         }
-    return JSONResponse(content={'message': '회원 정보가 없습니다.'}, status_code=404)
+    # ✅ 로그인 성공
+    return {
+        "response": f"{'관리자' if user.role == 'admin' else '유저'} 로그인 성공",
+        "status": True,
+        "name": user.name,
+        "email": user.email,
+        "role": user.role
+    }
 
 
 # 소셜로그인
@@ -127,17 +149,7 @@ async def MSPSocialLogin(request: Request):
     return {"response":"소셜 로그인 성공"}
 
 
-# 아래 메서드에서 사용되는 모듈
-from crud.user import *
-from email.mime.text import MIMEText
-import smtplib
-from email.mime.multipart import MIMEMultipart
 
-# SMTP 환경변수 (이메일 전송용)
-SMTP_SERVER = config.SMTP_SERVER
-SMTP_PORT = config.SMTP_PORT
-SENDER_EMAIL = config.SENDER_EMAIL
-SENDER_PASSWORD = config.SENDER_PASSWORD
 
 # 이메일 인증 요청
 @test_router.post("/MSPSendEmail")
@@ -165,31 +177,72 @@ async def MSPSendEmail(request: Request):
     except Exception as e:
         return JSONResponse(content={'response': f'이메일 전송 실패 : {str(e)}', "result":False}, status_code=500)
 
+
+
+
 # 이메일 중복체크 요청
 @test_router.post("/MSPCheckEmail")
-async def MSPCheckEmail(request: Request):
+async def MSPCheckEmail(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    print(body)
     email = body.get("email")
 
-    if email == "dudqls327@naver.com":
+    if not email:
+        return {
+            "response": "이메일을 입력해주세요.",
+            "result": False
+        }
+
+    # ✅ crud 사용해서 DB 조회
+    user = get_user_by_email(db, email=email)
+    print(user)
+
+    if user:
         return {
             "response": "이미 가입된 이메일 입니다!",
             "result": False
         }
-    else :
+    else:
         return {
             "response": "사용 가능한 이메일 입니다!",
             "result": True
         }
+
+
+
 
 # 회원가입 요청
 @test_router.post("/MSPRegister")
 async def MSPRegister(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     print(body)
+    firstName = body.get("register").get("firstName")
+    lastName= body.get("register").get("lastName")
+    email = body.get("register").get("email")
+    password = body.get("register").get("password")
+    termsAgreed = body.get("register").get("termsAgreed")
+    marketingAgreed = body.get("register").get("marketingAgreed")
 
-    return {
-        "response": "가입이 완료되었습니다!",
-        "result": True
-    }
+    hashed_pw = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+    try:
+        new_user = create_user(
+            db=db,
+            email=email,
+            password_hash=hashed_pw,
+            name=firstName+lastName,
+            role="user",
+            terms_agreed = termsAgreed,
+            marketing_agreed = marketingAgreed
+        )
+        print(f"신규 사용자 생성됨: ID={new_user.user_id}, Email={new_user.email}")
+
+        return {
+            "response": "가입이 완료되었습니다!",
+            "result": True
+        }
+    except ValueError:
+        return {
+            "response": "이미 가입된 이메일입니다!",
+            "result": True
+        }
+        # raise HTTPException(status_code=400, detail="이미 가입된 이메일입니다.")
