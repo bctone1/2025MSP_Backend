@@ -1,5 +1,7 @@
 /myenv/
-core/config.py
+/core/config.py
+/not_using
+.env
 
 __pycache__/
 *.pyc

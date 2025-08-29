@@ -1,3 +1,7 @@
+FRIENDLI_MODELS = [
+    'exaone-4.0'
+]
+
 OPENAI_MODELS = [
     'gpt-4',
     'gpt-4o',

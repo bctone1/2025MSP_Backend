@@ -11,7 +11,7 @@ from langchain_service.chain.image_generator import *
 from langchain_service.vision.download_image import save_image_from_url
 from langchain_service.agent.code_agent import code_agent
 from service.sms.generate_random_code import generate_verification_code
-from core.config import EMBEDDING_API,OPENAI_API
+from core.config import EMBEDDING_API, FRIENDLI_API, CLAUDE_API, OPENAI_API
 import core.config as config
 import os
 
@@ -172,8 +172,6 @@ async def change_provider_status_endpoint(request: ProviderStatusRequest, db: Se
 # =======================================
 # LLM 질의 (QA 체인 + 백그라운드 Usage 기록)
 # =======================================
-
-
 @langchain_router.post('/RequestMessage')
 async def request_message(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     email = request.user_email
@@ -269,8 +267,34 @@ async def agent_test(request: TestRequest, db: Session = Depends(get_db)):
 
 ###### 20205-08-19 #######
 
-@langchain_router.post('/Gemenitest')
-async def Gemenitest():
-    return {"response" : "요청 성공"}
+@langchain_router.post('/RequestMessage2')
+async def request_message2(request: RequestMessageRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    email = request.user_email
+    project_id = request.project_id
+    message: str = request.messageInput
+    session = request.session
+    model = request.selected_model
+    print(f"사용중인 모델 : {model}")
+
+    if model in config.OPENAI_MODELS:
+        provider, api_key = "openai", config.OPENAI_API
+    elif model in config.ANTHROPIC_MODELS:
+        provider, api_key = "anthropic", config.CLAUDE_API
+    elif model in config.GOOGLE_MODELS:
+        provider, api_key = "google", config.GOOGLE_API
+    elif model in config.FRIENDLI_MODELS:
+        provider, api_key = "friendli", config.FRIENDLI_API
+    else:
+        return {"response": "해당 모델은 아직 지원되지 않습니다.\n다른 모델을 선택해주세요."}
 
 
+
+    if not api_key:
+        raise HTTPException(400, f"{provider} API 키가 없습니다.")
+
+    llm = get_llm(provider = provider, model=model, api_key=api_key)
+    try:
+        ai_message = await llm.ainvoke(message)
+        return {"response": ai_message.content}
+    except Exception as e:
+        raise HTTPException(502, f"{provider} 호출 실패: {e.__class__.__name__}: {e}")

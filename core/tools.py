@@ -1,5 +1,6 @@
 from core.config import CLAUDE_MODELS
 
+
 def fit_anthropic_model(model_name : str):
     if model_name == 'claude-3-opus':
         return CLAUDE_MODELS[0]
@@ -34,3 +35,11 @@ def mask_api_key(api_key: str) -> str:
     num_visible = 4
     masked_body = "*" * (len(key_body) - num_visible) + key_body[-num_visible:]
     return prefix + masked_body
+
+
+def FRIENDLI_AI(model_name : str):
+    if model_name == 'exaone-3.5':
+        return FRIENDLI_AI[0]
+    else:
+        return model_name
+
