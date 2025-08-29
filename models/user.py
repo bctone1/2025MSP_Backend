@@ -20,6 +20,8 @@ class MSP_USER(Base):
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())  # 가입일
     updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())  # 수정일
 
+    projects = relationship("MSP_Project",back_populates="user",cascade="all, delete-orphan")
+
 
 
 #================================================================================================================================================

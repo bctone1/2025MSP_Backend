@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, func, BigInteger
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, func, BigInteger,Table,JSON
 from database.base import Base
 from sqlalchemy.orm import relationship, backref
 from pgvector.sqlalchemy import Vector
@@ -9,6 +9,16 @@ from pgvector.sqlalchemy import Vector
 #================================================================================================================================================
 #================================================================================================================================================
 #================================================================================================================================================
+
+# 중간 테이블 (프로젝트 ↔ 지식 연결)
+project_knowledge_association = Table(
+    "_msp_project_knowledge_association",
+    Base.metadata,
+    Column("project_id", Integer, ForeignKey("_msp_project_table.id", ondelete="CASCADE"), primary_key=True),
+    Column("knowledge_id", Integer, ForeignKey("_msp_knowledge_table.id", ondelete="CASCADE"), primary_key=True)
+)
+
+
 class MSP_Project(Base):
     __tablename__ = "_msp_project_table"
 
@@ -20,13 +30,20 @@ class MSP_Project(Base):
     cost = Column(String(50), nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
 
+    user = relationship("MSP_USER",back_populates="projects")
+
     # 관계 설정
-    conversations = relationship("MSP_Conversation", back_populates="project", cascade="all, delete-orphan")
-    knowledge = relationship("MSP_Knowledge", back_populates="project", cascade="all, delete-orphan")
+    chat_sessions = relationship("MSP_Chat_Session", back_populates="project", cascade="all, delete-orphan")
 
+    # ✅ 다대다 관계 (프로젝트 삭제 시 연결만 삭제됨, 지식은 보존됨)
+    knowledge = relationship(
+        "MSP_Knowledge",
+        secondary=project_knowledge_association,
+        back_populates="projects"
+    )
 
-class MSP_Conversation(Base):
-    __tablename__ = "_msp_conversation_table"
+class MSP_Chat_Session(Base):
+    __tablename__ = "_msp_chat_session_table"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     project_id = Column(Integer, ForeignKey("_msp_project_table.id", ondelete="CASCADE"), nullable=False)
@@ -35,25 +52,42 @@ class MSP_Conversation(Base):
     status = Column(String(50), nullable=True)
     date = Column(String(100), nullable=True)  # "2시간 전", "어제" → 문자열 저장 (또는 TIMESTAMP로 바꿀 수도 있음)
     preview = Column(Text, nullable=True)
-    messages = Column(Integer, default=0)
-
+    message_count = Column(Integer, default=0)
     # 관계 역방향
-    project = relationship("MSP_Project", back_populates="conversations")
+    project = relationship("MSP_Project", back_populates="chat_sessions")
+    messages = relationship("MSP_Message", back_populates="session", cascade="all, delete-orphan")
+
+class MSP_Message(Base):
+    __tablename__ = "_msp_message_table"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    # 어떤 세션에 속한 메시지인지
+    session_id = Column(Integer, ForeignKey("_msp_chat_session_table.id", ondelete="CASCADE"), nullable=False)
+    role = Column(String(50), nullable=False)
+    content = Column(Text, nullable=False)
+    # 첨부 파일, 이미지, JSON 등 멀티모달 확장 고려
+    extra_data = Column(JSON, nullable=True)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+    # 관계
+    session = relationship("MSP_Chat_Session", back_populates="messages")
+
 
 
 class MSP_Knowledge(Base):
     __tablename__ = "_msp_knowledge_table"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    project_id = Column(Integer, ForeignKey("_msp_project_table.id", ondelete="CASCADE"), nullable=False)
-
     name = Column(String(255), nullable=False)
     type = Column(String(50), nullable=True)
     size = Column(String(50), nullable=True)
-    uploaded = Column(String(100), nullable=True)  # "2일 전", "1주 전" 등 (원하면 TIMESTAMP로 바꿀 수도 있음)
+    uploaded = Column(String(100), nullable=True)
 
-    # 관계 역방향
-    project = relationship("MSP_Project", back_populates="knowledge")
+    # 역방향 관계
+    projects = relationship(
+        "MSP_Project",
+        secondary=project_knowledge_association,
+        back_populates="knowledge"
+    )
 
 
 
