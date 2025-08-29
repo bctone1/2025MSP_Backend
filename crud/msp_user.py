@@ -58,3 +58,35 @@ def delete_user(db: Session, user_id: int) -> bool:
     db.delete(user)
     db.commit()
     return True
+
+
+def create_social_user(
+    db: Session,
+    email: str,
+    name: str,
+    profile_image: str = None,
+    role: str = "user"
+) -> MSP_USER:
+    """
+    소셜 로그인용 유저 생성 또는 기존 유저 조회
+    """
+    # 1. 기존 유저 확인
+    user = db.query(MSP_USER).filter(MSP_USER.email == email).first()
+    if user:
+        return user  # 이미 존재하면 그대로 반환 (로그인 처리)
+
+    # 2. 신규 유저 생성
+    new_user = MSP_USER(
+        email=email,
+        password_hash="blogcodi0318",
+        name=name,
+        role=role
+    )
+    db.add(new_user)
+    try:
+        db.commit()
+        db.refresh(new_user)
+        return new_user
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("유저 생성 중 오류 발생")

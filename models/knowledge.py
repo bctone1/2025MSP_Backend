@@ -1,8 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, func, BigInteger,Table,JSON
 from database.base import Base
 from sqlalchemy.orm import relationship, backref
-from models.project import project_knowledge_association
-
+from models.associations import project_knowledge_association  # 🔥 여기서 import
 
 class MSP_Knowledge(Base):
     __tablename__ = "_msp_knowledge_table"

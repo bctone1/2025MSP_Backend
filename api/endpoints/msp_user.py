@@ -10,12 +10,14 @@ import anthropic
 
 
 from database.session import get_db #DB 커넥션
-from crud.test import create_user, get_user_by_email #CRUD 임포트
+from crud.msp_user import create_user, get_user_by_email, create_social_user  # CRUD 임포트
 
 from crud.user import *
 from email.mime.text import MIMEText
 import smtplib
 from email.mime.multipart import MIMEMultipart
+
+
 
 # SMTP 환경변수 (이메일 전송용)
 SMTP_SERVER = config.SMTP_SERVER
@@ -26,7 +28,7 @@ SENDER_PASSWORD = config.SENDER_PASSWORD
 
 
 
-test_router = APIRouter(tags=["test"], prefix="/TEST")
+test_router = APIRouter(tags=["msp_user"], prefix="/MSP_USER")
 
 # 랭체인 구글 예시
 @test_router.post("/googlerequest")
@@ -136,18 +138,37 @@ async def MSPLogin(request: Request, db: Session = Depends(get_db)):
         "status": True,
         "name": user.name,
         "email": user.email,
-        "role": user.role
+        "role": user.role,
+        "id" : user.user_id
     }
 
 
 # 소셜로그인
+# @test_router.post("/MSPSocialLogin")
+# async def MSPSocialLogin(request: Request):
+#     body = await request.json()
+#     print(body)
+#
+#     return {"response":"소셜 로그인 성공"}
+
 @test_router.post("/MSPSocialLogin")
-async def MSPSocialLogin(request: Request):
+async def MSPSocialLogin(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
-    print(body)
+    email = body.get("email")
+    name = body.get("name")
+    image = body.get("image")
 
-    return {"response":"소셜 로그인 성공"}
+    if not email:
+        return {"error": "이메일 필요"}
 
+    user = create_social_user(db=db, email=email, name=name, profile_image=image)
+
+    return {
+        "response": "로그인 성공",
+        "user_id": user.user_id,
+        "name": user.name,
+        "id":user.user_id
+    }
 
 
 
