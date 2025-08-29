@@ -3,9 +3,6 @@ from database.base import Base
 from sqlalchemy.orm import relationship, backref
 from pgvector.sqlalchemy import Vector
 
-
-
-
 #================================================================================================================================================
 #================================================================================================================================================
 #================================================================================================================================================
@@ -36,32 +33,7 @@ class MSP_Project(Base):
     chat_sessions = relationship("MSP_Chat_Session", back_populates="project", cascade="all, delete-orphan")
 
     # ✅ 다대다 관계 (프로젝트 삭제 시 연결만 삭제됨, 지식은 보존됨)
-    knowledge = relationship(
-        "MSP_Knowledge",
-        secondary=project_knowledge_association,
-        back_populates="projects"
-    )
-
-
-
-
-class MSP_Knowledge(Base):
-    __tablename__ = "_msp_knowledge_table"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(255), nullable=False)
-    type = Column(String(50), nullable=True)
-    size = Column(String(50), nullable=True)
-    uploaded = Column(String(100), nullable=True)
-
-    # 역방향 관계
-    projects = relationship(
-        "MSP_Project",
-        secondary=project_knowledge_association,
-        back_populates="knowledge"
-    )
-
-
+    knowledge = relationship("MSP_Knowledge",secondary=project_knowledge_association,back_populates="projects")
 
 
 #================================================================================================================================================

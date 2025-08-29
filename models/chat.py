@@ -1,10 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, func, BigInteger, Table, JSON
 from database.base import Base
 from sqlalchemy.orm import relationship, backref
-from pgvector.sqlalchemy import Vector
-
-
-
 
 
 class MSP_Chat_Session(Base):
