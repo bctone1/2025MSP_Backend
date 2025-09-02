@@ -1,71 +1,82 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+
+from models import MSP_Chat_Session
 from models.project import *
 from models.user import User
 from models.llm import *
-from typing import List
+from typing import List, Optional
+from sqlalchemy.orm import joinedload
 
-def create_new_project(db : Session, name : str, desc : str, category : str, model : str, user_email : str, provider : str):
-    new_project = Project(
-        user_email = user_email,
-        project_name = name,
+
+def create_project(
+    db: Session,
+    user_id: int,
+    name: str,
+    category: Optional[str] = None,
+    description: Optional[str] = None,
+    status: Optional[str] = None,
+    cost: Optional[str] = None,
+) -> MSP_Project:
+    new_project = MSP_Project(
+        user_id=user_id,
+        name=name,
         category=category,
-        description = desc,
-        provider=provider,
-        ai_model = model
+        description=description,
+        status=status,
+        cost=cost,
     )
     db.add(new_project)
     db.commit()
     db.refresh(new_project)
     return new_project
 
-def get_provider(db: Session):
-    providers = db.execute(select(Provider.id, Provider.name, Provider.status, Provider.website, Provider.description)).all()
+#
+# def get_projects_by_user(db: Session, user_id: int) -> List[MSP_Project]:
+#     return db.query(MSP_Project).filter(MSP_Project.user_id == user_id).all()
 
-# 여러 개의 딕셔너리로 구성된 리스트
+def get_projects_by_user(db: Session, user_id: int) -> List[MSP_Project]:
+    return (
+        db.query(MSP_Project)
+        .options(
+            # chat_sessions와 그 안의 messages를 함께 로드
+            joinedload(MSP_Project.chat_sessions).joinedload(MSP_Chat_Session.messages),
+            # project와 연결된 knowledge
+            joinedload(MSP_Project.knowledge)
+        )
+        .filter(MSP_Project.user_id == user_id)
+        .all()
+    )
+
+
+def serialize_project(p: MSP_Project):
     return {
-        "providers": [
+        "id": p.id,
+        "name": p.name,
+        "description": p.description,
+        "status": p.status,
+        "cost": p.cost,
+        "conversations": [
             {
-                "id" : p.id,
-                "name": p.name,
-                "status": p.status,
-                "website": p.website,
-                "description": p.description
-            } for p in providers
+                "id": s.id,
+                "title": s.title or "",
+                "status": s.status or "",
+                "date": getattr(s, "created_at", None).strftime("%Y-%m-%d %H:%M")
+                        if getattr(s, "created_at", None) else None,
+                "preview": s.preview or "",
+                "messages": len(s.messages) if s.messages is not None else 0
+            }
+            for s in p.chat_sessions or []
+        ],
+        "knowledge": [
+            {
+                "id": k.id,
+                "name": k.name or "",
+                "type": k.type or "",
+                "size": k.size,
+                "uploaded": getattr(k, "uploaded_at", None).strftime("%Y-%m-%d")
+                            if getattr(k, "uploaded_at", None) else None
+            }
+            for k in p.knowledge or []
         ]
     }
-
-def delete_session(db: Session, session_id : str):
-    session = db.query(ConversationSession).filter(ConversationSession.id == session_id).first()
-    if session:
-        db.delete(session)
-        db.commit()
-
-def delete_infobase(db: Session, infobase_id : int):
-    file = db.query(ProjectInfoBase).filter(ProjectInfoBase.id == infobase_id).first()
-    if file:
-        db.delete(file)
-        db.commit()
-
-def select_and_delete_infobase(db: Session, project_id : int, file_name : str):
-    file_url = 'saved_file/' + file_name
-    files = db.query(ProjectInfoBase).filter(ProjectInfoBase.project_id == project_id, ProjectInfoBase.file_url == file_url).all()
-    for file in files:
-        db.delete(file)
-        db.commit()
-
-def delete_project(db: Session, project_ids:List[int]):
-    db.query(Project).filter(Project.project_id.in_(project_ids)).delete(synchronize_session=False)
-    db.commit()
-    return "deleted"
-
-def get_project_list(db : Session, email : str):
-    user_role = db.query(User.role).filter(User.email == email).first()[0]
-    if user_role.lower() == "admin":
-        total_list = db.query(Project).order_by(Project.project_id.desc()).all()
-        return total_list
-    else:
-        personal_list = (db.query(Project).filter(Project.user_email.ilike(email.lower())).
-                         order_by(Project.project_id.desc()).
-                         all())
-        return personal_list

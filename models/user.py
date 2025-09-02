@@ -21,6 +21,7 @@ class MSP_USER(Base):
     updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())  # 수정일
 
     projects = relationship("MSP_Project",back_populates="user",cascade="all, delete-orphan")
+    knowledge = relationship("MSP_Chat_Session",back_populates="user",cascade="all, delete-orphan")
 
 
 

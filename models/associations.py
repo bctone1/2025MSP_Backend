@@ -18,3 +18,10 @@ project_knowledge_association = Table(
     Column("project_id", Integer, ForeignKey("_msp_project_table.id", ondelete="CASCADE"), primary_key=True),
     Column("knowledge_id", Integer, ForeignKey("_msp_knowledge_table.id", ondelete="CASCADE"), primary_key=True)
 )
+
+session_knowledge_association = Table(
+    "_msp_session_knowledge_association",
+    Base.metadata,
+    Column("session_id", Integer, ForeignKey("_msp_chat_session_table.id", ondelete="CASCADE"), primary_key=True),
+    Column("knowledge_id", Integer, ForeignKey("_msp_knowledge_table.id", ondelete="CASCADE"), primary_key=True)
+)
