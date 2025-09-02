@@ -1,0 +1,69 @@
+app/services/ingestion/
+├─ preprocess/
+│  ├─ split_pdf.py            # PDF → 페이지/범위 분할
+│  ├─ analyzer_upstage.py     # Upstage Layout API 호출 래퍼
+│  ├─ extract_assets.py       # JSON→이미지·테이블·좌표 추출
+│  ├─ render_html_md.py       # 블록→HTML/Markdown 렌더
+│  └─ __init__.py
+├─ parser.py                  # 오케스트레이터(아래 모듈 조합)
+├─ chunker.py                 # 문단/문장/토큰 청킹
+├─ loader.py                  # 업로드→정규화 진입점
+└─ __init__.py
+
+각 단계는 입력 → 출력만 명확히 한다
+
+1. loader.py
+* 입력: 업로드 파일 경로, 프로젝트·KB 식별자
+* 작업: 파일 유형 검사, 작업 폴더 생성, 로그 시작
+* 출력: `input_pdf` 경로 → parser로 전달
+
+2. parser.py (오케스트레이터)
+* 입력: `input_pdf`, 작업 폴더, API 키
+* 작업: 아래 preprocess 모듈들을 순차 호출해 **정규화 산출물(MD/HTML) + 블록 리스트** 생성
+* 출력: `html_path`, `md_path`, `blocks`, `images` → chunker로 전달
+
+3. preprocess/split_pdf.py
+* 입력: `input_pdf`, `batch_size`
+* 작업: PDF를 배치 단위로 분할
+* 출력: 분할 PDF 리스트 `[part_0000_0009.pdf, ...]`
+
+4. preprocess/analyzer_upstage.py
+* 입력: 분할 PDF 1개
+* 작업: Upstage Layout API 호출 → 요소(텍스트/표/그림) 레이아웃 분석
+* 출력: 동일 prefix의 `.json` 파일
+
+5. preprocess/extract_assets.py
+* 입력: 원본 `input_pdf`, JSON 리스트
+* 작업:
+  * figure 좌표 → 원본 PDF 페이지에서 이미지 크롭 저장
+  * JSON elements → `blocks`(text/table/figure, page, html, coords 등)로 정규화
+* 출력: `blocks`, `images` 경로 리스트
+
+6. preprocess/render_html_md.py
+* 입력: `blocks`, `out_dir`, `base_name`
+* 작업: blocks의 html/text를 합쳐 HTML 생성 → HTML을 Markdown으로 변환
+* 출력: `{html_path, md_path}`
+
+7. chunker.py
+* 입력: `blocks`
+* 작업: 문단/문장/토큰 규칙에 따라 청킹, 표·그림은 그대로 유지
+* 출력: `entries`(청킹 단위 콘텐츠)
+
+8. 임베딩·저장 (vector 계층; pgvector_store 등)
+* 입력: `entries`
+* 작업: 임베딩 계산 → `knowledge_entry(vector, meta)` 저장
+* 출력: DB 레코드 ID들
+
+9. 메타 기록·로그
+* `knowledge_base.meta` 업데이트: `original_format`, `derived_formats`, `html_path`, `md_path`, `page_count`, `has_ocr`
+* `conversation_logs`에 파이프라인 실행 로그 및 추후 검색 시 `retrieved_entries` 기록
+
+오류 처리 핵심 지점
+
+* Upstage 응답 비정상 → 재시도/폴백(ocr=True)
+* 이미지 크롭 실패 → 해당 블록 건너뛰고 로그 적재
+* 임베딩 실패 → 배치 재시도 후 실패분만 격리 저장
+
+산출물 정리
+* 파일: `<work_dir>/<base>.html`, `<work_dir>/<base>.md`, `page_*_figure_*.png`
+* DB: `knowledge_entry` n건, `knowledge_base.meta` 갱신, `conversation_logs` 기록
