@@ -3,8 +3,12 @@ from api.endpoints import user
 from api.endpoints import project
 from api.endpoints import llm
 from api.endpoints import agent
+
+
 from api.endpoints import msp_user
 from api.endpoints import msp_project
+from api.endpoints import msp_chat
+from api.endpoints import msp_service
 
 router = APIRouter()
 
@@ -12,8 +16,12 @@ router.include_router(user.user_router)
 router.include_router(project.project_router)
 router.include_router(llm.langchain_router)
 router.include_router(agent.agent_router)
-router.include_router(msp_user.test_router)
-router.include_router(msp_project.test_router)
+
+
+router.include_router(msp_user.user_router)
+router.include_router(msp_project.project_router)
+router.include_router(msp_chat.chat_router)
+router.include_router(msp_service.service_router)
 
 
 """

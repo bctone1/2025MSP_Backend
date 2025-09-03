@@ -1,62 +1,17 @@
 from fastapi import APIRouter, Request, UploadFile, File, Form, Depends
 from langchain.chains.llm import LLMChain
 from langchain_core.prompts import PromptTemplate
-
-from core.config import GOOGLE_API, CLAUDE_API, OPENAI_API
-from langchain_google_genai import ChatGoogleGenerativeAI
+from core.config import   OPENAI_API
 from langchain_community.chat_models import ChatOpenAI
-from fastapi.responses import JSONResponse
-import anthropic
-
-
 from database.session import get_db #DB 커넥션
 from crud.msp_user import create_user, get_user_by_email, create_social_user  # CRUD 임포트
-
 from crud.user import *
-from email.mime.text import MIMEText
-import smtplib
-from email.mime.multipart import MIMEMultipart
 
-
-
-# SMTP 환경변수 (이메일 전송용)
-SMTP_SERVER = config.SMTP_SERVER
-SMTP_PORT = config.SMTP_PORT
-SENDER_EMAIL = config.SENDER_EMAIL
-SENDER_PASSWORD = config.SENDER_PASSWORD
-
-
-
-
-test_router = APIRouter(tags=["msp_user"], prefix="/MSP_USER")
-
-# 랭체인 구글 예시
-@test_router.post("/googlerequest")
-async def googlerequest(request: Request):
-    # 요청 정보 출력
-    body = await request.json()
-    print(body["messageInput"])
-    print(body["selected_model"])
-
-    # LLM 호출
-    llm = ChatGoogleGenerativeAI(model=body["selected_model"], api_key=GOOGLE_API)
-    result = llm.invoke(body["messageInput"])
-    print("LLM Result:", result.content)
-
-    return {"response": result.content}
-
-# 엔트로픽 모델 리스트 가져오기
-@test_router.post("/getModelList")
-async def getModelList(request: Request):
-    client = anthropic.Anthropic(api_key=CLAUDE_API)
-
-    result = client.models.list(limit=20)
-    print(result)
-    return{"response": "엔트로픽 모델리스트 테스트", "models":result}
+user_router = APIRouter(tags=["msp_user"], prefix="/MSP_USER")
 
 
 # 사용자 의도파악 프롬프트 예시
-@test_router.post("/userInputPrompt")
+@user_router.post("/userInputPrompt")
 async def userInputPrompt(request: Request):
     body = await request.json()
     llm = ChatOpenAI(
@@ -90,21 +45,11 @@ async def userInputPrompt(request: Request):
     return {"response": response}
 
 
-# Rag 파일업로드 요청
-@test_router.post("/uploadRAG")
-async def uploadRAG(request: Request, file: UploadFile = File(...)):
-    form_data = await request.form()
-    project_id = form_data.get("project_id")
-    user_email = form_data.get("user_email")
-    session_id = form_data.get("session_id")
-    print(form_data)
-    print(file.filename)
 
-    return {"filename": file.filename}
 
 
 # 로그인
-@test_router.post("/MSPLogin")
+@user_router.post("/MSPLogin")
 async def MSPLogin(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     email = body.get("user_email")
@@ -144,14 +89,7 @@ async def MSPLogin(request: Request, db: Session = Depends(get_db)):
 
 
 # 소셜로그인
-# @test_router.post("/MSPSocialLogin")
-# async def MSPSocialLogin(request: Request):
-#     body = await request.json()
-#     print(body)
-#
-#     return {"response":"소셜 로그인 성공"}
-
-@test_router.post("/MSPSocialLogin")
+@user_router.post("/MSPSocialLogin")
 async def MSPSocialLogin(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     email = body.get("email")
@@ -172,37 +110,10 @@ async def MSPSocialLogin(request: Request, db: Session = Depends(get_db)):
 
 
 
-# 이메일 인증 요청
-@test_router.post("/MSPSendEmail")
-async def MSPSendEmail(request: Request):
-    body = await request.json()
-    print(body)
-    email = body.get("email")
-    secretCode = body.get("secretCode")
-
-    return JSONResponse(content={"response": "이메일 확인 후 인증번호를 입력해주세요", "result": True}, status_code=200)
-
-    subject = "이메일 인증 코드"
-    body = f"귀하의 인증 코드는 {body["secretCode"]}입니다."
-    msg = MIMEMultipart()
-    msg['From'], msg['To'], msg['Subject'] = config.SENDER_EMAIL, email, subject
-    msg.attach(MIMEText(body, 'plain'))
-
-    try:
-        server = smtplib.SMTP(config.SMTP_SERVER, config.SMTP_PORT)
-        server.starttls()
-        server.login(config.SENDER_EMAIL, config.SENDER_PASSWORD)
-        server.sendmail(config.SENDER_EMAIL, email, msg.as_string())
-        server.quit()
-        return JSONResponse(content={"response": "중복확인 되었습니다! 인증번호를 입력해주세요.", "result":True}, status_code=200)
-    except Exception as e:
-        return JSONResponse(content={'response': f'이메일 전송 실패 : {str(e)}', "result":False}, status_code=500)
-
-
 
 
 # 이메일 중복체크 요청
-@test_router.post("/MSPCheckEmail")
+@user_router.post("/MSPCheckEmail")
 async def MSPCheckEmail(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     email = body.get("email")
@@ -232,7 +143,7 @@ async def MSPCheckEmail(request: Request, db: Session = Depends(get_db)):
 
 
 # 회원가입 요청
-@test_router.post("/MSPRegister")
+@user_router.post("/MSPRegister")
 async def MSPRegister(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     print(body)

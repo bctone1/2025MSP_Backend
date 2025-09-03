@@ -13,7 +13,7 @@ class MSP_Chat_Session(Base):
     project_id = Column(Integer, ForeignKey("_msp_project_table.id", ondelete="CASCADE"), nullable=True)
     title = Column(String(255), nullable=False)
     status = Column(String(50), nullable=True)
-    date = Column(String(100), nullable=True)  # "2시간 전", "어제" → 문자열 저장 (또는 TIMESTAMP로 바꿀 수도 있음)
+    created_at = Column(TIMESTAMP, server_default=func.now())
     preview = Column(Text, nullable=True)
     message_count = Column(Integer, default=0)
     # 관계 역방향
