@@ -1,10 +1,47 @@
 from sqlalchemy.orm import Session
-
+from sqlalchemy import desc
 from models import *
+from datetime import datetime
 
 
 def get_sessions_by_user(db: Session, user_id: int):
-    return db.query(MSP_Chat_Session).filter(MSP_Chat_Session.user_id == user_id).all()
+    return (
+        db.query(MSP_Chat_Session)
+        .filter(MSP_Chat_Session.user_id == user_id)
+        .order_by(desc(MSP_Chat_Session.id))  # id 기준 내림차순
+        .all()
+    )
+
+
+
+
+
+def create_session(
+    db: Session,
+    user_id: int,
+    title: str,
+    project_id: int = None,
+    preview: str = None,
+) -> MSP_Chat_Session:
+    """
+    새로운 채팅 세션을 생성하고 DB에 저장하는 함수
+    """
+    new_session = MSP_Chat_Session(
+        user_id=user_id,
+        project_id=project_id,
+        title=title,
+        preview=preview,
+        created_at=datetime.utcnow()
+    )
+    db.add(new_session)
+    db.commit()
+    db.refresh(new_session)  # 새로 생성된 id 값 등을 반영
+    return new_session
+
+
+
+
+
 
 def get_messages_by_session(db: Session, session_id:int):
     return db.query(MSP_Message).filter(MSP_Message.session_id==session_id).all()

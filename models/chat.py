@@ -12,10 +12,10 @@ class MSP_Chat_Session(Base):
     user_id = Column(BigInteger, ForeignKey("_msp_user_table.user_id", ondelete="CASCADE"), nullable=False)
     project_id = Column(Integer, ForeignKey("_msp_project_table.id", ondelete="CASCADE"), nullable=True)
     title = Column(String(255), nullable=False)
-    status = Column(String(50), nullable=True)
+    # status = Column(String(50), nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
     preview = Column(Text, nullable=True)
-    message_count = Column(Integer, default=0)
+    # message_count = Column(Integer, default=0)
     # 관계 역방향
     project = relationship("MSP_Project", back_populates="chat_sessions")
     messages = relationship("MSP_Message", back_populates="session", cascade="all, delete-orphan")

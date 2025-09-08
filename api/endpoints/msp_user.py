@@ -1,49 +1,10 @@
 from fastapi import APIRouter, Request, UploadFile, File, Form, Depends
-from langchain.chains.llm import LLMChain
-from langchain_core.prompts import PromptTemplate
-from core.config import   OPENAI_API
-from langchain_community.chat_models import ChatOpenAI
+
 from database.session import get_db #DB 커넥션
 from crud.msp_user import create_user, get_user_by_email, create_social_user  # CRUD 임포트
 from crud.user import *
 
 user_router = APIRouter(tags=["msp_user"], prefix="/MSP_USER")
-
-
-# 사용자 의도파악 프롬프트 예시
-@user_router.post("/userInputPrompt")
-async def userInputPrompt(request: Request):
-    body = await request.json()
-    llm = ChatOpenAI(
-        model_name="gpt-3.5-turbo",
-        temperature=0,
-        streaming=False,
-        openai_api_key=OPENAI_API
-    )
-
-    template = """
-    다음은 사용자가 보낸 요청입니다:
-    "{input}"
-
-    위 요청을 분석해서 아래 JSON 형식으로만 답변하세요:
-    {{
-        "language": "...",
-        "domain": "...",
-        "complexity": "...",
-        "accuracyImportance": "...",
-        "recommendedModel": "..."
-    }}
-    """
-
-    prompt = PromptTemplate(
-        input_variables=["input"],
-        template=template
-    )
-    chain = LLMChain(llm=llm, prompt=prompt)
-    response = chain.invoke({"input": body["messageInput"]})
-    # print(response)
-    return {"response": response}
-
 
 
 

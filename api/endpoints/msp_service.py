@@ -7,6 +7,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 import core.config as config
 
+from service.prompt import preview_prompt
 
 # SMTP 환경변수 (이메일 전송용)
 SMTP_SERVER = config.SMTP_SERVER
@@ -15,6 +16,16 @@ SENDER_EMAIL = config.SENDER_EMAIL
 SENDER_PASSWORD = config.SENDER_PASSWORD
 
 service_router = APIRouter(tags=["msp_service"], prefix="/MSP_SERVICE")
+
+
+# 사용자 의도파악 프롬프트 예시
+@service_router.post("/userInputPrompt")
+async def userInputPrompt(request: Request):
+    body = await request.json()
+    input = body.get("messageInput")
+
+    preview = preview_prompt(input)
+    return {"preview": preview}
 
 
 # 엔트로픽 모델 리스트 가져오기

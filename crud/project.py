@@ -60,7 +60,7 @@ def serialize_project(p: MSP_Project):
             {
                 "id": s.id,
                 "title": s.title or "",
-                "status": s.status or "",
+                # "status": s.status or "",
                 "date": getattr(s, "created_at", None).strftime("%Y-%m-%d %H:%M")
                         if getattr(s, "created_at", None) else None,
                 "preview": s.preview or "",

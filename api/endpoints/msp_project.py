@@ -60,9 +60,13 @@ async def msp_read_user_project(request: Request, db: Session = Depends(get_db))
         raise HTTPException(status_code=400, detail="user_id는 필수입니다.")
 
     projects = get_projects_by_user(db, user_id)
-
-    return {
-        "user_id": user_id,
-        "projects": [serialize_project(p) for p in projects]
-    }
+    if projects :
+        return {
+            "user_id": user_id,
+            "projects": [serialize_project(p) for p in projects]
+        }
+    else:
+        return{
+            "user_id":None
+        }
 
