@@ -42,7 +42,7 @@ async def msp_request_message(
     session_id = body.get("session_id")
     user_id = body.get("user_id")
     role = body.get("role")
-    project_id = body.get("project_id ")
+    project_id = body.get("project_id")
 
     if session_id == 0 :
         result = preview_prompt(user_input)
@@ -53,7 +53,7 @@ async def msp_request_message(
             db=db,
             user_id=user_id,
             title=title,
-            # project_id=project_id,
+            project_id=project_id,
             preview=preview
         )
 

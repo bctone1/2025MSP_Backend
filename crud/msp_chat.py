@@ -1,18 +1,31 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc
 from models import *
 from datetime import datetime
 
 
 def get_sessions_by_user(db: Session, user_id: int):
-    return (
+    sessions = (
         db.query(MSP_Chat_Session)
+        .options(joinedload(MSP_Chat_Session.project))  # 프로젝트 미리 로드
         .filter(MSP_Chat_Session.user_id == user_id)
-        .order_by(desc(MSP_Chat_Session.id))  # id 기준 내림차순
+        .order_by(desc(MSP_Chat_Session.id))
         .all()
     )
 
+    result = []
+    for s in sessions:
+        result.append({
+            "id": s.id,
+            "user_id": s.user_id,
+            "title": s.title,
+            "project_id": s.project_id,  # project_id도 포함
+            "project_name": s.project.name if s.project else None,  # project가 없으면 None
+            "created_at": s.created_at,
+            "preview": s.preview
+        })
 
+    return result
 
 
 

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import desc
 
 from models import MSP_Chat_Session
 from models.project import *
@@ -45,6 +45,7 @@ def get_projects_by_user(db: Session, user_id: int) -> List[MSP_Project]:
             joinedload(MSP_Project.knowledge)
         )
         .filter(MSP_Project.user_id == user_id)
+        .order_by(desc(MSP_Project.id))
         .all()
     )
 
