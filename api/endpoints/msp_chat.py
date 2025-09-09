@@ -80,5 +80,6 @@ async def msp_request_message(
         "status": "success",
         "user_message_id": user_message.id,
         "response": result.content,
-        "session_id":session_id
+        "session_id":session_id,
+        "title":title
     }
