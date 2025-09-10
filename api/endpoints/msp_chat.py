@@ -5,7 +5,7 @@ from core.config import GOOGLE_API
 from fastapi import APIRouter, Request, HTTPException, Depends, BackgroundTasks
 from database.session import get_db
 from crud.msp_chat import *
-from service.prompt import preview_prompt
+from service.prompt import preview_prompt, user_input_intent
 
 chat_router = APIRouter(tags=["msp_chat"], prefix="/MSP_CHAT")
 
@@ -43,6 +43,7 @@ async def msp_request_message(
     user_id = body.get("user_id")
     role = body.get("role")
     project_id = body.get("project_id")
+    title = None
 
     if session_id == 0 :
         result = preview_prompt(user_input)
@@ -62,6 +63,14 @@ async def msp_request_message(
 
     # 1. 사용자 메시지 저장 (즉시 저장)
     user_message = create_message(db, session_id=session_id, role=role, content=user_input)
+
+
+    # 1-1 사용자 메시지에대한 llm추천
+    print("==============================================================================")
+    result = user_input_intent(user_input)
+    recommended_model = result.get("recommended_model")
+    print(recommended_model)
+    print("==============================================================================")
 
     # 2. LLM 호출
     google_assistant = ChatGoogleGenerativeAI(model=chat_model, api_key=GOOGLE_API)

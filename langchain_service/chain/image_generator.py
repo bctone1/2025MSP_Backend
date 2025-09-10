@@ -6,6 +6,7 @@ from core.config import EMBEDDING_API
 import os
 import openai
 import re
+
 os.environ["OPENAI_API_KEY"] = EMBEDDING_API
 
 # 1. 프롬프트 템플릿 정의
@@ -40,6 +41,16 @@ template = """
 다른 불필요한 설명 없이 번호만 답변으로 제공해주세요.  
 """
 
+prompt2 = PromptTemplate(
+    input_variables=["input"],
+    template="""
+다음 문장을 자연스러운 영어로 번역해 주세요.
+
+한국어: {input}
+영어:
+"""
+)
+
 prompt = PromptTemplate(
     input_variables=["input"],
     template=template
@@ -57,17 +68,9 @@ llm = ChatOpenAI(
 chain = LLMChain(llm=llm, prompt=prompt)
 
 
-prompt2 = PromptTemplate(
-    input_variables=["input"],
-    template="""
-다음 문장을 자연스러운 영어로 번역해 주세요.
-
-한국어: {input}
-영어:
-"""
-)
 
 chain2 = LLMChain(llm=llm, prompt=prompt2)
+
 
 # 4. 함수 정의
 def discrimination(input: str) -> int:
@@ -80,7 +83,8 @@ def discrimination(input: str) -> int:
         return number
     return 1
 
-def translateToenglish(input:str):
+
+def translateToenglish(input: str):
     response = chain2.run({
         "input": input
     })
@@ -90,7 +94,7 @@ def translateToenglish(input:str):
 def generate_image_with_openai(message: str, model: str) -> str:
     openai.api_key = EMBEDDING_API
     response = openai.images.generate(
-        model = model,
+        model=model,
         prompt=message,
         n=1,
         size="1024x1024"
