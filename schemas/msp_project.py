@@ -9,7 +9,8 @@ class KnowledgeSchema(BaseModel):
     uploaded: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+        # orm_mode = True #업데이트로인해 권장하지 않는 방식
 
 class ChatSessionSchema(BaseModel):
     id: int
@@ -20,7 +21,8 @@ class ChatSessionSchema(BaseModel):
     messages: int = 0  # 메시지 개수
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+        # orm_mode = True #업데이트로인해 권장하지 않는 방식
 
 class ProjectSchema(BaseModel):
     id: int
@@ -32,7 +34,8 @@ class ProjectSchema(BaseModel):
     knowledge: List[KnowledgeSchema] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+        # orm_mode = True #업데이트로인해 권장하지 않는 방식
 
 class UserProjectsResponse(BaseModel):
     user_id: int

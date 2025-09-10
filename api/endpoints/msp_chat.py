@@ -1,32 +1,37 @@
+from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_anthropic import ChatAnthropic
 # from pygments.styles.dracula import background
 
-from core.config import GOOGLE_API
+from core.config import GOOGLE_API, CLAUDE_API
 from fastapi import APIRouter, Request, HTTPException, Depends, BackgroundTasks
 from database.session import get_db
 from crud.msp_chat import *
 from service.prompt import preview_prompt, user_input_intent
+import core.config as config
 
 chat_router = APIRouter(tags=["msp_chat"], prefix="/MSP_CHAT")
+
 
 @chat_router.post("/msp_read_chat_session_by_user")
 async def msp_read_chat_session_by_user(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     user_id = body.get("user_id")
-    sessions = get_sessions_by_user(db,user_id)
-    return{
+    sessions = get_sessions_by_user(db, user_id)
+    return {
         "status": True,
-        "sessions":sessions
+        "sessions": sessions
     }
+
 
 @chat_router.post("/msp_read_message_by_session")
 async def msp_read_message_by_session(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     session_id = body.get("session_id")
-    messages = get_messages_by_session(db,session_id)
-    return{
+    messages = get_messages_by_session(db, session_id)
+    return {
         "status": True,
-        "messages":messages
+        "messages": messages
     }
 
 
@@ -45,7 +50,7 @@ async def msp_request_message(
     project_id = body.get("project_id")
     title = None
 
-    if session_id == 0 :
+    if session_id == 0:
         result = preview_prompt(user_input)
         preview = result.get("preview")
         title = result.get("title")
@@ -60,10 +65,8 @@ async def msp_request_message(
 
         session_id = new_session.id
 
-
     # 1. 사용자 메시지 저장 (즉시 저장)
     user_message = create_message(db, session_id=session_id, role=role, content=user_input)
-
 
     # 1-1 사용자 메시지에대한 llm추천
     print("==============================================================================")
@@ -72,9 +75,31 @@ async def msp_request_message(
     print(recommended_model)
     print("==============================================================================")
 
-    # 2. LLM 호출
-    google_assistant = ChatGoogleGenerativeAI(model=chat_model, api_key=GOOGLE_API)
-    result = google_assistant.invoke(user_input)
+    try:
+        if chat_model in config.GOOGLE_MODELS:
+            google_assistant = ChatGoogleGenerativeAI(
+                model=chat_model,
+                api_key=GOOGLE_API
+            )
+            result = google_assistant.invoke(user_input)
+            response = result.content
+        elif chat_model in config.ANTHROPIC_MODELS:
+            anthropic_assistant = ChatAnthropic(
+                model_name=chat_model,
+                api_key=CLAUDE_API
+            )
+            result = anthropic_assistant.invoke(user_input)
+            response = result.content
+        elif chat_model in config.OPENAI_MODELS:
+            response = "OPENAI모델을 준비중입니다!"
+        elif chat_model in config.FRIENDLI_MODELS:
+            response = "FRIENDLI모델을 준비중입니다!"
+        else:
+            response = f"선택한 모델({chat_model})이 지원되지 않습니다."
+
+    except Exception as e:
+        print(f"Error: {e}")  # 로그 확인용
+        response = "오류가 발생했습니다. 관리자에 문의해주세요"
 
     # 3. AI 응답 저장 (백그라운드로 저장 가능)
     background_tasks.add_task(
@@ -82,13 +107,13 @@ async def msp_request_message(
         db,
         session_id=session_id,
         role="assistant",
-        content=result.content
+        content=response
     )
 
-    return{
+    return {
         "status": "success",
         "user_message_id": user_message.id,
-        "response": result.content,
-        "session_id":session_id,
-        "title":title
+        "response": response,
+        "session_id": session_id,
+        "title": title
     }
