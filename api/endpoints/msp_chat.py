@@ -24,17 +24,6 @@ async def msp_read_chat_session_by_user(request: Request, db: Session = Depends(
     }
 
 
-@chat_router.post("/msp_read_message_by_session")
-async def msp_read_message_by_session(request: Request, db: Session = Depends(get_db)):
-    body = await request.json()
-    session_id = body.get("session_id")
-    messages = get_messages_by_session(db, session_id)
-    return {
-        "status": True,
-        "messages": messages
-    }
-
-
 @chat_router.post("/msp_request_message")
 async def msp_request_message(
         request: Request,
@@ -133,4 +122,15 @@ async def msp_request_message(
         "response": response,
         "session_id": session_id,
         "title": title
+    }
+
+
+@chat_router.post("/msp_read_message_by_session")
+async def msp_read_message_by_session(request: Request, db: Session = Depends(get_db)):
+    body = await request.json()
+    session_id = body.get("session_id")
+    messages = get_messages_by_session(db, session_id)
+    return {
+        "status": True,
+        "messages": messages
     }
