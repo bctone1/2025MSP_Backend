@@ -1,9 +1,9 @@
-from langchain_core.messages import HumanMessage
+from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_anthropic import ChatAnthropic
 # from pygments.styles.dracula import background
 
-from core.config import GOOGLE_API, CLAUDE_API
+from core.config import GOOGLE_API, CLAUDE_API, OPENAI_API,FRIENDLI_API
 from fastapi import APIRouter, Request, HTTPException, Depends, BackgroundTasks
 from database.session import get_db
 from crud.msp_chat import *
@@ -72,7 +72,6 @@ async def msp_request_message(
     print("==============================================================================")
     result = user_input_intent(user_input)
     recommended_model = result.get("recommended_model")
-    print(recommended_model)
     print("==============================================================================")
 
     try:
@@ -81,25 +80,43 @@ async def msp_request_message(
                 model=chat_model,
                 api_key=GOOGLE_API
             )
-            result = google_assistant.invoke(user_input)
-            response = result.content
+            invoke_result = google_assistant.invoke(user_input)
+            response = invoke_result.content
+
         elif chat_model in config.ANTHROPIC_MODELS:
             anthropic_assistant = ChatAnthropic(
-                model_name=chat_model,
+                model=chat_model,
                 api_key=CLAUDE_API
             )
-            result = anthropic_assistant.invoke(user_input)
-            response = result.content
+            invoke_result = anthropic_assistant.invoke(user_input)
+            response = invoke_result.content
+
         elif chat_model in config.OPENAI_MODELS:
-            response = "OPENAI모델을 준비중입니다!"
+            openai_assistant = ChatOpenAI(
+                model=chat_model,
+                api_key=OPENAI_API
+            )
+            invoke_result = openai_assistant.invoke(user_input)
+            response = invoke_result.content
+
         elif chat_model in config.FRIENDLI_MODELS:
-            response = "FRIENDLI모델을 준비중입니다!"
+            friendly_assistant = ChatOpenAI(
+                api_key=FRIENDLI_API,
+                model="LGAI-EXAONE/EXAONE-4.0-32B",
+                base_url="https://api.friendli.ai/serverless/v1",
+            )
+            invoke_result = friendly_assistant.invoke(user_input)
+            response = invoke_result.content
+
         else:
             response = f"선택한 모델({chat_model})이 지원되지 않습니다."
 
     except Exception as e:
         print(f"Error: {e}")  # 로그 확인용
         response = "오류가 발생했습니다. 관리자에 문의해주세요"
+
+
+
 
     # 3. AI 응답 저장 (백그라운드로 저장 가능)
     background_tasks.add_task(
