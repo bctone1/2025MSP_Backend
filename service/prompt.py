@@ -1,8 +1,7 @@
 import json
-# from langchain.chains.llm import LLMChain
 from langchain_core.prompts import PromptTemplate
+# from langchain_community.chat_models import ChatOpenAI # 업데이트로 인해 권장하지 않는 방식
 from core.config import OPENAI_API, DEFAULT_CHAT_MODEL
-# from langchain_community.chat_models import ChatOpenAI
 from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(
