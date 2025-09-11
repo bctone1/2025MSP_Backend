@@ -9,6 +9,7 @@ from api.endpoints import msp_user
 from api.endpoints import msp_project
 from api.endpoints import msp_chat
 from api.endpoints import msp_service
+from api.endpoints import msp_pdf
 
 router = APIRouter()
 
@@ -22,6 +23,7 @@ router.include_router(msp_user.user_router)
 router.include_router(msp_project.project_router)
 router.include_router(msp_chat.chat_router)
 router.include_router(msp_service.service_router)
+router.include_router(msp_pdf.pdf_router)
 
 
 """

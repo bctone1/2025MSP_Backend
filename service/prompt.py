@@ -1,15 +1,16 @@
 import json
-from langchain.chains.llm import LLMChain
+# from langchain.chains.llm import LLMChain
 from langchain_core.prompts import PromptTemplate
-from core.config import OPENAI_API
-from langchain_community.chat_models import ChatOpenAI
-from core.config import DEFAULT_CHAT_MODEL
+from core.config import OPENAI_API, DEFAULT_CHAT_MODEL
+# from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(
-    model_name=DEFAULT_CHAT_MODEL,
-    temperature=0,
-    streaming=False,
-    openai_api_key=OPENAI_API
+    model='gpt-4o',temperature=0
+    # model_name=DEFAULT_CHAT_MODEL,
+    # temperature=0,
+    # streaming=False,
+    # openai_api_key=OPENAI_API
 )
 
 
