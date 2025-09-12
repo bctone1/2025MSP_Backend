@@ -48,10 +48,10 @@ async def msp_request_message(
             db=db,
             user_id=user_id,
             project_id=project_id,
-            # title=title,
-            # preview=preview
-            title="title",
-            preview="preview"
+            title=title,
+            preview=preview
+            # title="title",
+            # preview="preview"
         )
 
         session_id = new_session.id
