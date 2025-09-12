@@ -20,11 +20,11 @@ async def pdfRAG(files: list[UploadFile], question: str) -> str:
     tmp_dir = Path("FILE/Upload")
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
-    # 업로드된 파일 저장
-    for file in files:
-        tmp_path = tmp_dir / f"{uuid.uuid4()}_{file.filename}"
-        with open(tmp_path, "wb") as out:
-            out.write(await file.read())
+    # # 업로드된 파일 저장
+    # for file in files:
+    #     tmp_path = tmp_dir / f"{uuid.uuid4()}_{file.filename}"
+    #     with open(tmp_path, "wb") as out:
+    #         out.write(await file.read())
 
     # 여러 PDF 처리
     file_paths = glob("FILE/Upload/*.pdf")

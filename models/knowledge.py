@@ -8,10 +8,11 @@ class MSP_Knowledge(Base):
     __tablename__ = "_msp_knowledge_table"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(255), nullable=False)
+    origin_name = Column(String(255), nullable=False)
+    file_path = Column(String(300), nullable=True)
     type = Column(String(50), nullable=True)
     size = Column(String(50), nullable=True)
-    uploaded = Column(String(100), nullable=True)
+    created_at = Column(TIMESTAMP, server_default=func.now())
 
     # 역방향 관계
     projects = relationship("MSP_Project",secondary=project_knowledge_association,back_populates="knowledge")
