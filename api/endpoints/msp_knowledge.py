@@ -51,11 +51,9 @@ async def msp_upload_file(
     file_size = len(content)
 
     pdf_preview = pdf_preview_prompt(file_path)
-    if pdf_preview.startswith("```json"):
-        pdf_preview = pdf_preview.replace("```json", "").replace("```", "").strip()
-
-    # 이제 JSON 로드
-    pdf_preview = json.loads(pdf_preview)
+    # if pdf_preview.startswith("```json"):
+    #     pdf_preview = pdf_preview.replace("```json", "").replace("```", "").strip()
+    # pdf_preview = json.loads(pdf_preview)
 
     tags = pdf_preview.get("tags", "")
     preview = pdf_preview.get("preview", [])

@@ -42,18 +42,13 @@ def pdf_preview_prompt(file_path: str) -> dict:
     chain = prompt | llm
     response = chain.invoke({"input_text": short_text})
     text_output = response.content
-    print(text_output)
-
     try:
-        cleaned = text_output.strip()
-        # JSON 파싱
-        parsed = json.loads(cleaned)
-        print(parsed)
-        return parsed
+        text_output = text_output.replace("```json", "").replace("```", "").strip()
+        text_output = json.loads(text_output)
+        return text_output
     except json.JSONDecodeError:
         # JSON이 아닐 경우 fallback 처리
-        # return {"tags": "", "preview": "text_output"}
-        return text_output
+        return {"tags": "", "preview": "text_output"}
 
 
 def preview_prompt(input: str, ):
@@ -76,12 +71,21 @@ def preview_prompt(input: str, ):
     # return response
     # text_output = response["text"] # 구버전 코드
     text_output = response.content
+
     try:
-        parsed = json.loads(text_output)
-        return parsed
+        text_output = text_output.replace("```json", "").replace("```", "").strip()
+        text_output = json.loads(text_output)
+        return text_output
     except json.JSONDecodeError:
         # JSON이 아닐 경우 fallback 처리
         return {"title": None, "preview": text_output}
+
+
+
+
+
+
+
 
 
 def user_input_intent(input: str):
@@ -122,8 +126,10 @@ def user_input_intent(input: str):
     print(text_output)
 
     try:
-        parsed = json.loads(text_output)
-        return parsed
+        text_output = text_output.replace("```json", "").replace("```", "").strip()
+        text_output = json.loads(text_output)
+        return text_output
     except json.JSONDecodeError:
         # JSON이 아닐 경우 fallback 처리
         return {"analysis": None, "recommended_model": DEFAULT_CHAT_MODEL}
+

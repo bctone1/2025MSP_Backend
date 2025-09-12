@@ -47,9 +47,11 @@ async def msp_request_message(
         new_session = create_session(
             db=db,
             user_id=user_id,
-            title=title,
             project_id=project_id,
-            preview=preview
+            # title=title,
+            # preview=preview
+            title="title",
+            preview="preview"
         )
 
         session_id = new_session.id
@@ -58,10 +60,11 @@ async def msp_request_message(
     user_message = create_message(db, session_id=session_id, role=role, content=user_input)
 
     # 1-1 사용자 메시지에대한 llm추천
-    print("==============================================================================")
-    result = user_input_intent(user_input)
-    recommended_model = result.get("recommended_model")
-    print("==============================================================================")
+    # print("==============================================================================")
+    # result = user_input_intent(user_input)
+    # recommended_model = result.get("recommended_model")
+    # print(recommended_model)
+    # print("==============================================================================")
 
     try:
         if chat_model in config.GOOGLE_MODELS:
