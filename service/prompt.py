@@ -1,16 +1,59 @@
 import json
+
+from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.prompts import PromptTemplate
 # from langchain_community.chat_models import ChatOpenAI # 업데이트로 인해 권장하지 않는 방식
 from core.config import OPENAI_API, DEFAULT_CHAT_MODEL
 from langchain_openai import ChatOpenAI
+import re
 
 llm = ChatOpenAI(
-    model='gpt-4o',temperature=0
+    model='gpt-4o', temperature=0
     # model_name=DEFAULT_CHAT_MODEL,
     # temperature=0,
     # streaming=False,
     # openai_api_key=OPENAI_API
 )
+
+
+def pdf_preview_prompt(file_path: str) -> dict:
+    """
+    PDF 파일에서 앞부분 텍스트를 읽고 preview와 tags를 반환
+    """
+
+    loader = PyPDFLoader(file_path)
+    documents = loader.load()
+    # 앞 페이지 텍스트를 합치기
+    full_text = "\n".join([doc.page_content for doc in documents])
+    short_text = full_text[:3000]  # 앞 3000자 정도만 LLM에 전달
+
+    prompt = PromptTemplate(
+        input_variables=["input_text"],
+        template="""
+                  "{input_text}"
+                  위 내용을 요약해서 아래 JSON 형식으로만 답변하세요:
+                  {{
+                      "tags": ["...","...","...","..."],
+                      "preview": "...",
+                  }}
+                  """
+    )
+
+    chain = prompt | llm
+    response = chain.invoke({"input_text": short_text})
+    text_output = response.content
+    print(text_output)
+
+    try:
+        cleaned = text_output.strip()
+        # JSON 파싱
+        parsed = json.loads(cleaned)
+        print(parsed)
+        return parsed
+    except json.JSONDecodeError:
+        # JSON이 아닐 경우 fallback 처리
+        # return {"tags": "", "preview": "text_output"}
+        return text_output
 
 
 def preview_prompt(input: str, ):
@@ -75,7 +118,7 @@ def user_input_intent(input: str):
     )
     chain = prompt | llm
     response = chain.invoke({"input": input})
-    text_output = response.content   # ✅ 모델의 답변 텍스트
+    text_output = response.content  # ✅ 모델의 답변 텍스트
     print(text_output)
 
     try:

@@ -19,7 +19,7 @@ class MSP_Chat_Session(Base):
     # 관계 역방향
     project = relationship("MSP_Project", back_populates="chat_sessions")
     messages = relationship("MSP_Message", back_populates="session", cascade="all, delete-orphan")
-    user = relationship("MSP_USER", back_populates="knowledge")
+    user = relationship("MSP_USER", back_populates="sessions")
     knowledges = relationship("MSP_Knowledge",secondary=session_knowledge_association,back_populates="sessions")
 
 class MSP_Message(Base):

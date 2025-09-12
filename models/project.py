@@ -31,7 +31,7 @@ class MSP_Project(Base):
     user = relationship("MSP_USER",back_populates="projects")
     chat_sessions = relationship("MSP_Chat_Session", back_populates="project",order_by=desc(MSP_Chat_Session.id))
     # ✅ 다대다 관계 (프로젝트 삭제 시 연결만 삭제됨, 지식은 보존됨)
-    knowledge = relationship("MSP_Knowledge",secondary=project_knowledge_association,back_populates="projects")
+    knowledges = relationship("MSP_Knowledge",secondary=project_knowledge_association,back_populates="projects")
 
 
 #================================================================================================================================================

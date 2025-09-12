@@ -42,7 +42,7 @@ def get_projects_by_user(db: Session, user_id: int) -> List[MSP_Project]:
             # chat_sessions와 그 안의 messages를 함께 로드
             joinedload(MSP_Project.chat_sessions).joinedload(MSP_Chat_Session.messages),
             # project와 연결된 knowledge
-            joinedload(MSP_Project.knowledge)
+            joinedload(MSP_Project.knowledges)
         )
         .filter(MSP_Project.user_id == user_id)
         .order_by(desc(MSP_Project.id))
@@ -78,6 +78,6 @@ def serialize_project(p: MSP_Project):
                 "uploaded": getattr(k, "uploaded_at", None).strftime("%Y-%m-%d")
                             if getattr(k, "uploaded_at", None) else None
             }
-            for k in p.knowledge or []
+            for k in p.knowledges or []
         ]
     }

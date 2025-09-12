@@ -6,12 +6,9 @@ from email.mime.text import MIMEText
 import smtplib
 from email.mime.multipart import MIMEMultipart
 import core.config as config
-import os
 from langchain.chains import RetrievalQA
-from database.session import get_db
 from service.prompt import preview_prompt
-from service.sms.generate_random_code import generate_verification_code
-from crud.msp_knowledge import *
+
 
 # SMTP 환경변수 (이메일 전송용)
 SMTP_SERVER = config.SMTP_SERVER
@@ -40,39 +37,6 @@ async def getModelList(request: Request):
     result = client.models.list(limit=20)
     print(result)
     return {"response": "엔트로픽 모델리스트 테스트", "models": result}
-
-
-# Rag 파일업로드 요청
-@service_router.post("/msp_upload_file")
-async def msp_upload_file(request: Request, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    form_data = await request.form()
-    user_id = form_data.get("user_id")
-    # print(form_data)
-    # print(file.filename)
-    save_dir = config.UPLOAD_FOLDER
-    user_dir = os.path.join(save_dir, user_id, 'document')
-    os.makedirs(user_dir, exist_ok=True)
-
-    # 파일 저장
-    origin_name = file.filename
-    random_number = generate_verification_code()
-    file_name = f"{user_id}_{random_number}_{origin_name}"
-    file_path = os.path.join(user_dir, file_name)
-    with open(file_path, "wb") as f:
-        content = await file.read()
-        f.write(content)
-
-    file_type = file.content_type
-    file_size = len(content)
-
-    upload_result = create_knowledge(db, origin_name=origin_name, file_path=file_path, file_type=file_type,
-                                     file_size=file_size)
-
-    return {
-        "filename": file.filename,
-        "response" : upload_result
-    }
-
 
 # 이메일 인증 요청
 @service_router.post("/MSPSendEmail")
