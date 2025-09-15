@@ -2,17 +2,16 @@ import json
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.prompts import PromptTemplate
-# from langchain_community.chat_models import ChatOpenAI # 업데이트로 인해 권장하지 않는 방식
 from core.config import OPENAI_API, DEFAULT_CHAT_MODEL
 from langchain_openai import ChatOpenAI
 import re
 
 llm = ChatOpenAI(
-    model='gpt-4o', temperature=0
+    model='gpt-4o', temperature=0,
     # model_name=DEFAULT_CHAT_MODEL,
     # temperature=0,
     # streaming=False,
-    # openai_api_key=OPENAI_API
+    openai_api_key="OPENAI_API"
 )
 
 
@@ -79,11 +78,6 @@ def preview_prompt(input: str, ):
     except json.JSONDecodeError:
         # JSON이 아닐 경우 fallback 처리
         return {"title": None, "preview": text_output}
-
-
-
-
-
 
 
 
