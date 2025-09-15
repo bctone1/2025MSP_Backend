@@ -77,7 +77,7 @@ async def msp_get_knowledge_by_user(
     print(knowledges)
     return {
         "status": True,
-        "kbowledges": knowledges
+        "knowledges": knowledges
     }
 
 
