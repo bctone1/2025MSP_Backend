@@ -25,12 +25,8 @@ from models.knowledge import MSP_KnowledgeChunk
 
 knowledge_router = APIRouter(tags=["msp_knowledge"], prefix="/MSP_KNOWLEDGE")
 
-
 @knowledge_router.post("/msp_get_knowledge_by_user")
-async def msp_get_knowledge_by_user(
-        request: Request,
-        db: Session = Depends(get_db)
-):
+async def msp_get_knowledge_by_user(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     user_id = body.get("user_id")
     knowledges = get_knowledge_by_user(db, user_id)
@@ -51,7 +47,7 @@ async def msp_upload_file(
     form_data = await request.form()
     user_id = form_data.get("user_id")
     save_dir = config.UPLOAD_FOLDER
-    user_dir = os.path.join(save_dir, user_id, 'document')
+    user_dir = os.path.join(save_dir, user_id, 'document')    # 사용자별 디렉토리
     os.makedirs(user_dir, exist_ok=True)
 
     # 파일 저장
