@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc
 from models import *
-from datetime import datetime
+from datetime import datetime, UTC
 
 
 def get_sessions_by_user(db: Session, user_id: int):
@@ -44,7 +44,7 @@ def create_session(
         project_id=project_id,
         title=title,
         preview=preview,
-        created_at=datetime.utcnow()
+        created_at=datetime.now(UTC)
     )
     db.add(new_session)
     db.commit()

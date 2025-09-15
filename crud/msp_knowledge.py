@@ -1,6 +1,8 @@
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
+from models import MSP_Knowledge, MSP_KnowledgeChunk
+from typing import List, Sequence
 from models import MSP_Knowledge, MSP_Chat_Session
 from typing import List
 
@@ -79,3 +81,37 @@ def get_knowledge_by_user(db: Session, user_id: int):
         return knowledges
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Knowledge 조회 실패")
+
+def create_knowledge_chunks(db: Session, knowledge_id: int, chunks: Sequence[dict]):
+    """주어진 텍스트 청크와 벡터를 KnowledgeChunk 테이블에 저장"""
+    for chunk in chunks:
+        db.add(
+            MSP_KnowledgeChunk(
+                knowledge_id=knowledge_id,
+                chunk_index=chunk["index"],
+                chunk_text=chunk["text"],
+                vector_memory=chunk["vector"],
+            )
+        )
+    db.commit()
+
+# 파일 경로 조회
+def get_knowledge_by_id(db: Session, knowledge_id: int, user_id: int) -> str:
+    """특정 파일 ID의 파일 경로를 반환한다."""
+    knowledge = db.query(MSP_Knowledge).filter(MSP_Knowledge.id == knowledge_id).first()
+
+    if knowledge is None:
+        raise HTTPException(status_code=404, detail="Knowledge 조회 실패")
+
+    if knowledge.user_id != user_id:
+        raise HTTPException(status_code=403, detail="권한이 없습니다")
+    return knowledge.file_path
+
+
+# chunk 조회
+def get_chunk_by_id(db: Session, chunk_id: int) -> MSP_KnowledgeChunk:
+    """지식 청크를 ID로 조회"""
+    chunk = db.query(MSP_KnowledgeChunk).filter(MSP_KnowledgeChunk.id == chunk_id).first()
+    if not chunk:
+        raise HTTPException(status_code=404, detail="해당 청크가 없습니다.")
+    return chunk

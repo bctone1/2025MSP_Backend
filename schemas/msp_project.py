@@ -40,3 +40,11 @@ class ProjectSchema(BaseModel):
 class UserProjectsResponse(BaseModel):
     user_id: int
     projects: List[ProjectSchema]
+
+
+class InvokeRequest(BaseModel):
+    question: str
+    file_paths: List[str] = []
+    session_id: Optional[str] = None
+    provider: str = "openai"
+    model: str = "gpt-4o-mini"
