@@ -26,6 +26,8 @@ def qa_chain(db: Session, session_id, conversation, provider="openai", model=Non
     response_text = chain.invoke({"history": formatted_history, "input": conversation})
     return response_text, vector, formatted_history
 
+# def pdf_chain(db: Session):
+
 
 
 def process_usage_in_background(db, session_id, project_id, user_email, provider, model, conversation, response_text, formatted_history, vector):
