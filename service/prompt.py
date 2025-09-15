@@ -11,7 +11,7 @@ llm = ChatOpenAI(
     # model_name=DEFAULT_CHAT_MODEL,
     # temperature=0,
     # streaming=False,
-    openai_api_key="OPENAI_API"
+    openai_api_key=OPENAI_API
 )
 
 
