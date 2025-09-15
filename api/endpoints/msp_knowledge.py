@@ -226,9 +226,3 @@ async def invoke_knowledge(req:InvokeRequest , db: Session = Depends(get_db)):
         "response": answer,
         "history": []
     }
-
-
-
-
-
-
