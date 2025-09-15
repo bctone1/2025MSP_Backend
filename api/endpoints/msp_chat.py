@@ -3,10 +3,11 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_anthropic import ChatAnthropic
 # from pygments.styles.dracula import background
 
-from core.config import GOOGLE_API, CLAUDE_API, OPENAI_API,FRIENDLI_API
+from core.config import GOOGLE_API, CLAUDE_API, OPENAI_API, FRIENDLI_API
 from fastapi import APIRouter, Request, HTTPException, Depends, BackgroundTasks
 from database.session import get_db
 from crud.msp_chat import *
+from langchain_service.embedding.get_vector import text_to_vector
 from service.prompt import preview_prompt, user_input_intent
 import core.config as config
 
@@ -56,8 +57,16 @@ async def msp_request_message(
 
         session_id = new_session.id
 
+    vector_memory = text_to_vector(user_input)
+
     # 1. 사용자 메시지 저장 (즉시 저장)
-    user_message = create_message(db, session_id=session_id, role=role, content=user_input)
+    user_message = create_message(
+        db,
+        session_id=session_id,
+        role=role,
+        content=user_input,
+        vector_memory=vector_memory
+    )
 
     # 1-1 사용자 메시지에대한 llm추천
     # print("==============================================================================")
@@ -107,9 +116,6 @@ async def msp_request_message(
         print(f"Error: {e}")  # 로그 확인용
         response = "오류가 발생했습니다. 관리자에 문의해주세요"
 
-
-
-
     # 3. AI 응답 저장 (백그라운드로 저장 가능)
     background_tasks.add_task(
         create_message,
@@ -133,7 +139,20 @@ async def msp_read_message_by_session(request: Request, db: Session = Depends(ge
     body = await request.json()
     session_id = body.get("session_id")
     messages = get_messages_by_session(db, session_id)
-    return {
-        "status": True,
-        "messages": messages
-    }
+    return [
+        {
+            "id": m.id,
+            "session_id": m.session_id,
+            "role": m.role,
+            "content": m.content,
+            "extra_data": m.extra_data,
+            "created_at": m.created_at,
+        }
+        for m in messages
+    ]
+
+    # messages = get_messages_by_session(db, session_id)
+    # return {
+    #     "status": True,
+    #     "messages": messages
+    # }

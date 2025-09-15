@@ -56,11 +56,26 @@ def create_session(
 
 
 
+# def get_messages_by_session(db: Session, session_id: int):
+#     return (
+#         db.query(MSP_Message)
+#         .filter(MSP_Message.session_id == session_id)
+#         .order_by(MSP_Message.id)  # id 기준 내림차순 정렬
+#         .all()
+#     )
+
 def get_messages_by_session(db: Session, session_id: int):
     return (
-        db.query(MSP_Message)
+        db.query(
+            MSP_Message.id,
+            MSP_Message.session_id,
+            MSP_Message.role,
+            MSP_Message.content,
+            MSP_Message.extra_data,
+            MSP_Message.created_at
+        )
         .filter(MSP_Message.session_id == session_id)
-        .order_by(MSP_Message.id)  # id 기준 내림차순 정렬
+        .order_by(MSP_Message.id)
         .all()
     )
 
