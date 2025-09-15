@@ -1,14 +1,69 @@
 from fastapi import APIRouter, Request, HTTPException, Depends, UploadFile, File, Form
 import json
-from service.prompt import pdf_preview_prompt
+from service.prompt import pdf_preview_prompt, preview_prompt
 from service.sms.generate_random_code import generate_verification_code
 from crud.msp_knowledge import *
 import core.config as config
 import os
 from database.session import get_db
-
+from crud.msp_chat import create_session
 
 knowledge_router = APIRouter(tags=["msp_knowledge"], prefix="/MSP_KNOWLEDGE")
+
+
+@knowledge_router.post("/msp_get_session_knowledge_association")
+async def msp_get_session_knowledge_association(
+        request: Request,
+        db: Session = Depends(get_db)
+):
+    body = await request.json()
+    session_id = body.get("session_id")
+    knowledge_ids = get_session_knowledge_association(db, session_id)
+    return {
+        "status": True,
+        "knowledge_ids": knowledge_ids
+    }
+
+
+@knowledge_router.post("/msp_add_session_knowledge_association")
+async def msp_add_session_knowledge_association(
+        request: Request,
+        db: Session = Depends(get_db)
+):
+    body = await request.json()
+    session_id = body.get("session_id")
+    knowledge_ids = body.get("knowledge_ids")
+
+    # 세션생성 용 정보
+    user_id = body.get("user_id")
+    project_id = body.get("project_id")
+    title = None
+
+    if session_id == 0:
+        result = preview_prompt("사용자가 새로운 대화를 시작하면서 참고 파일을 선택했습니다.")
+        preview = result.get("preview")
+        title = result.get("title")
+
+        new_session = create_session(
+            db=db,
+            user_id=user_id,
+            project_id=project_id,
+            title=title,
+            preview=preview
+            # title="title",
+            # preview="preview"
+        )
+        session_id = new_session.id
+
+    if not isinstance(knowledge_ids, list):
+        knowledge_ids = [knowledge_ids]  # 단일 값일 경우 리스트로 변환
+    associations = add_session_knowledge_association(db, session_id, knowledge_ids)
+    return {
+        "status": True,
+        "associations": associations,
+        "session_id": session_id,
+        "title": title
+    }
 
 
 @knowledge_router.post("/msp_get_knowledge_by_user")
