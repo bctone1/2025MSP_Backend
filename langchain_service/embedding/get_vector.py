@@ -1,6 +1,7 @@
 import requests
 from langchain_core.embeddings import Embeddings
-from .setup import get_embeddings
+from langchain_service.embedding.setup import get_embeddings
+
 import numpy as np
 from typing import List
 
