@@ -8,7 +8,7 @@ from fastapi import APIRouter, Request, HTTPException, Depends, BackgroundTasks
 from database.session import get_db
 from crud.msp_chat import *
 from langchain_service.embedding.get_vector import text_to_vector
-from service.prompt import preview_prompt, user_input_intent
+from service.prompt import preview_prompt, user_input_intent, get_answer_with_knowledge
 import core.config as config
 
 chat_router = APIRouter(tags=["msp_chat"], prefix="/MSP_CHAT")
@@ -38,8 +38,11 @@ async def msp_request_message(
     user_id = body.get("user_id")
     role = body.get("role")
     project_id = body.get("project_id")
+    knowledge_ids = body.get("knowledge_ids")
     title = None
+    # print("참고 지식 ID : ",knowledge_ids)
 
+    # 새로운 세션 생성 및 전달
     if session_id == 0:
         result = preview_prompt(user_input)
         preview = result.get("preview")
@@ -51,15 +54,21 @@ async def msp_request_message(
             project_id=project_id,
             title=title,
             preview=preview
-            # title="title",
-            # preview="preview"
         )
-
         session_id = new_session.id
 
+    # 사용자 input vector로 변화
     vector_memory = text_to_vector(user_input)
 
-    # 1. 사용자 메시지 저장 (즉시 저장)
+    if knowledge_ids:
+        print("================================지식베이스 참고 시작================================")
+        knowledge_rows = get_similarity_search_by_knowledge_ids(
+            db=db,
+            knowledge_ids=knowledge_ids,
+            user_input=user_input
+        )
+
+    # 사용자 메시지 저장 (즉시 저장)
     user_message = create_message(
         db,
         session_id=session_id,
@@ -68,55 +77,68 @@ async def msp_request_message(
         vector_memory=vector_memory
     )
 
-    # 1-1 사용자 메시지에대한 llm추천
-    # print("==============================================================================")
+    # 사용자 메시지에대한 llm추천
     # result = user_input_intent(user_input)
     # recommended_model = result.get("recommended_model")
     # print(recommended_model)
-    # print("==============================================================================")
 
+    # LLM답변 요청
     try:
         if chat_model in config.GOOGLE_MODELS:
             google_assistant = ChatGoogleGenerativeAI(
                 model=chat_model,
                 api_key=GOOGLE_API
             )
-            invoke_result = google_assistant.invoke(user_input)
-            response = invoke_result.content
+            if knowledge_ids:
+                with_knowledge_prompt = get_answer_with_knowledge(google_assistant, user_input, knowledge_rows)
+                response = with_knowledge_prompt
+            else:
+                invoke_result = google_assistant.invoke(user_input)
+                response = invoke_result.content
 
         elif chat_model in config.ANTHROPIC_MODELS:
             anthropic_assistant = ChatAnthropic(
                 model=chat_model,
                 api_key=CLAUDE_API
             )
-            invoke_result = anthropic_assistant.invoke(user_input)
-            response = invoke_result.content
+            if knowledge_ids:
+                with_knowledge_prompt = get_answer_with_knowledge(anthropic_assistant, user_input, knowledge_rows)
+                response = with_knowledge_prompt
+            else:
+                invoke_result = anthropic_assistant.invoke(user_input)
+                response = invoke_result.content
 
         elif chat_model in config.OPENAI_MODELS:
             openai_assistant = ChatOpenAI(
                 model=chat_model,
                 api_key=OPENAI_API
             )
-            invoke_result = openai_assistant.invoke(user_input)
-            response = invoke_result.content
-
+            if knowledge_ids:
+                with_knowledge_prompt = get_answer_with_knowledge(openai_assistant, user_input, knowledge_rows)
+                response = with_knowledge_prompt
+            else:
+                invoke_result = openai_assistant.invoke(user_input)
+                response = invoke_result.content
         elif chat_model in config.FRIENDLI_MODELS:
             friendly_assistant = ChatOpenAI(
                 api_key=FRIENDLI_API,
                 model="LGAI-EXAONE/EXAONE-4.0-32B",
                 base_url="https://api.friendli.ai/serverless/v1",
             )
-            invoke_result = friendly_assistant.invoke(user_input)
-            response = invoke_result.content
+            if knowledge_ids:
+                with_knowledge_prompt = get_answer_with_knowledge(friendly_assistant, user_input, knowledge_rows)
+                response = with_knowledge_prompt
+            else:
+                invoke_result = friendly_assistant.invoke(user_input)
+                response = invoke_result.content
 
         else:
             response = f"선택한 모델({chat_model})이 지원되지 않습니다."
-
     except Exception as e:
         print(f"Error: {e}")  # 로그 확인용
         response = "오류가 발생했습니다. 관리자에 문의해주세요"
 
-    # 3. AI 응답 저장 (백그라운드로 저장 가능)
+    # AI 응답 저장 (백그라운드로 저장 가능)
     background_tasks.add_task(
         create_message,
         db,
@@ -124,7 +146,7 @@ async def msp_request_message(
         role="assistant",
         content=response
     )
-
+    # 답변 프론트로 리턴
     return {
         "status": "success",
         "user_message_id": user_message.id,

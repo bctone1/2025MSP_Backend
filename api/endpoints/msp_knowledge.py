@@ -13,11 +13,11 @@ import os, json
 from database.session import get_db
 from crud.msp_chat import create_session
 from fastapi.responses import FileResponse
-from langchain_service.chain.qa_chain import qa_chain
-from langchain.document_loaders import PyMuPDFLoader
+
+from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.chains import RetrievalQA
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.chat_models import ChatOpenAI
+
+from langchain_community.chat_models import ChatOpenAI
 
 from langchain_service.embedding.get_vector import text_to_vector
 from models import MSP_Knowledge

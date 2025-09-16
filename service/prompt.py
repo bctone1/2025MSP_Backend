@@ -15,11 +15,35 @@ llm = ChatOpenAI(
 )
 
 
-def pdf_preview_prompt(file_path: str) -> dict:
-    """
-    PDF 파일에서 앞부분 텍스트를 읽고 preview와 tags를 반환
-    """
+def get_answer_with_knowledge(llm,user_input: str, knowledge_rows: list[dict], max_chunks: int = 3) -> str:
+    if not knowledge_rows:
+        return user_input
 
+    # 1. similarity가 낮은 순서대로 정렬 (낮을수록 더 관련 있음)
+    top_chunks = sorted(knowledge_rows, key=lambda x: x["similarity"])[:max_chunks]
+    # knowledge_texts = "\n\n".join([f"data {i + 1}:\n{x['chunk_text']}" for i, x in enumerate(top_chunks)])
+    knowledge_texts = "\n\n".join([x['chunk_text'] for x in top_chunks])
+    print("가공된 데이터 : ",knowledge_texts)
+    prompt = PromptTemplate(
+        input_variables=["user_input", "knowledge_texts"],
+        template="""
+        사용자가 질문했습니다:
+        {user_input}
+    
+        다음 지식베이스 자료를 참고하세요:
+        {knowledge_texts}
+    
+        위 자료를 참고하여 정확하고 구체적으로 답변해주세요.
+        """
+    )
+    chain = prompt | llm
+    response = chain.invoke({"user_input": user_input, "knowledge_texts":knowledge_texts})
+    text_output = response.content
+    print("데이터와 함께 요청 결과1 : ", text_output)
+    return text_output
+
+
+def pdf_preview_prompt(file_path: str) -> dict:
     loader = PyPDFLoader(file_path)
     documents = loader.load()
     # 앞 페이지 텍스트를 합치기
@@ -50,7 +74,7 @@ def pdf_preview_prompt(file_path: str) -> dict:
         return {"tags": "", "preview": "text_output"}
 
 
-def preview_prompt(input: str, ):
+def preview_prompt(input: str):
     prompt = PromptTemplate(
         input_variables=["input"],
         template="""
@@ -78,8 +102,6 @@ def preview_prompt(input: str, ):
     except json.JSONDecodeError:
         # JSON이 아닐 경우 fallback 처리
         return {"title": None, "preview": text_output}
-
-
 
 
 def user_input_intent(input: str):
@@ -126,4 +148,3 @@ def user_input_intent(input: str):
     except json.JSONDecodeError:
         # JSON이 아닐 경우 fallback 처리
         return {"analysis": None, "recommended_model": DEFAULT_CHAT_MODEL}
-
