@@ -29,10 +29,7 @@ from models import MSP_Knowledge
 from sqlalchemy.orm import Session
 from models.knowledge import MSP_KnowledgeChunk
 
-
-
 knowledge_router = APIRouter(tags=["msp_knowledge"], prefix="/MSP_KNOWLEDGE")
-
 
 @knowledge_router.post("/msp_get_session_knowledge_association")
 async def msp_get_session_knowledge_association(
