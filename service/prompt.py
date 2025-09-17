@@ -1,46 +1,65 @@
 import json
-
+from langchain_teddynote import logging
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.prompts import PromptTemplate
 from core.config import OPENAI_API, DEFAULT_CHAT_MODEL
 from langchain_openai import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
 import re
+# from fastapi.responses import JSONResponse
+
+logging.langsmith("Garam_RAG")
 
 llm = ChatOpenAI(
     model='gpt-4o', temperature=0,
     # model_name=DEFAULT_CHAT_MODEL,
-    # temperature=0,
     # streaming=False,
     openai_api_key=OPENAI_API
 )
 
 
-def get_answer_with_knowledge(llm,user_input: str, knowledge_rows: list[dict], max_chunks: int = 3) -> str:
+def get_answer_with_knowledge(
+    llm, user_input: str, knowledge_rows: list[dict], max_chunks: int = 4
+) -> str:
     if not knowledge_rows:
-        return user_input
+        return "관련된 지식이 없어 답변할 수 없습니다."
 
-    # 1. similarity가 낮은 순서대로 정렬 (낮을수록 더 관련 있음)
+    # 1. similarity 낮은 순으로 정렬 후 상위 max_chunks 선택
     top_chunks = sorted(knowledge_rows, key=lambda x: x["similarity"])[:max_chunks]
-    # knowledge_texts = "\n\n".join([f"data {i + 1}:\n{x['chunk_text']}" for i, x in enumerate(top_chunks)])
-    knowledge_texts = "\n\n".join([x['chunk_text'] for x in top_chunks])
-    print("가공된 데이터 : ",knowledge_texts)
-    prompt = PromptTemplate(
-        input_variables=["user_input", "knowledge_texts"],
-        template="""
-        사용자가 질문했습니다:
-        {user_input}
-    
-        다음 지식베이스 자료를 참고하세요:
-        {knowledge_texts}
-    
-        위 자료를 참고하여 정확하고 구체적으로 답변해주세요.
-        """
-    )
+    knowledge_texts = "\n\n".join([x["chunk_text"] for x in top_chunks])
+    print("가공된 데이터:", knowledge_texts)
+
+    # ChatPromptTemplate 사용
+    prompt = ChatPromptTemplate.from_messages([
+        (
+            "system",
+            """당신은 가람포스텍 RAG 시스템의 응답자입니다.
+            아래는 검색된 지식베이스 내용입니다:
+            
+            {knowledge_texts}
+
+            규칙:
+            1. 제공된 지식만 사용하여 답변할 것. 질문 문장을 그대로 반복하지 말 것.
+            2. 원문의 핵심 구절(사훈, 표어, 원칙 등)은 반드시 그대로 포함.
+            3. 요약은 허용하되 핵심 구절은 삭제·변형하지 말 것.
+            4. 답변은 번호 목록 또는 불릿포인트로 구조화해 깔끔하게 출력.
+            5. '원문 인용' 같은 라벨은 출력하지 말 것.
+            6. 최대 10줄 이내로 유지.""",
+        ),
+        ("human", "{user_input}"),
+    ])
+
     chain = prompt | llm
-    response = chain.invoke({"user_input": user_input, "knowledge_texts":knowledge_texts})
+    response = chain.invoke({
+        "user_input": user_input,
+        "knowledge_texts": knowledge_texts
+    })
+
     text_output = response.content
-    print("데이터와 함께 요청 결과1 : ", text_output)
+    print("데이터와 함께 요청 결과:", text_output)
+    # return JSONResponse(content={"answer": text_output})
     return text_output
+
 
 
 def pdf_preview_prompt(file_path: str) -> dict:

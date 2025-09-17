@@ -8,6 +8,7 @@ from service.prompt import pdf_preview_prompt, preview_prompt
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+# from langchain_service.document_loader.indexer import KssTextSplitter
 from schemas.msp_project import InvokeRequest
 from service.prompt import pdf_preview_prompt
 from service.sms.generate_random_code import generate_verification_code
@@ -151,7 +152,9 @@ async def msp_upload_file(
     # 임베딩 과정 (추후 조정 가능)
     loader = PyMuPDFLoader(file_path)
     documents = loader.load()
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    splitter =RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+
+    # KssTextSplitter(chunk_size=1000, chunk_overlap=200)
     split_docs = splitter.split_documents(documents)
     chunk_payload = []
     for idx, doc in enumerate(split_docs):
@@ -220,6 +223,7 @@ async def invoke_knowledge(req:InvokeRequest , db: Session = Depends(get_db)):
     )
     context = "\n".join(chunk.chunk_text for chunk in chunks)
 
+#######################################
     # 3) LLM 호출
     llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
 

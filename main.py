@@ -5,6 +5,8 @@ from core.config import UPLOAD_FOLDER
 from fastapi.staticfiles import StaticFiles
 import os
 import uvicorn
+from dotenv import load_dotenv
+load_dotenv()
 
 app = FastAPI(debug=True)
 
