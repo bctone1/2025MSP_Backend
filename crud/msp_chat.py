@@ -10,7 +10,7 @@ def get_similarity_search_by_knowledge_ids(
         db: Session,
         knowledge_ids: list[int],
         user_input: str,
-        top_k: int = 3
+        top_k: int = 5
 ):
     # 1. 사용자 입력을 벡터로 변환
     user_input_vector = text_to_vector(user_input)  # numpy array

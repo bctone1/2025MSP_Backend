@@ -24,8 +24,6 @@ from models import MSP_Knowledge
 from sqlalchemy.orm import Session
 from models.knowledge import MSP_KnowledgeChunk
 
-
-
 knowledge_router = APIRouter(tags=["msp_knowledge"], prefix="/MSP_KNOWLEDGE")
 
 
@@ -51,6 +49,8 @@ async def msp_add_session_knowledge_association(
     body = await request.json()
     session_id = body.get("session_id")
     knowledge_ids = body.get("knowledge_ids")
+    knowledge_titles = body.get("knowledge_titles")
+    print(knowledge_titles)
 
     # 세션생성 용 정보
     user_id = body.get("user_id")
@@ -58,7 +58,7 @@ async def msp_add_session_knowledge_association(
     title = None
 
     if session_id == 0:
-        result = preview_prompt("사용자가 새로운 대화를 시작하면서 참고 파일을 선택했습니다.")
+        result = preview_prompt(f"사용자가 새로운 대화를 시작하면서 참고 파일({knowledge_titles})을 선택했습니다.")
         preview = result.get("preview")
         title = result.get("title")
 
@@ -106,7 +106,7 @@ async def msp_upload_file(
     form_data = await request.form()
     user_id = form_data.get("user_id")
     save_dir = config.UPLOAD_FOLDER
-    user_dir = os.path.join(save_dir, user_id, 'document')    # 사용자별 디렉토리
+    user_dir = os.path.join(save_dir, user_id, 'document')  # 사용자별 디렉토리
     os.makedirs(user_dir, exist_ok=True)
 
     # 파일 저장
@@ -155,12 +155,10 @@ async def msp_upload_file(
     if chunk_payload:
         create_knowledge_chunks(db, upload_result.id, chunk_payload)
 
-
     return {
         "filename": file.filename,
         "response": upload_result
     }
-
 
 
 @knowledge_router.get("/msp_get_file")
@@ -171,6 +169,7 @@ async def msp_get_file(file_id: int, user_id: int, db: Session = Depends(get_db)
         raise HTTPException(status_code=404, detail="파일이 존재하지 않습니다")
 
     return FileResponse(path=file_path, filename=os.path.basename(file_path))
+
 
 # vector 불러오는 테스트용
 @knowledge_router.get("/msp_get_chunk_vector/{chunk_id}")
@@ -189,7 +188,7 @@ async def msp_get_chunk_vector(chunk_id: int, db: Session = Depends(get_db)):
 
 # 질문을 임베딩 뒤 DB에 저장된 벡터와 비교해 관련 내용을 추출하고 LLM에 전달해 답변을 생성하는 방식
 @knowledge_router.post("/invoke")
-async def invoke_knowledge(req:InvokeRequest , db: Session = Depends(get_db)):
+async def invoke_knowledge(req: InvokeRequest, db: Session = Depends(get_db)):
     question = req.question
     user_id = req.user_id
     provider = req.provider

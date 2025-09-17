@@ -15,7 +15,7 @@ llm = ChatOpenAI(
 )
 
 
-def get_answer_with_knowledge(llm,user_input: str, knowledge_rows: list[dict], max_chunks: int = 3) -> str:
+def get_answer_with_knowledge(llm, user_input: str, knowledge_rows: list[dict], max_chunks: int = 3) -> str:
     if not knowledge_rows:
         return user_input
 
@@ -23,21 +23,31 @@ def get_answer_with_knowledge(llm,user_input: str, knowledge_rows: list[dict], m
     top_chunks = sorted(knowledge_rows, key=lambda x: x["similarity"])[:max_chunks]
     # knowledge_texts = "\n\n".join([f"data {i + 1}:\n{x['chunk_text']}" for i, x in enumerate(top_chunks)])
     knowledge_texts = "\n\n".join([x['chunk_text'] for x in top_chunks])
-    print("가공된 데이터 : ",knowledge_texts)
+    print("가공된 데이터 : ", knowledge_texts)
     prompt = PromptTemplate(
         input_variables=["user_input", "knowledge_texts"],
         template="""
-        사용자가 질문했습니다:
-        {user_input}
+        당신은 업로드된 문서(PDF)에서 추출된 지식 기반을 활용하여 사용자의 질문에 답변하는 전문가 비서입니다.  
     
-        다음 지식베이스 자료를 참고하세요:
-        {knowledge_texts}
+        [사용자 질문]  
+        {user_input}  
     
-        위 자료를 참고하여 정확하고 구체적으로 답변해주세요.
+        [참고 자료]  
+        아래 텍스트는 사용자가 업로드한 PDF에서 벡터 검색을 통해 질문과 가장 유사도가 높은 부분을 선별한 것입니다.  
+        {knowledge_texts}  
+    
+        [답변 지침]  
+        1. 반드시 참고 자료를 최우선으로 활용하세요.  
+        2. 자료에 없는 내용은 추측하지 말고, "제공된 자료에서는 해당 정보를 찾을 수 없습니다."라고 명시하세요.  
+        3. 불필요한 반복이나 장황한 설명은 피하고, 사용자가 이해하기 쉽게 간결하고 구체적으로 답변하세요.  
+        4. 전문 용어는 풀어서 설명하되, 원문 표현도 함께 제시하세요.  
+        5. 답변은 한국어로 작성하세요.  
+    
+        [최종 답변]  
         """
     )
     chain = prompt | llm
-    response = chain.invoke({"user_input": user_input, "knowledge_texts":knowledge_texts})
+    response = chain.invoke({"user_input": user_input, "knowledge_texts": knowledge_texts})
     text_output = response.content
     print("데이터와 함께 요청 결과1 : ", text_output)
     return text_output
@@ -78,14 +88,24 @@ def preview_prompt(input: str):
     prompt = PromptTemplate(
         input_variables=["input"],
         template="""
-        다음은 사용자가 보낸 요청입니다:
-        "{input}"
-        위 내용을 요약해서 아래 JSON 형식으로만 답변하세요:
-        {{
-            "title": "...",
-            "preview": "..."
-        }}
-        """
+    당신은 JSON 포맷 요약기를 수행하는 도우미입니다.  
+    아래는 사용자가 보낸 요청입니다:
+    "{input}"
+
+    작업 지시사항:
+    1. 입력 내용을 읽고 핵심 주제를 간결하게 "title"에 담으세요 (짧고 직관적, 10자 이내 권장).
+    2. 입력 내용을 요약하여 "preview"에 담으세요 (2~3문장, 핵심만 포함).
+    3. 반드시 JSON 형식만 출력하세요. 그 외 설명, 텍스트, 코드블록 표시는 금지합니다.
+
+    출력 예시:
+    {{
+        "title": "파일 선택 요약",
+        "preview": "사용자가 새로운 대화를 시작하면서 선택한 파일을 참조하려고 합니다."
+    }}
+
+    이제 아래 입력을 JSON으로 요약하세요:
+    "{input}"
+            """
     )
     # chain = LLMChain(llm=llm, prompt=prompt) # LLMChain 클래스는 LangChain 0.1.17부터 사용 중단(deprecated) 되었어요.
 

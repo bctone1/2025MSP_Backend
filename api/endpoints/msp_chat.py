@@ -67,6 +67,11 @@ async def msp_request_message(
             knowledge_ids=knowledge_ids,
             user_input=user_input
         )
+        for i, row in enumerate(knowledge_rows, 1):
+            print(f"--- Chunk {i} ---")
+            print(f"유사도 점수(낮을수록 가까움): {row['similarity']:.4f}")
+            print(f"내용: {row['chunk_text']}")  # 앞부분만 출력
+            print()
 
     # 사용자 메시지 저장 (즉시 저장)
     user_message = create_message(
@@ -143,7 +148,8 @@ async def msp_request_message(
         create_message,
         db,
         session_id=session_id,
-        role="assistant",
+        # role="assistant",
+        role=chat_model,
         content=response
     )
     # 답변 프론트로 리턴
