@@ -28,11 +28,9 @@ class MSP_KnowledgeChunk(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     knowledge_id = Column(Integer, ForeignKey("_msp_knowledge_table.id", ondelete="CASCADE"), nullable=False)
-
     chunk_index = Column(Integer, nullable=False)  # 몇 번째 청크인지 (순서 유지)
     chunk_text = Column(Text, nullable=False)  # 실제 잘린 텍스트
     vector_memory = Column(Vector(1536), nullable=True)  # 대화 임베딩 저장
-
     extra_data = Column(JSON, nullable=True)     # 추가 메타 정보 (토큰 수, 페이지, 문서 위치 등)
 
     # 역방향 관계

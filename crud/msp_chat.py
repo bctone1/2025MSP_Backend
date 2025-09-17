@@ -1,7 +1,48 @@
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import desc
+from sqlalchemy import desc, text
+
+from langchain_service.embedding.get_vector import text_to_vector
 from models import *
 from datetime import datetime, UTC
+
+
+def get_similarity_search_by_knowledge_ids(
+        db: Session,
+        knowledge_ids: list[int],
+        user_input: str,
+        top_k: int = 3
+):
+    # 1. 사용자 입력을 벡터로 변환
+    user_input_vector = text_to_vector(user_input)  # numpy array
+    user_input_vector = user_input_vector.tolist()  # list
+
+    # 백터를 제외한 데이터 출력
+    # stmt = text("""
+    # SELECT id, knowledge_id, chunk_index, chunk_text, extra_data,
+    #        vector_memory <=> CAST(:query_vector AS vector) AS similarity
+    # FROM _msp_knowledge_chunk_table
+    # WHERE knowledge_id = ANY(:knowledge_ids)
+    # ORDER BY similarity ASC
+    # LIMIT :top_k
+    # """)
+
+    stmt = text("""
+        SELECT  chunk_text,
+               vector_memory <=> CAST(:query_vector AS vector) AS similarity
+        FROM _msp_knowledge_chunk_table
+        WHERE knowledge_id = ANY(:knowledge_ids)
+        ORDER BY similarity ASC
+        LIMIT :top_k
+        """)
+
+    rows = db.execute(stmt, {
+        "knowledge_ids": knowledge_ids,
+        "query_vector": user_input_vector,
+        "top_k": top_k
+    }).fetchall()
+
+    # 3. dict 리스트 형태로 반환
+    return [dict(r._mapping) for r in rows]
 
 
 def get_sessions_by_user(db: Session, user_id: int):
@@ -28,13 +69,12 @@ def get_sessions_by_user(db: Session, user_id: int):
     return result
 
 
-
 def create_session(
-    db: Session,
-    user_id: int,
-    title: str,
-    project_id: int = None,
-    preview: str = None,
+        db: Session,
+        user_id: int,
+        title: str,
+        project_id: int = None,
+        preview: str = None,
 ) -> MSP_Chat_Session:
     """
     새로운 채팅 세션을 생성하고 DB에 저장하는 함수
@@ -50,10 +90,6 @@ def create_session(
     db.commit()
     db.refresh(new_session)  # 새로 생성된 id 값 등을 반영
     return new_session
-
-
-
-
 
 
 # def get_messages_by_session(db: Session, session_id: int):
@@ -78,7 +114,6 @@ def get_messages_by_session(db: Session, session_id: int):
         .order_by(MSP_Message.id)
         .all()
     )
-
 
 
 def create_message(db: Session, session_id: int, role: str, content: str, vector_memory=None, extra_data=None):
