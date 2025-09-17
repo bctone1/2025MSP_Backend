@@ -200,7 +200,7 @@ async def msp_get_chunk_vector(chunk_id: int, db: Session = Depends(get_db)):
 
 # 질문을 임베딩 뒤 DB에 저장된 벡터와 비교해 관련 내용을 추출하고 LLM에 전달해 답변을 생성하는 방식
 @knowledge_router.post("/invoke")
-async def invoke_knowledge(req:InvokeRequest , db: Session = Depends(get_db)):
+async def invoke_knowledge(req: InvokeRequest , db: Session = Depends(get_db)):
     question = req.question
     user_id = req.user_id
     provider = req.provider
