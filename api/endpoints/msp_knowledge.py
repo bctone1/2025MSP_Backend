@@ -1,5 +1,9 @@
 from fastapi import APIRouter, Request, HTTPException, Depends, UploadFile, File, Form
 import json
+
+from langchain_core.prompts import PromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+
 from service.prompt import pdf_preview_prompt, preview_prompt
 
 from langchain_core.output_parsers import StrOutputParser
@@ -110,9 +114,11 @@ async def msp_upload_file(
     os.makedirs(user_dir, exist_ok=True)
 
     # 파일 저장
-    origin_name = file.filename
+    origin_name = file.filename    # 원본 파일명
     random_number = generate_verification_code()
     file_name = f"{user_id}_{random_number}_{origin_name}"
+
+    # 저장경로 완성
     file_path = os.path.join(user_dir, file_name)
     with open(file_path, "wb") as f:
         content = await file.read()
@@ -120,6 +126,7 @@ async def msp_upload_file(
     file_type = file.content_type
     file_size = len(content)
 
+    # PDF 내용을 요약하거나 태그/미리보기를 뽑아내는 함수
     pdf_preview = pdf_preview_prompt(file_path)
     # if pdf_preview.startswith("```json"):
     #     pdf_preview = pdf_preview.replace("```json", "").replace("```", "").strip()
@@ -128,6 +135,7 @@ async def msp_upload_file(
     tags = pdf_preview.get("tags", "")
     preview = pdf_preview.get("preview", [])
 
+    # 업로드한 파일의 메타데이터를 DB의 knowledge 테이블에 기록.
     upload_result = create_knowledge(db,
                                      origin_name=origin_name,
                                      file_path=file_path,
@@ -213,13 +221,34 @@ async def invoke_knowledge(req:InvokeRequest , db: Session = Depends(get_db)):
     context = "\n".join(chunk.chunk_text for chunk in chunks)
 
     # 3) LLM 호출
-    if provider == "openai":
-        llm = ChatOpenAI(model_name=model, api_key=config.OPENAI_API, temperature=0.1)
-    else:
-        raise HTTPException(status_code=400, detail="지원하지 않는 AI 입니다.")
+    llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
 
-    prompt = f"다음 정보를 참고하여 질문에 답변해 주세요:\n{context}\n\n질문: {question}"
-    answer = llm.predict(prompt)
+    retriever = msp_get_chunk_vector.as_retriever()
+
+    # 프롬프트를 생성합니다.
+    prompt = PromptTemplate.from_template(
+        """You are an assistant for question-answering tasks. 
+    Use the following pieces of retrieved context to answer the question. 
+    If you don't know the answer, just say that you don't know. 
+    Answer in Korean.
+
+    #Question: 
+    {question} 
+    #Context: 
+    {context} 
+
+    #Answer:"""
+    )
+
+
+    chain = (
+            {"context": retriever, "question": RunnablePassthrough()}
+            | prompt
+            | llm
+            | StrOutputParser()
+    )
+
+    answer = chain.invoke(question)
 
     return {
         "status": True,
