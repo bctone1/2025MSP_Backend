@@ -67,20 +67,37 @@ def create_knowledge(db: Session, origin_name: str, file_path: str, file_type: s
 
 
 def get_knowledge_by_user(db: Session, user_id: int):
-    try:
-        knowledges = (
-            db.query(MSP_Knowledge)
-            .filter(MSP_Knowledge.user_id == user_id)
-            .order_by(MSP_Knowledge.created_at.desc())
-            .all()
+    from sqlalchemy import func
+    knowledges_with_count = (
+        db.query(
+            MSP_Knowledge,
+            func.count(MSP_KnowledgeChunk.id).label("chunk_count")
         )
+        .outerjoin(MSP_KnowledgeChunk, MSP_Knowledge.id == MSP_KnowledgeChunk.knowledge_id)
+        .filter(MSP_Knowledge.user_id == user_id)
+        .group_by(MSP_Knowledge.id)
+        .order_by(MSP_Knowledge.created_at.desc())
+        .all()
+    )
 
-        if not knowledges:
-            raise HTTPException(status_code=404, detail="해당 사용자의 Knowledge 데이터가 없습니다.")
+    if not knowledges_with_count:
+        raise HTTPException(status_code=404, detail="해당 사용자의 Knowledge 데이터가 없습니다.")
 
-        return knowledges
-    except NoResultFound:
-        raise HTTPException(status_code=404, detail="Knowledge 조회 실패")
+    result = []
+    for k, chunk_count in knowledges_with_count:
+        result.append({
+            "id": k.id,
+            "origin_name": k.origin_name,
+            "file_path": k.file_path,
+            "type": k.type,
+            "size": k.size,
+            "tags": k.tags,  # 여기 추가
+            "preview":k.preview,
+            "created_at": k.created_at,
+            "chunk_count": chunk_count
+        })
+
+    return result
 
 def create_knowledge_chunks(db: Session, knowledge_id: int, chunks: Sequence[dict]):
     """주어진 텍스트 청크와 벡터를 KnowledgeChunk 테이블에 저장"""

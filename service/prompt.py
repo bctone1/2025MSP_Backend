@@ -58,7 +58,7 @@ def pdf_preview_prompt(file_path: str) -> dict:
     documents = loader.load()
     # 앞 페이지 텍스트를 합치기
     full_text = "\n".join([doc.page_content for doc in documents])
-    short_text = full_text[:3000]  # 앞 3000자 정도만 LLM에 전달
+    short_text = full_text[:6000]  # 앞 3000자 정도만 LLM에 전달
 
     prompt = PromptTemplate(
         input_variables=["input_text"],

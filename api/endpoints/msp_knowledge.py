@@ -89,7 +89,7 @@ async def msp_get_knowledge_by_user(request: Request, db: Session = Depends(get_
     body = await request.json()
     user_id = body.get("user_id")
     knowledges = get_knowledge_by_user(db, user_id)
-    print(knowledges)
+    # print(knowledges)
     return {
         "status": True,
         "knowledges": knowledges
