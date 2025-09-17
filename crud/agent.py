@@ -50,7 +50,7 @@ def create_agent(db: Session, id: str, name: str, type_code: str, avatar: Option
         provider_id=provider_id,
         model_id=model_id,
         capabilities=capabilities or [],
-        created_at=datetime.utcnow()
+        created_at=datetime.now(UTC)
     )
     db.add(new_agent)
     db.commit()

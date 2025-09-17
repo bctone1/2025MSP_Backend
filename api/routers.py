@@ -2,7 +2,7 @@ from fastapi import APIRouter
 # from api.endpoints import user
 # from api.endpoints import project
 # from api.endpoints import llm
-# from api.endpoints import agent
+from api.endpoints import agent
 
 
 from api.endpoints import msp_user
@@ -17,7 +17,7 @@ router = APIRouter()
 # router.include_router(user.user_router)
 # router.include_router(project.project_router)
 # router.include_router(llm.langchain_router)
-# router.include_router(agent.agent_router)
+router.include_router(agent.agent_router)
 
 
 router.include_router(msp_user.user_router)
