@@ -1,0 +1,75 @@
+name: writing_agent
+description: >
+  글쓰기 요청을 처리하는 에이전트. 
+  사용자 입력을 기반으로 의도 분석 → 아웃라인 생성 → 초안 작성 → 수정 → 품질검사 단계를 거쳐 최종 글을 완성한다.
+type: chain
+
+inputs:
+  - name: user_input
+    type: string
+    description: 사용자가 작성하려는 주제나 요청
+  - name: context
+    type: string
+    description: 참고할 배경지식이나 자료 (없으면 빈 문자열)
+
+steps:
+  - id: intent_analysis
+    type: llm
+    name: Intent Analysis
+    input: |
+      사용자가 작성하고자 하는 글의 의도를 분석하라.
+      - 목적
+      - 대상 독자
+      - 글의 톤과 스타일
+      - 분량 요구사항
+      요청: {user_input}
+    output: intent
+
+  - id: outline_generation
+    type: llm
+    name: Outline Generation
+    input: |
+      다음 의도를 기반으로 글의 아웃라인을 설계하라.
+      기본은 [서론 - 본론 - 결론] 구조이지만 필요시 다른 구조도 가능하다.
+      의도: {intent}
+    output: outline
+
+  - id: draft_writing
+    type: llm
+    name: Draft Writing
+    input: |
+      아웃라인을 바탕으로 초안을 작성하라.
+      - 간결하고 명확한 문장
+      - 논리적 전개
+      - 필요시 배경지식 참고
+      아웃라인: {outline}
+      배경정보: {context}
+    output: draft
+
+  - id: refinement
+    type: llm
+    name: Refinement
+    input: |
+      초안을 검토하고 다듬어라.
+      - 문장 흐름
+      - 맞춤법 및 어휘 교정
+      - 예시/설명 보강
+      초안: {draft}
+    output: refined_text
+
+  - id: quality_check
+    type: llm
+    name: Quality Check
+    input: |
+      최종 글을 검토하라.
+      - 사용자 의도와 일치 여부
+      - 일관된 톤과 논리 구조
+      - 정확성
+      최종 글을 출력하라.
+      글: {refined_text}
+    output: final_text
+
+outputs:
+  - name: final_text
+    type: string
+    description: 최종 완성된 글
