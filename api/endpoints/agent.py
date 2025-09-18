@@ -1,30 +1,6 @@
-from fastapi import APIRouter, Depends, status, HTTPException, File, UploadFile, Request, BackgroundTasks
-from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
-from sqlalchemy import select
-
-from crud.agent import get_agent_types
-from database.session import get_db
-
-from models.llm import Provider, AIModel
-from models.agent import Agent
-from schemas.agent import *
-from crud.llm import *
-
-from langchain_service.agent.writing_agent import *
-from langchain_service.chain.file_chain import get_file_chain
-from langchain_service.chain.qa_chain import qa_chain, process_usage_in_background, get_session_title
-from langchain_service.prompt.file_agent import get_file_agent
-from langchain_service.embedding.get_vector import text_to_vector
-from langchain_service.chain.image_generator import *
-from langchain_service.vision.download_image import save_image_from_url
-
-# from service.sms.generate_random_code import generate_verification_code
-
 import core.config as config
-from core.config import EMBEDDING_API
 import os
-
+from langchain_service.agent.raect_agent import build_agent_with_history, create_agent_executor
 
 # agent_router = APIRouter(prefix="/agent", tags=["agent"])
 
@@ -48,7 +24,7 @@ import os
 #     ...
 
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -295,4 +271,34 @@ def run_agent_endpoint(payload: AgentRunRequest, db: Session = Depends(get_db)):
         return AgentRunResponse(agent_type=payload.agent_type, content="analysis 에이전트 준비 중")
 
     raise HTTPException(400, detail="지원되지 않는 agent_type")
+
+
+# DB에서 불러온 히스토리를 agent 메모리에 넣고, 새로운 입력(user_input)에 대한 응답을 생성
+@agent_router.post("/msp_run_with_context")
+async def msp_run_with_context(request: Request, db: Session = Depends(get_db)):
+    body = await request.json()
+    session_id = body.get("session_id")
+    user_input = body.get("input")
+
+    if not session_id or not user_input:
+        raise HTTPException(status_code=400, detail="session_id와 input은 필수입니다.")
+
+    # 1) AgentExecutor 생성 (tools는 실제 정의된 리스트 주입해야 함)
+    tools = []  # TODO: 사용할 LangChain tools 리스트로 교체
+    agent_executor = create_agent_executor(tools)
+
+    # 2) DB 히스토리와 결합
+    agent_with_history = build_agent_with_history(db, agent_executor)
+
+    # 3) 실행
+    response = agent_with_history.invoke(
+        {"input": user_input},
+        config={"configurable": {"session_id": session_id}},
+    )
+
+    return {
+        "status": True,
+        "session_id": session_id,
+        "response": response,
+    }
 
