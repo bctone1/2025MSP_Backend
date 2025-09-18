@@ -1,5 +1,6 @@
 import json
-from langchain_teddynote import logging
+
+from langchain_service.langsmith import logging
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.prompts import PromptTemplate
 from core.config import OPENAI_API, DEFAULT_CHAT_MODEL
