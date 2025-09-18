@@ -6,7 +6,7 @@ from langchain_core.prompts import PromptTemplate
 from core.config import OPENAI_API, DEFAULT_CHAT_MODEL
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
-import re
+# import re
 # from fastapi.responses import JSONResponse
 
 logging.langsmith("Garam_RAG")

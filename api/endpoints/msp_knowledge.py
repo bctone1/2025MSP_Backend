@@ -220,7 +220,7 @@ async def invoke_knowledge(req: InvokeRequest , db: Session = Depends(get_db)):
     )
     context = "\n".join(chunk.chunk_text for chunk in chunks)
 
-#######################################
+###################################################
     # 3) LLM 호출
     llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
 
@@ -256,3 +256,5 @@ async def invoke_knowledge(req: InvokeRequest , db: Session = Depends(get_db)):
         "response": answer,
         "history": []
     }
+###################################################
+

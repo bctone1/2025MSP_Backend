@@ -10,6 +10,7 @@ from crud.msp_chat import *
 from langchain_service.embedding.get_vector import text_to_vector
 from service.prompt import preview_prompt, user_input_intent, get_answer_with_knowledge
 import core.config as config
+from langchain_service.agent.raect_agent import build_agent_with_history, create_agent_executor
 
 chat_router = APIRouter(tags=["msp_chat"], prefix="/MSP_CHAT")
 
@@ -178,3 +179,32 @@ async def msp_read_message_by_session(request: Request, db: Session = Depends(ge
     #     "status": True,
     #     "messages": messages
     # }
+
+# DB에서 불러온 히스토리를 agent 메모리에 넣고, 새로운 입력(user_input)에 대한 응답을 생성
+@chat_router.post("/msp_run_with_context")
+async def msp_run_with_context(request: Request, db: Session = Depends(get_db)):
+    body = await request.json()
+    session_id = body.get("session_id")
+    user_input = body.get("input")
+
+    if not session_id or not user_input:
+        raise HTTPException(status_code=400, detail="session_id와 input은 필수입니다.")
+
+    # 1) AgentExecutor 생성 (tools는 실제 정의된 리스트 주입해야 함)
+    tools = []  # TODO: 사용할 LangChain tools 리스트로 교체
+    agent_executor = create_agent_executor(tools)
+
+    # 2) DB 히스토리와 결합
+    agent_with_history = build_agent_with_history(db, agent_executor)
+
+    # 3) 실행
+    response = agent_with_history.invoke(
+        {"input": user_input},
+        config={"configurable": {"session_id": session_id}},
+    )
+
+    return {
+        "status": True,
+        "session_id": session_id,
+        "response": response,
+    }
