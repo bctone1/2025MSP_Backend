@@ -125,3 +125,12 @@ if __name__ == "__main__":
 [user@example.com](mailto:user@example.com) | pass456
 
 [user@bctone.kr](mailto:user@bctone.kr) | testpass123
+
+
+
+
+# Copyright [2024] [teddynote]
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
