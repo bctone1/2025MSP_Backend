@@ -27,6 +27,24 @@ from models.knowledge import MSP_KnowledgeChunk
 knowledge_router = APIRouter(tags=["msp_knowledge"], prefix="/MSP_KNOWLEDGE")
 
 
+@knowledge_router.post("/msp_delete_by_knowledge_id")
+async def msp_delete_by_knowledge_id(
+        request: Request,
+        db: Session = Depends(get_db)
+):
+    body = await request.json()
+    knowledge_id = body.get("knowledge_id")
+
+    deleted = delete_by_knowledge_id(db, knowledge_id)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"Knowledge {knowledge_id} not found")
+
+    return {
+        "status": True,
+        "response": f"Knowledge {knowledge_id}가 삭제되었습니다."
+    }
+
 @knowledge_router.post("/msp_get_session_knowledge_association")
 async def msp_get_session_knowledge_association(
         request: Request,

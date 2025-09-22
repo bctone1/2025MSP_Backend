@@ -3,6 +3,26 @@ from models import MSP_Project
 from datetime import datetime
 
 
+
+def delete_project_by_id(db: Session, project_id: int) -> bool:
+    """
+    주어진 project_id로 MSP_Project 삭제
+    """
+    project = db.get(MSP_Project, project_id)
+    if not project:
+        return False
+
+    # 다대다 관계 해제 (knowledge는 보존됨)
+    project.knowledges.clear()
+
+    # chat_sessions 삭제 여부 (정책에 따라 다름)
+    for session in project.chat_sessions:
+        db.delete(session)
+
+    db.delete(project)
+    db.commit()
+    return True
+
 # ✅ Create (프로젝트 생성)
 def create_project(db: Session, user_id: int, name: str, category: str = None, description: str = None,
                    status: str = None, cost: str = None):

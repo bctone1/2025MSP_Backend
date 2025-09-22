@@ -1,6 +1,5 @@
 from typing import Dict, Any
-from fastapi import APIRouter, Request,HTTPException,Depends
-
+from fastapi import APIRouter, Request, HTTPException, Depends
 
 from crud.project import *
 from database.session import get_db
@@ -8,6 +7,23 @@ from crud.msp_project import *
 from schemas.msp_project import UserProjectsResponse
 
 project_router = APIRouter(tags=["msp_project"], prefix="/MSP_PROJECT")
+
+
+
+@project_router.post("/msp_delete_project_by_id")
+async def msp_delete_project_by_id(request: Request, db: Session = Depends(get_db)):
+    body = await request.json()
+    project_id = body.get("project_id")
+
+    deleted = delete_project_by_id(db, project_id)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"Project {project_id} not found")
+
+    return {
+        "status": True,
+        "response": f"Project {project_id}가 삭제되었습니다."
+    }
 
 
 @project_router.post("/msp_create_project")
@@ -36,7 +52,7 @@ async def msp_create_project(request: Request, db: Session = Depends(get_db)):
     )
 
     return {
-        "status":True,
+        "status": True,
         "response": f"{new_project.name} 프로젝트가 생성되었습니다. ",
         "project": {
             "id": new_project.id,

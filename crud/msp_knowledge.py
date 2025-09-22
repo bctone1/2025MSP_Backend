@@ -8,6 +8,25 @@ from typing import List
 
 from models.associations import session_knowledge_association
 
+
+def delete_by_knowledge_id(db: Session, knowledge_id: int) -> bool:
+    """
+    knowledge_id에 해당하는 MSP_Knowledge를 삭제
+    """
+    knowledge = db.get(MSP_Knowledge, knowledge_id)
+    if not knowledge:
+        return False
+
+    # 다대다 관계 해제
+    knowledge.projects.clear()
+    knowledge.sessions.clear()
+
+    # chunks는 cascade로 자동 삭제됨
+    db.delete(knowledge)
+    db.commit()
+
+    return True
+
 def get_session_knowledge_association(db: Session, session_id: int):
     session_obj = db.query(MSP_Chat_Session).filter(MSP_Chat_Session.id == session_id).first()
     if not session_obj:
